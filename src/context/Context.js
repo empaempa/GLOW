@@ -10,15 +10,15 @@ GLOW.Context = function( parameters ) {
 
 	if( parameters === undefined ) parameters = {};
 	
-	that.id 					= parameters.id        				!== undefined ? parameters.id 		 				: "Context" + GLOW.uniqueId();
-	that.alpha      			= parameters.alpha      			!== undefined ? parameters.alpha     				: true;
-	that.depth      			= parameters.depth      			!== undefined ? parameters.depth     				: true;
-	that.antialias 				= parameters.antialias 				!== undefined ? parameters.antialias 				: true;
-	that.stencil 				= parameters.stencil 				!== undefined ? parameters.stencil 	 				: false;
-	that.premultipliedAlpha 	= parameters.premultipliedAlpha 	!== undefined ? parameters.premultipliedAlpha		: true;
-	that.preserveDrawingBuffer	= parameters.preserveDrawingBuffer	!== undefined ?	parameters.preserveDrawingBuffer	: false;
-	that.width                  = parameters.width					!== undefined ? parameters.width					: window.innerWidth;
-	that.height					= parameters.height					!== undefined ? parmaeters.height					: window.innerHeight;
+	that.id                     = parameters.id                     !== undefined ? parameters.id                       : "Context" + GLOW.uniqueId();
+	that.alpha                  = parameters.alpha                  !== undefined ? parameters.alpha                    : true;
+	that.depth                  = parameters.depth                  !== undefined ? parameters.depth                    : true;
+	that.antialias              = parameters.antialias              !== undefined ? parameters.antialias                : true;
+	that.stencil                = parameters.stencil                !== undefined ? parameters.stencil                  : false;
+	that.premultipliedAlpha     = parameters.premultipliedAlpha     !== undefined ? parameters.premultipliedAlpha       : true;
+	that.preserveDrawingBuffer  = parameters.preserveDrawingBuffer  !== undefined ?	parameters.preserveDrawingBuffer    : false;
+	that.width                  = parameters.width                  !== undefined ? parameters.width                    : window.innerWidth;
+	that.height					= parameters.height                 !== undefined ? parmaeters.height                   : window.innerHeight;
 	
 	
 	// create canvas and webgl context and register
@@ -26,12 +26,12 @@ GLOW.Context = function( parameters ) {
 	try {
 		
 		that.domElement	= document.createElement( 'canvas' );
-		that.GL 		= that.domElement.getContext( 'experimental-webgl', { alpha: 				that.alpha, 
-			 											 	 	 			  depth: 				that.depth, 
-														 	 	 			  antialias: 			that.antialias,
-														 	 	 			  stencil: 				that.stencil,
-														 	 	 			  premultipliedAlpha: 	that.premultipliedAlpha,
-														 	 	 			  preserveDrawingBuffer: that.preserveDrawingBuffer } );
+		that.GL         = that.domElement.getContext( 'experimental-webgl', { alpha:                 that.alpha, 
+                                                                              depth:                 that.depth, 
+                                                                              antialias:             that.antialias,
+                                                                              stencil:               that.stencil,
+                                                                              premultipliedAlpha:    that.premultipliedAlpha,
+                                                                              preserveDrawingBuffer: that.preserveDrawingBuffer } );
 
 		that.domElement.width  = that.width;
 		that.domElement.height = that.height;
@@ -68,19 +68,11 @@ GLOW.Context = function( parameters ) {
 	that.enableBlend = function( flag, setup ) {
 		
 		if( flag ) {
-			
+
 			GL.enable( GL.BLEND );
+			if( setup ) that.setupBlend( setup );
 			
-			if( setup ) {
-				
-				that.setupBlend( setup );
-				
-			}
-			
-		} else {
-			
-			GL.disable( GL.BLEND );
-		}
+		} else GL.disable( GL.BLEND );
 		
 		return that;
 	}
@@ -91,36 +83,26 @@ GLOW.Context = function( parameters ) {
 	that.setupBlend = function( setup ) {
 		
 		if( setup.equationRGB ) {
-			
+
 			try {
-				
+
 				if( setup.equationAlpha ) GL.blendEquationSeparate( setup.equationRGB, setup.equationAlpha );
 				if( setup.srcRGB        ) GL.blendFuncSeparate( setup.srcRGB, setup.dstRGB, setup.srcAlpha, setup.dstAlpha );
-				
-			} catch( error ) {
-				
-				console.error( "GLOW.Context.setupBlend: " + error );
-				
-			}
-			
+
+			} catch( error ) { console.error( "GLOW.Context.setupBlend: " + error ); }
 			
 		} else {
 			
 			try {
-				
+			
 				if( setup.equation ) GL.blendEquation( setup.equation );
 				if( setup.src      ) GL.blendFunc( setup.src, setup.dst );
-				
-			} catch( error ) {
-				
-				console.error( "GLOW.Context.setupBlend: " + error );
-
-			}
+			
+			} catch( error ) { console.error( "GLOW.Context.setupBlend: " + error ); }
 			
 		}
 		
 		return that;
-		
 	}
 	
 	
@@ -131,18 +113,9 @@ GLOW.Context = function( parameters ) {
 		if( flag ) {
 			
 			GL.enable( GL.DEPTH_TEST );
-			
-			if( setup ) {
-				
-				that.setupDepthTest( setup );
-				
-			}
-			
-		} else {
-			
-			GL.disable( GL.DEPTH_TEST );
-			
-		}
+			if( setup ) that.setupDepthTest( setup );
+		
+		} else GL.disable( GL.DEPTH_TEST );
 		
 		return that;
 	}
@@ -156,11 +129,7 @@ GLOW.Context = function( parameters ) {
 			
 			// TODO
 			
-		} catch( error ) {
-			
-			console.log( "GLOW.Context.setupDepthTest: " + error );
-			
-		}
+		} catch( error ) { console.log( "GLOW.Context.setupDepthTest: " + error ); }
 		
 		return that;
 	
@@ -174,18 +143,9 @@ GLOW.Context = function( parameters ) {
 		if( flag ) {
 			
 			GL.enable( GL.STENCIL_TEST );
-			
-			if( setup ) {
-				
-				that.setupStencilTest( setup );
-				
-			}
-			
-		} else {
-			
-			GL.disable( GL.STENCIL_TEST );
-			
-		}
+			if( setup ) that.setupStencilTest( setup );
+		
+		} else GL.disable( GL.STENCIL_TEST );
 		
 		return that;
 	}
@@ -199,11 +159,7 @@ GLOW.Context = function( parameters ) {
 			
 			// TODO
 			
-		} catch( error ) {
-			
-			console.log( "GLOW.Context.setupStencilTest: " + error );
-			
-		}
+		} catch( error ) { console.log( "GLOW.Context.setupStencilTest: " + error ); }
 		
 		return that;
 	
@@ -215,20 +171,11 @@ GLOW.Context = function( parameters ) {
 	that.enableCulling = function( flag, setup ) {
 		
 		if( flag ) {
-			
+
 			GL.enable( GL.CULL_FACE );
-			
-			if( setup ) {
-				
-				that.setupCulling( setup );
-				
-			}
-			
-		} else {
-			
-			GL.disable( GL.CULL_FACE );
-			
-		}
+			if( setup ) that.setupCulling( setup );
+
+		} else GL.disable( GL.CULL_FACE );
 		
 		return that;
 	}
@@ -239,18 +186,17 @@ GLOW.Context = function( parameters ) {
 	that.setupCulling = function( setup ) {
 		
 		try {
-			
+
 			if( setup.frontFace ) GL.frontFace( setup.frontFace );
 			if( setup.cullFace  ) GL.cullFace ( setup.cullFace  );
-			
+
 		} catch( error ) {
-			
+
 			console.error( "GLOW.Context.setupCulling: " + error );
-			
+
 		}
 		
 		return that;
-	
 	}
 
 
@@ -261,13 +207,8 @@ GLOW.Context = function( parameters ) {
 		if( flag ) {
 	
 			GL.enable( GL.SCISSOR_TEST );
-			
-			if( setup ) {
-				
-				that.setupScissorTest( setup );
-				
-			}
-			
+			if( setup ) that.setupScissorTest( setup );
+
 		} else {
 			
 			GL.disable( GL.SCISSOR_TEST );
@@ -294,9 +235,3 @@ GLOW.Context = function( parameters ) {
 	return that;
 }
 
-
-/*
-* Context ID counter
-*/
-
-GLOW.ContextId = 0;

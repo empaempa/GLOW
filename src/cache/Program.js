@@ -9,14 +9,11 @@ GLOW.Cache.Program = (function() {
 	that.isCached = function( programId ) {
 		
 		if( programId === currentProgramId ) {
-			
 			return true;
-			
 		}
 		
 		currentProgramId = programId;
 		return false;
-		
 	}
 
 
@@ -25,7 +22,6 @@ GLOW.Cache.Program = (function() {
 	that.clear = function() {
 		
 		currentProgramId = -1;
-		
 	}
 	
 	

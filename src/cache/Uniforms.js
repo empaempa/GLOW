@@ -11,9 +11,7 @@ GLOW.Cache.Uniforms = (function() {
 		return true;
 		
 		if( dataByLocation[ uniform.location ] === uniform.data ) {
-			
 			return true;
-			
 		}
 		
 		dataByLocation[ uniform.location ] === uniform.data;
