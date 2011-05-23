@@ -8,6 +8,8 @@ GLOW.Cache.Uniforms = (function() {
 	
 	that.isCached = function( uniform ) {
 		
+		return true;
+		
 		if( dataByLocation[ uniform.location ] === uniform.data ) {
 			
 			return true;

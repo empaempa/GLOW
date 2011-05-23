@@ -7,6 +7,8 @@ GLOW.Context = function( parameters ) {
 	// construct
 	
 	var that = {};
+
+	if( parameters === undefined ) parameters = {};
 	
 	that.id 					= parameters.id        				!== undefined ? parameters.id 		 				: "Context" + GLOW.uniqueId();
 	that.alpha      			= parameters.alpha      			!== undefined ? parameters.alpha     				: true;
@@ -24,12 +26,12 @@ GLOW.Context = function( parameters ) {
 	try {
 		
 		that.domElement	= document.createElement( 'canvas' );
-		that.GL 		= that.canvas.getContext( 'webgl', { alpha: 				that.alpha, 
-			 											 	 depth: 				that.depth, 
-														 	 antialias: 			that.antialias,
-														 	 stencil: 				that.stencil,
-														 	 premultipliedAlpha: 	that.premultipliedAlpha,
-														 	 preserveDrawingBuffer: that.preserveDrawingBuffer } );
+		that.GL 		= that.domElement.getContext( 'experimental-webgl', { alpha: 				that.alpha, 
+			 											 	 	 			  depth: 				that.depth, 
+														 	 	 			  antialias: 			that.antialias,
+														 	 	 			  stencil: 				that.stencil,
+														 	 	 			  premultipliedAlpha: 	that.premultipliedAlpha,
+														 	 	 			  preserveDrawingBuffer: that.preserveDrawingBuffer } );
 
 		that.domElement.width  = that.width;
 		that.domElement.height = that.height;
@@ -38,7 +40,7 @@ GLOW.Context = function( parameters ) {
 
 	} catch( error ) {
 
-		console.error( error );
+		console.error( "GLOW.Context.construct: " + error );
 		return;
 		
 	}

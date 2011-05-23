@@ -1,5 +1,5 @@
 /*
-* GLOW - WebGL Just Above Low Level
+* GLOW - Just-Above-Low-Level WebGL API
 */
 
 GLOW = (function() {
@@ -10,7 +10,7 @@ GLOW = (function() {
 	var uniqueIdCounter = -1;
 
 
-	//--- Register Context ---
+	//--- register context ---
 
 	that.registerContext = function( context ) {
 		
@@ -20,7 +20,7 @@ GLOW = (function() {
 	};
 	
 	
-	//--- Get Context By Id ---
+	//--- get context by id ---
 	
 	that.getContextById = function( id ) {
 		
@@ -36,7 +36,7 @@ GLOW = (function() {
 	};
 
 
-	//--- Enable Context ---
+	//--- enable context ---
 
 	that.enableContext = function( contextOrId ) {
 		
@@ -55,7 +55,7 @@ GLOW = (function() {
 	}
 
 
-	//--- unique Id ---
+	//--- unique id ---
 	
 	that.uniqueId = function() {
 		

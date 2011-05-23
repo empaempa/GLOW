@@ -1,0 +1,131 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>GLOW</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		<div id="container"/>
+
+		<script type="text/javascript" src="src/GLOW.js"></script>
+		<script type="text/javascript" src="src/context/Context.js"></script>
+		
+		<script type="text/javascript" src="src/shader/Shader.js"></script>
+		<script type="text/javascript" src="src/shader/Program.js"></script>
+		<script type="text/javascript" src="src/shader/Uniforms.js"></script>
+		<script type="text/javascript" src="src/shader/Attributes.js"></script>
+		<script type="text/javascript" src="src/shader/Textures.js"></script>
+		<script type="text/javascript" src="src/shader/Elements.js"></script>
+		
+		<script type="text/javascript" src="src/cache/Cache.js"></script>
+		<script type="text/javascript" src="src/cache/Program.js"></script>
+		<script type="text/javascript" src="src/cache/Uniforms.js"></script>
+		<script type="text/javascript" src="src/cache/Attributes.js"></script>
+		<script type="text/javascript" src="src/cache/Textures.js"></script>
+		<script type="text/javascript" src="src/cache/Elements.js"></script>
+
+		<script type="text/javascript" src="examples/js/Detector.js"></script>
+		<script type="text/javascript" src="examples/js/RequestAnimationFrame.js"></script>
+		<script type="text/javascript" src="examples/js/Stats.js"></script>
+
+		<script type="text/javascript">
+		
+			var shaderInfo = {
+				
+				uniforms: {
+					
+					time: GLOW.Uniform( 0 ),
+					camera: GLOW.Uniform( GLOW.Matrix()),
+					perspective: GLOW.Uniform( GLOW.Matrix())
+					
+				},
+				
+				attributes: {
+					
+					vertices: GLOW.Attribute( GLOW.Helpers.randomVector3( 100, 100 ))
+					
+				}
+				
+				elements: {
+					
+					faces: GLOW.Elements( GLOW.Helpers.straightElements( 100 ))
+					
+				}
+							
+			}
+		
+		</script>
+
+		<script type="text/javascript">
+
+			if( !Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var container, stats;
+			var mouseX = 0, mouseY = 0;
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			init();
+			animate();
+
+
+			//--- init ---
+			
+			function init() {
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				container = document.getElementById( 'container' );
+				
+				// create context
+				
+				var context = GLOW.Context();
+
+
+
+
+
+				
+				
+				// stats
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+			}
+
+
+			//--- animate ---
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				render();
+				stats.update();
+
+			}
+
+
+			//--- render ---
+
+			function render() {
+
+			}
+
+
+			//--- on mouse move ---
+			
+			function onDocumentMouseMove( event ) {
+
+				mouseX = ( event.clientX - windowHalfX );
+				mouseY = ( event.clientY - windowHalfY );
+
+			}
+			
+
+		</script>
+
+	</body>
+</html>
