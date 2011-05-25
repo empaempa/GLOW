@@ -27,10 +27,14 @@ GLOW.Helpers = (function() {
 	
 	//--- straight elements ---
 	
-	that.straightElements = function( amount ) {
+	that.straightFaces = function( amount ) {
 		
+		var a, array = [];
 		
-		
+		for( a = 0; a < amount; a++ ) {
+			
+			array.push( a );
+		}
 	}
 	
 	

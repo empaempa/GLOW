@@ -8,21 +8,19 @@
 		<div id="container"/>
 
 		<script type="text/javascript" src="src/GLOW.js"></script>
-		<script type="text/javascript" src="src/context/Context.js"></script>
+		<script type="text/javascript" src="src/core/Context.js"></script>
+		<script type="text/javascript" src="src/core/Float.js"></script>
+		<script type="text/javascript" src="src/core/Int.js"></script>
+		<script type="text/javascript" src="src/core/Matrix3.js"></script>
+		<script type="text/javascript" src="src/core/Matrix4.js"></script>
+		<script type="text/javascript" src="src/core/Texture.js"></script>
+		<script type="text/javascript" src="src/core/Cache.js"></script>
 		
 		<script type="text/javascript" src="src/shader/Shader.js"></script>
-		<script type="text/javascript" src="src/shader/Program.js"></script>
-		<script type="text/javascript" src="src/shader/Uniforms.js"></script>
-		<script type="text/javascript" src="src/shader/Attributes.js"></script>
-		<script type="text/javascript" src="src/shader/Textures.js"></script>
-		<script type="text/javascript" src="src/shader/Elements.js"></script>
-		
-		<script type="text/javascript" src="src/cache/Cache.js"></script>
-		<script type="text/javascript" src="src/cache/Program.js"></script>
-		<script type="text/javascript" src="src/cache/Uniforms.js"></script>
-		<script type="text/javascript" src="src/cache/Attributes.js"></script>
-		<script type="text/javascript" src="src/cache/Textures.js"></script>
-		<script type="text/javascript" src="src/cache/Elements.js"></script>
+		<script type="text/javascript" src="src/shader/Uniform.js"></script>
+		<script type="text/javascript" src="src/shader/Attribute.js"></script>
+
+		<script type="text/javascript" src="src/extras/Helpers.js"></script>
 
 		<script type="text/javascript" src="examples/js/Detector.js"></script>
 		<script type="text/javascript" src="examples/js/RequestAnimationFrame.js"></script>
@@ -32,26 +30,54 @@
 		
 			var shaderInfo = {
 				
-				uniforms: {
-					
-					time: GLOW.Uniform( 0 ),
-					camera: GLOW.Uniform( GLOW.Matrix()),
-					perspective: GLOW.Uniform( GLOW.Matrix())
-					
-				},
-				
-				attributes: {
-					
-					vertices: GLOW.Attribute( GLOW.Helpers.randomVector3( 100, 100 ))
-					
-				}
-				
-				elements: {
-					
-					faces: GLOW.Elements( GLOW.Helpers.straightElements( 100 ))
-					
-				}
-							
+				time:        GLOW.Float( 0 ),
+				isSomething: GLOW.Int( 1 ),
+				matrix3:     GLOW.Matrix3(),
+				matrix4:     GLOW.Matrix4(),
+				cloud:       GLOW.Texture( "examples/textures/clouds.jpg" ),
+				vertices:    GLOW.Helpers.randomVector3( 300, 100 ),
+				normals:     GLOW.Helpers.randomVector3( 300, 1 ),
+				elements:    GLOW.Helpers.straightFaces( 100 ),
+	
+				vertexShader: [
+
+						"uniform	mat3 	matrix3;",
+						"uniform 	mat4 	matrix4;",
+						"uniform 	int 	isSomething;",
+						"uniform	float 	time;",
+
+						"attribute 	vec3 	vertices;",
+						"attribute	vec3	normals;",
+						
+						"varying	vec3	normal;",
+
+						"void main(void)",
+						"{",
+							"if( isSomething == 0 ) {",
+								"normal = matrix3 * normals * time;",
+								"gl_Position = matrix4 * vec4( vertices, 1.0 );",
+							"} else {",
+								"gl_Position = vec4( 1.0 );",
+							"}",
+						"}"
+						
+					].join( "\n" ),
+
+				fragmentShader: [ 	
+
+						"#ifdef GL_ES",
+							"precision highp float;",
+						"#endif",		
+
+						"uniform sampler2D 	cloud;",
+						"varying	vec3	normal;",
+
+						"void main( void )",
+						"{",
+							"gl_FragColor = texture2D( cloud, normal.xy );",
+						"}"
+
+					].join( "\n" )
 			}
 		
 		</script>
@@ -62,6 +88,7 @@
 
 			var container, stats;
 			var mouseX = 0, mouseY = 0;
+			var shader, context;
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
@@ -79,12 +106,11 @@
 				
 				// create context
 				
-				var context = GLOW.Context();
+				context = GLOW.Context();
+				shader = GLOW.Shader( shaderInfo );
 
-
-
-
-
+				container.appendChild( context.domElement );
+				
 				
 				
 				// stats
@@ -112,6 +138,7 @@
 
 			function render() {
 
+				shader.draw();
 			}
 
 
