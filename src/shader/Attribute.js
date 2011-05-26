@@ -2,14 +2,15 @@ GLOW.Attribute = function( parameters, interleave ) {
 	
 	var attribute = {};
 	
-	attribute.id       = GLOW.uniqueId();
-	attribute.data     = parameters.data;
-	attribute.name     = parameters.name;
-	attribute.type     = parameters.type;
-	attribute.location = parameters.location;
-	attribute.stride   = 0;
-	attribute.offset   = 0;
-	attribute.size     = GLOW.AttributeSize( parameters.type );
+	attribute.id             = GLOW.uniqueId();
+	attribute.data           = parameters.data;
+	attribute.name           = parameters.name;
+	attribute.type           = parameters.type;
+	attribute.location       = parameters.location;
+	attribute.locationNumber = parameters.locationNumber;
+	attribute.stride         = 0;
+	attribute.offset         = 0;
+	attribute.size           =  GLOW.AttributeSize( parameters.type );
 
 	if( !interleave ) {
 		
@@ -60,6 +61,7 @@ GLOW.Attribute = function( parameters, interleave ) {
 		
 		if( !GLOW.Cache.attributeCached( attribute )) {
 			
+			GL.enableVertexAttribArray( attribute.locationNumber );
 			GL.bindBuffer( GL.ARRAY_BUFFER, attribute.buffer );
 			GL.vertexAttribPointer( attribute.location, attribute.size, GL.FLOAT, false, attribute.stride, attribute.offset );
 		}

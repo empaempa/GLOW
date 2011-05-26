@@ -7,7 +7,7 @@ GLOW.Helpers = (function() {
 	
 	that.cubeVertices = function( size ) {
 		
-		var a = new Float32Array( 6 * 4 * 3 );
+		var a = new Float32Array( 6 * 4 * 3 * 2 );
 		var i = 0;
 		
 		size *= 0.5;
@@ -53,13 +53,39 @@ GLOW.Helpers = (function() {
 		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
 		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
 		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+
 		
 		return a;
 	}
 	
 	that.cubeElements = function() {
 
-		var a = new Float32Array( 6 * 2 * 3 );
+		var a = new Uint16Array( 6 * 2 * 3 );
 		var i = 0;
 		
 		a[ i++ ] = 0; a[ i++ ] = 1; a[ i++ ] = 2;

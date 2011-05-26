@@ -47,7 +47,7 @@
 				cameraInverse:    GLOW.defaultCamera.inverse,
 				cameraProjection: GLOW.defaultCamera.projection,
 
-				vertices:    GLOW.Helpers.cubeVertices( 300 ),
+				vertices:    GLOW.Helpers.cubeVertices( 200 ),
 				elements:    GLOW.Helpers.cubeElements(),
 	
 				vertexShader: [
@@ -75,7 +75,7 @@
 
 						"void main( void )",
 						"{",
-							"gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 );",
+							"gl_FragColor = texture2D( clouds, vec2( gl_FragCoord.x / 100.0, gl_FragCoord.z * 1000.0 ));",
 						"}"
 
 					].join( "\n" )
@@ -87,7 +87,7 @@
 
 			var container, stats;
 			var mouseX = 0, mouseY = 0;
-			var shader, context;
+			var shader, context, t = 0;
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
@@ -98,13 +98,10 @@
 			context = GLOW.Context();
 			shader = GLOW.Shader( shaderInfo );
 			
-			context.setupClearColor( { red:0, green:1, blue:0, alpha:1 } );
-			context.enableCulling( false );
-
 			container = document.getElementById( 'container' );
 			container.appendChild( context.domElement );
 			
-			GLOW.defaultCamera.setPosition( 0, 0, 700 );
+			GLOW.defaultCamera.setPosition( 0, 0, 500 );
 			GLOW.defaultCamera.update();
 			
 			
@@ -122,6 +119,11 @@
 			setInterval( render, 1000 / 60 );
 
 			function render() {
+
+				t += 0.001;
+
+				shader.transform.setRotation( Math.sin( t ) * Math.PI * 2, Math.cos( t * 2 ) * Math.PI * 2, 0 );
+				shader.transform.update();
 
 				context.clear();
 				shader.draw();

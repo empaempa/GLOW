@@ -128,8 +128,9 @@ GLOW.Shader = function( _declaration ) {
 				
 				if( declaration[ name ] !== undefined ) {
 					
-					attributeInformation.location = GL.getAttribLocation( program, name );
-					attributeInformation.data     = declaration[ name ];
+					attributeInformation.location       = GL.getAttribLocation( program, name );
+					attributeInformation.locationNumber = attributeLocation;
+					attributeInformation.data           = declaration[ name ];
 					
 					attributes[ name ] = GLOW.Attribute( attributeInformation, false );
 					
@@ -142,6 +143,8 @@ GLOW.Shader = function( _declaration ) {
 				
 			} else break;
 		}
+		
+		program.numberOfAttributes = attributeLocation - 1;
 	}
 	
 	
@@ -211,6 +214,8 @@ GLOW.Shader = function( _declaration ) {
 	function draw() {
 		
 		if( !GLOW.Cache.programCached( program )) {
+			
+			// TODO: handle enable/disable vertex attrib location depending on program.numberOfAttributes
 			
 			GL.useProgram( program );
 		}

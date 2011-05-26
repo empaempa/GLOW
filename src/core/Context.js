@@ -7,6 +7,8 @@ GLOW.Context = function( parameters ) {
 	// construct
 	
 	var context = {};
+	var depthTestEnabled = false;
+	var stencilTestEnabled = false;
 
 	if( parameters === undefined ) parameters = {};
 	
@@ -26,13 +28,13 @@ GLOW.Context = function( parameters ) {
 	try {
 		
 		context.domElement	= document.createElement( 'canvas' );
-		context.GL         = context.domElement.getContext( 'experimental-webgl', { alpha:                 context.alpha, 
+		context.GL         = context.domElement.getContext( 'experimental-webgl' );/*, { alpha:                 context.alpha, 
                                                                                     depth:                 context.depth, 
                                                                                     antialias:             context.antialias,
                                                                                     stencil:               context.stencil,
                                                                                     premultipliedAlpha:    context.premultipliedAlpha,
                                                                                     preserveDrawingBuffer: context.preserveDrawingBuffer } );
-
+*/
 		context.domElement.width  = context.width;
 		context.domElement.height = context.height;
 		context.GL.viewport( 0, 0, context.width, context.height );
@@ -45,11 +47,17 @@ GLOW.Context = function( parameters ) {
 	}
 
 	GLOW.registerContext( context );
+
+	enableCulling( false );
+	enableDepthTest( true );
+	enableBlend( true );
+	setupClearColor( 0, 0, 0, 0 );
+	clear();
 	
 	
 	//--- setup clear color ---
 	
-	context.setupClearColor = function( setup ) {
+	function setupClearColor( setup ) {
 		
 		var r = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : 0; 
 		var g = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : 0; 
@@ -64,15 +72,22 @@ GLOW.Context = function( parameters ) {
 	
 	//--- clear ---
 	
-	context.clear = function() {
+	function clear( bits ) {
 		
-		GL.clear( GL.COLOR_BUFFER_BIT | GL.STENCIL_BUFFER_BIT | GL.DEPTH_BUFFER_BIT )
+		if( bits === undefined ) {
+			
+			bits  = GL.COLOR_BUFFER_BIT;
+			bits |= depthTestEnabled ? GL.DEPTH_BUFFER_BIT : 0;
+			bits |= stencilTestEnabled ? GL.STENCIL_BUFFER_BIT : 0;
+		}
+		
+		GL.clear( bits )
 	}
 	
 
 	//--- enable blend ---
 	
-	context.enableBlend = function( flag, setup ) {
+	function enableBlend( flag, setup ) {
 		
 		if( flag ) {
 
@@ -87,7 +102,7 @@ GLOW.Context = function( parameters ) {
 	
 	//--- setup blend ---
 	
-	context.setupBlend = function( setup ) {
+	function setupBlend( setup ) {
 		
 		if( setup.equationRGB ) {
 
@@ -115,7 +130,9 @@ GLOW.Context = function( parameters ) {
 	
 	//--- enable depth test ---
 	
-	context.enableDepthTest = function( flag, setup ) {
+	function enableDepthTest( flag, setup ) {
+		
+		depthTestEnabled = flag;
 		
 		if( flag ) {
 			
@@ -130,7 +147,7 @@ GLOW.Context = function( parameters ) {
 	
 	//--- setup depth test ---
 	
-	context.setupDepthTest = function( setup ) {
+	function setupDepthTest( setup ) {
 		
 		try {
 			
@@ -145,7 +162,9 @@ GLOW.Context = function( parameters ) {
 	
 	//--- enable stencil test ---
 	
-	context.enableStencilTest = function( flag, setup ) {
+	function enableStencilTest( flag, setup ) {
+		
+		stencilTestEnabled = flag;
 		
 		if( flag ) {
 			
@@ -160,7 +179,7 @@ GLOW.Context = function( parameters ) {
 	
 	//--- setup stencil test ---
 	
-	context.setupStencilTest = function( setup ) {
+	function setupStencilTest( setup ) {
 		
 		try {
 			
@@ -175,7 +194,7 @@ GLOW.Context = function( parameters ) {
 	
 	//--- enable culling ---
 	
-	context.enableCulling = function( flag, setup ) {
+	function enableCulling( flag, setup ) {
 		
 		if( flag ) {
 
@@ -190,7 +209,7 @@ GLOW.Context = function( parameters ) {
 
 	//--- setup culling ---
 	
-	context.setupCulling = function( setup ) {
+	function setupCulling( setup ) {
 		
 		try {
 
@@ -209,7 +228,7 @@ GLOW.Context = function( parameters ) {
 
 	//--- enable scissor test ---
 
-	context.enableScissorTest = function( flag, setup ) {
+	function enableScissorTest( flag, setup ) {
 		
 		if( flag ) {
 	
@@ -228,7 +247,7 @@ GLOW.Context = function( parameters ) {
 
 	//--- setup scissor test ---
 	
-	context.setupScissorTest = function( setup ) {
+	function setupScissorTest( setup ) {
 		
 		// TODO
 		
@@ -238,6 +257,19 @@ GLOW.Context = function( parameters ) {
 
 
 	//--- return public ---
+
+	context.setupClearColor = setupClearColor;
+	context.clear = clear;
+	context.enableBlend = enableBlend;
+	context.setupBlend = setupBlend;
+	context.enableDepthTest = enableDepthTest;
+	context.setupDepthTest = setupDepthTest;
+	context.enableStencilTest = enableStencilTest;
+	context.setupStencilTest = setupStencilTest;
+	context.enableCulling = enableCulling;
+	context.setupCulling = setupCulling;
+	context.enableScissorTest = enableScissorTest;
+	context.setupScissorTest = setupScissorTest;
 
 	return context;
 }

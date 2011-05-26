@@ -32,5 +32,5 @@ GLOW.Camera = function( fov, aspect, near, far ) {
 * Create default camera
 */
 
-GLOW.defaultCamera = GLOW.Camera();
+GLOW.defaultCamera = GLOW.Camera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
 
