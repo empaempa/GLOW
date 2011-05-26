@@ -2,14 +2,16 @@
 * Shader.js
 */
 
-GLOW.Shader = function( declaration ) {
+GLOW.Shader = function( _declaration ) {
 	
 	var shader = {};
 	var uniforms = {};
 	var attributes = {};
+	var elements;
 	var program;
 	var vertexShader;
 	var fragmentShader;
+	var declaration = _declaration;
 
 	shader.id = GLOW.uniqueId();
 
@@ -18,6 +20,7 @@ GLOW.Shader = function( declaration ) {
 	linkProgram();
 	extractAndCreateUniforms();
 	extractAndCreateAttributes();
+	createElements();
 
 
 	//--- compile vertex shader ---
@@ -105,9 +108,7 @@ GLOW.Shader = function( declaration ) {
 				}
 
 			} else break;
-
 		}
-
 	}
 	
 	
@@ -140,9 +141,32 @@ GLOW.Shader = function( declaration ) {
 				}
 				
 			} else break;
+		}
+	}
+	
+	
+	//--- create elements ---
+	
+	function createElements() {
+		
+		if( !declaration.elements ) {
 			
+			for( var a in attributes ) { break;	}
+			declaration.elements = GLOW.Helpers.arrayElements( attributes[ a ].bufferData.length / ( attributes[ a ].size * 3 ));
 		}
 		
+		if( !( declaration.elements instanceof Uint16Array )) {
+			
+			declaration.elements = new Uint16Array( declaration.elements );
+		}
+		
+		
+		elements = GL.createBuffer();
+		elements.id = GLOW.uniqueId();
+		elements.length = declaration.elements.length;
+		
+		GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, elements );
+		GL.bufferData( GL.ELEMENT_ARRAY_BUFFER, declaration.elements, GL.STATIC_DRAW );
 	}
 	
 	
@@ -153,19 +177,30 @@ GLOW.Shader = function( declaration ) {
 		var u, a;
 		
 		for( u in uniforms ) {
+			
 			if( shader[ u ] === undefined ) {
+				
 				shader[ u ] = uniforms[ u ].data;
+			
 			} else {
+		
 				console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data." );
+		
 			}
+		
 		}
 	
 	
 		for( a in attributes ) {
+			
 			if( shader[ a ] === undefined ) {
+			
 				shader[ a ] = attributes[ a ].data;
+			
 			} else {
+			
 				console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data." );
+			
 			}
 		}
 	}
@@ -175,18 +210,27 @@ GLOW.Shader = function( declaration ) {
 	
 	function draw() {
 		
-		if( !Cache.programCached( program )) {
+		if( !GLOW.Cache.programCached( program )) {
+			
 			GL.useProgram( program );
 		}
 		
 		for( var u in uniforms ) {
+			
 			uniforms[ u ].set();
 		}
 		
 		for( var a in attributes ) {
+			
 			attributes[ a ].bind();
 		}
 		
+		if( !GLOW.Cache.elementsCached( elements )) {
+
+			GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, elements );
+		}
+		
+		GL.drawElements( GL.TRIANGLES, elements.length, GL.UNSIGNED_SHORT, 0 );		
 	}
 
 
@@ -208,5 +252,4 @@ GLOW.Shader = function( declaration ) {
 	attachUniformAndAttributeData();
 	
 	return shader;
-	
 }

@@ -11,45 +11,58 @@
 GLOW.Matrix4 = function() {
 
 	var m = new Float32Array( 16 );
+	var that = { value: m };
+	var rotation = GLOW.Vector3();
 	
-	m.transpose = false;
-	m.autoUpdate = true;
+	that.transposeUniform = false;
+	that.autoUpdate = true;
+	that.children = [];
+	that.parent = undefined;
 
-	m.set = function( m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 ) {
+
+	//--- methods ---
+
+	that.update = function() {
+		
+		that.setRotationFromEuler( rotation );
+		
+	}
+
+	that.set = function( m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 ) {
 
 		m[ 0 ] = m11; m[ 4 ] = m12; m[ 8 ] = m13; m[ 12 ] = m14;
 		m[ 1 ] = m21; m[ 5 ] = m22; m[ 9 ] = m23; m[ 13 ] = m24;
 		m[ 2 ] = m31; m[ 6 ] = m32; m[ 10 ] = m33; m[ 14 ] = m34;
 		m[ 3 ] = m41; m[ 7 ] = m42; m[ 11 ] = m43; m[ 15 ] = m44;
 
-		return m;
+		return that;
 	}
 
-	m.identity = function () {
+	that.identity = function () {
 
-		m.set(
+		that.set(
 			1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1
 		);
 
-		return m;
+		return that;
 	}
 
-	m.copy = function ( m ) {
+	that.copy = function ( m ) {
 
-		m.set(
+		that.set(
 			m[  0 ], m[  1 ], m[  2 ], m[  3 ],
 			m[  4 ], m[  5 ], m[  6 ], m[  7 ],
 			m[  8 ], m[  9 ], m[ 10 ], m[ 11 ],
 			m[ 12 ], m[ 13 ], m[ 14 ], m[ 15 ]
 		);
 
-		return m;
+		return that;
 	}
 
-/*	m.lookAt = function ( eye, center, up ) {
+/*	that.lookAt = function ( eye, center, up ) {
 
 		var x = THREE.Matrix4.__v1, y = THREE.Matrix4.__v2, z = THREE.Matrix4.__v3;
 
@@ -79,63 +92,68 @@ GLOW.Matrix4 = function() {
 
 		return m;
 
-	},
+	},*/
 
-	multiplyVector3 : function ( v ) {
+	that.multiplyVector3 = function ( v ) {
 
-		var vx = v.x, vy = v.y, vz = v.z,
+		var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ],
 		d = 1 / ( m[ 3 ] * vx + m[ 7 ] * vy + m[ 11 ] * vz + m[ 15 ] );
 
-		v.x = ( m[ 0 ] * vx + m[ 4 ] * vy + m[ 8 ] * vz + m[ 12 ] ) * d;
-		v.y = ( m[ 1 ] * vx + m[ 5 ] * vy + m[ 9 ] * vz + m[ 13 ] ) * d;
-		v.z = ( m[ 2 ] * vx + m[ 6 ] * vy + m[ 10 ] * vz + m[ 14 ] ) * d;
+		v.value[ 0 ] = ( m[ 0 ] * vx + m[ 4 ] * vy + m[ 8 ] * vz + m[ 12 ] ) * d;
+		v.value[ 1 ] = ( m[ 1 ] * vx + m[ 5 ] * vy + m[ 9 ] * vz + m[ 13 ] ) * d;
+		v.value[ 2 ] = ( m[ 2 ] * vx + m[ 6 ] * vy + m[ 10 ] * vz + m[ 14 ] ) * d;
 
 		return v;
+	}
 
-	},
+	that.multiplyVector4 = function ( v ) {
 
-	multiplyVector4 : function ( v ) {
+		var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ], vw = v.value[ 3 ];
 
-		var vx = v.x, vy = v.y, vz = v.z, vw = v.w;
-
-		v.x = m[ 0 ] * vx + m[ 4 ] * vy + m[ 8 ] * vz + m[ 12 ] * vw;
-		v.y = m[ 1 ] * vx + m[ 5 ] * vy + m[ 9 ] * vz + m[ 13 ] * vw;
-		v.z = m[ 2 ] * vx + m[ 6 ] * vy + m[ 10 ] * vz + m[ 14 ] * vw;
-		v.w = m[ 3 ] * vx + m[ 7 ] * vy + m[ 11 ] * vz + m[ 15 ] * vw;
+		v.value[ 0 ] = m[ 0 ] * vx + m[ 4 ] * vy + m[ 8 ] * vz + m[ 12 ] * vw;
+		v.value[ 1 ] = m[ 1 ] * vx + m[ 5 ] * vy + m[ 9 ] * vz + m[ 13 ] * vw;
+		v.value[ 2 ] = m[ 2 ] * vx + m[ 6 ] * vy + m[ 10 ] * vz + m[ 14 ] * vw;
+		v.value[ 3 ] = m[ 3 ] * vx + m[ 7 ] * vy + m[ 11 ] * vz + m[ 15 ] * vw;
 
 		return v;
+	}
 
-	},
+	that.rotateAxis = function ( v ) {
 
-	rotateAxis : function ( v ) {
+		var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ];
 
-		var vx = v.x, vy = v.y, vz = v.z;
-
-		v.x = vx * m[ 0 ] + vy * m[ 4 ] + vz * m[ 8 ];
-		v.y = vx * m[ 1 ] + vy * m[ 5 ] + vz * m[ 9 ];
-		v.z = vx * m[ 2 ] + vy * m[ 6 ] + vz * m[ 10 ];
+		v.value[ 0 ] = vx * m[ 0 ] + vy * m[ 4 ] + vz * m[ 8 ];
+		v.value[ 1 ] = vx * m[ 1 ] + vy * m[ 5 ] + vz * m[ 9 ];
+		v.value[ 2 ] = vx * m[ 2 ] + vy * m[ 6 ] + vz * m[ 10 ];
 
 		v.normalize();
 
 		return v;
+	}
 
-	},
+	that.crossVector = function ( a ) {
 
-	crossVector : function ( a ) {
+		var v = GLOW.Vector4();
+		var ax = a.value[ 0 ], ay = a.value[ 1 ], az = a.value[ 2 ], aw = a.value[ 3 ];
 
-		var v = new THREE.Vector4();
-
-		v.x = m[ 0 ] * a.x + m[ 4 ] * a.y + m[ 8 ] * a.z + m[ 12 ] * a.w;
-		v.y = m[ 1 ] * a.x + m[ 5 ] * a.y + m[ 9 ] * a.z + m[ 13 ] * a.w;
-		v.z = m[ 2 ] * a.x + m[ 6 ] * a.y + m[ 10 ] * a.z + m[ 14 ] * a.w;
-
-		v.w = ( a.w ) ? m[ 3 ] * a.x + m[ 7 ] * a.y + m[ 11 ] * a.z + m[ 15 ] * a.w : 1;
+		v.value[ 0 ] = m[ 0 ] * ax + m[ 4 ] * ay + m[ 8 ] * az + m[ 12 ] * aw;
+		v.value[ 1 ] = m[ 1 ] * ax + m[ 5 ] * ay + m[ 9 ] * az + m[ 13 ] * aw;
+		v.value[ 2 ] = m[ 2 ] * ax + m[ 6 ] * ay + m[ 10 ] * az + m[ 14 ] * aw;
+		v.value[ 3 ] = ( aw ) ? m[ 3 ] * ax + m[ 7 ] * ay + m[ 11 ] * az + m[ 15 ] * aw : 1;
 
 		return v;
+	}
 
-	},
+	that.multiply = function ( a, b ) {
 
-	multiply : function ( a, b ) {
+/*
+//reference:
+//m.n11 = m[ 0 ]; m.n12 = m[ 4 ]; m.n13 = m[ 8 ]; m.n14 = m[ 12 ];
+//m.n21 = m[ 1 ]; m.n22 = m[ 5 ]; m.n23 = m[ 9 ]; m.n24 = m[ 13 ];
+//m.n31 = m[ 2 ]; m.n32 = m[ 6 ]; m.n33 = m[ 10 ]; m.n34 = m[ 14 ];
+//m.n41 = m[ 3 ]; m.n42 = m[ 7 ]; m.n43 = m[ 11 ]; m.n44 = m[ 15 ];
+
+
 
 		var a11 = a.n11, a12 = a.n12, a13 = a.n13, a14 = a.n14,
 		a21 = a.n21, a22 = a.n22, a23 = a.n23, a24 = a.n24,
@@ -167,43 +185,28 @@ GLOW.Matrix4 = function() {
 		m[ 11 ] = a41 * b13 + a42 * b23 + a43 * b33;
 		m[ 15 ] = a41 * b14 + a42 * b24 + a43 * b34 + a44;
 
-		return this;
-
+		return that;
+*/
 	},
 
-	multiplyToArray : function ( a, b, r ) {
+	that.multiplySelf = function ( a ) {
 
-		this.multiply( a, b );
+		this.multiply( m, a );
 
-		r[ 0 ] = m[ 0 ]; r[ 1 ] = m[ 1 ]; r[ 2 ] = m[ 2 ]; r[ 3 ] = m[ 3 ];
-		r[ 4 ] = m[ 4 ]; r[ 5 ] = m[ 5 ]; r[ 6 ] = m[ 6 ]; r[ 7 ] = m[ 7 ];
-		r[ 8 ]  = m[ 8 ]; r[ 9 ]  = m[ 9 ]; r[ 10 ] = m[ 10 ]; r[ 11 ] = m[ 11 ];
-		r[ 12 ] = m[ 12 ]; r[ 13 ] = m[ 13 ]; r[ 14 ] = m[ 14 ]; r[ 15 ] = m[ 15 ];
+		return that;
+	}
 
-		return this;
-
-	},
-
-	multiplySelf : function ( m ) {
-
-		this.multiply( this, m );
-
-		return this;
-
-	},
-
-	multiplyScalar : function ( s ) {
+	that.multiplyScalar = function ( s ) {
 
 		m[ 0 ] *= s; m[ 4 ] *= s; m[ 8 ] *= s; m[ 12 ] *= s;
 		m[ 1 ] *= s; m[ 5 ] *= s; m[ 9 ] *= s; m[ 13 ] *= s;
 		m[ 2 ] *= s; m[ 6 ] *= s; m[ 10 ] *= s; m[ 14 ] *= s;
 		m[ 3 ] *= s; m[ 7 ] *= s; m[ 11 ] *= s; m[ 15 ] *= s;
 
-		return this;
+		return that;
+	}
 
-	},
-
-	determinant : function () {
+	that.determinant = function () {
 
 		var n11 = m[ 0 ], n12 = m[ 4 ], n13 = m[ 8 ], n14 = m[ 12 ],
 		n21 = m[ 1 ], n22 = m[ 5 ], n23 = m[ 9 ], n24 = m[ 13 ],
@@ -243,10 +246,9 @@ GLOW.Matrix4 = function() {
 			n12 * n21 * n33 * n44+
 			n11 * n22 * n33 * n44
 		);
+	}
 
-	},
-
-	transpose : function () {
+	that.transpose = function () {
 
 		var tmp;
 
@@ -258,153 +260,19 @@ GLOW.Matrix4 = function() {
 		tmp = m[ 7 ]; m[ 7 ] = m[ 13 ]; m[ 13 ] = tmp;
 		tmp = m[ 11 ]; m[ 11 ] = m[ 14 ]; m[ 11 ] = tmp;
 
-		return this;
+		return that;
+	}
 
-	},
+	that.clone = function () {
 
-	clone : function () {
+		var clone = new GLOW.Matrix4();
+		clone.value = new Float32Array( m );
 
-		var m = new THREE.Matrix4();
+		return clone;
+	}
 
-		m.n11 = m[ 0 ]; m.n12 = m[ 4 ]; m.n13 = m[ 8 ]; m.n14 = m[ 12 ];
-		m.n21 = m[ 1 ]; m.n22 = m[ 5 ]; m.n23 = m[ 9 ]; m.n24 = m[ 13 ];
-		m.n31 = m[ 2 ]; m.n32 = m[ 6 ]; m.n33 = m[ 10 ]; m.n34 = m[ 14 ];
-		m.n41 = m[ 3 ]; m.n42 = m[ 7 ]; m.n43 = m[ 11 ]; m.n44 = m[ 15 ];
 
-		return m;
-
-	},
-
-	flatten : function () {
-
-		this.flat[ 0 ] = m[ 0 ]; this.flat[ 1 ] = m[ 1 ]; this.flat[ 2 ] = m[ 2 ]; this.flat[ 3 ] = m[ 3 ];
-		this.flat[ 4 ] = m[ 4 ]; this.flat[ 5 ] = m[ 5 ]; this.flat[ 6 ] = m[ 6 ]; this.flat[ 7 ] = m[ 7 ];
-		this.flat[ 8 ]  = m[ 8 ]; this.flat[ 9 ]  = m[ 9 ]; this.flat[ 10 ] = m[ 10 ]; this.flat[ 11 ] = m[ 11 ];
-		this.flat[ 12 ] = m[ 12 ]; this.flat[ 13 ] = m[ 13 ]; this.flat[ 14 ] = m[ 14 ]; this.flat[ 15 ] = m[ 15 ];
-
-		return this.flat;
-
-	},
-
-	flattenToArray : function ( flat ) {
-
-		flat[ 0 ] = m[ 0 ]; flat[ 1 ] = m[ 1 ]; flat[ 2 ] = m[ 2 ]; flat[ 3 ] = m[ 3 ];
-		flat[ 4 ] = m[ 4 ]; flat[ 5 ] = m[ 5 ]; flat[ 6 ] = m[ 6 ]; flat[ 7 ] = m[ 7 ];
-		flat[ 8 ]  = m[ 8 ]; flat[ 9 ]  = m[ 9 ]; flat[ 10 ] = m[ 10 ]; flat[ 11 ] = m[ 11 ];
-		flat[ 12 ] = m[ 12 ]; flat[ 13 ] = m[ 13 ]; flat[ 14 ] = m[ 14 ]; flat[ 15 ] = m[ 15 ];
-
-		return flat;
-
-	},
-
-	flattenToArrayOffset : function( flat, offset ) {
-
-		flat[ offset ] = m[ 0 ];
-		flat[ offset + 1 ] = m[ 1 ];
-		flat[ offset + 2 ] = m[ 2 ];
-		flat[ offset + 3 ] = m[ 3 ];
-
-		flat[ offset + 4 ] = m[ 4 ];
-		flat[ offset + 5 ] = m[ 5 ];
-		flat[ offset + 6 ] = m[ 6 ];
-		flat[ offset + 7 ] = m[ 7 ];
-
-		flat[ offset + 8 ]  = m[ 8 ];
-		flat[ offset + 9 ]  = m[ 9 ];
-		flat[ offset + 10 ] = m[ 10 ];
-		flat[ offset + 11 ] = m[ 11 ];
-
-		flat[ offset + 12 ] = m[ 12 ];
-		flat[ offset + 13 ] = m[ 13 ];
-		flat[ offset + 14 ] = m[ 14 ];
-		flat[ offset + 15 ] = m[ 15 ];
-
-		return flat;
-
-	},
-
-	setTranslation : function( x, y, z ) {
-
-		this.set(
-
-			1, 0, 0, x,
-			0, 1, 0, y,
-			0, 0, 1, z,
-			0, 0, 0, 1
-
-		);
-
-		return this;
-
-	},
-
-	setScale : function ( x, y, z ) {
-
-		this.set(
-
-			x, 0, 0, 0,
-			0, y, 0, 0,
-			0, 0, z, 0,
-			0, 0, 0, 1
-
-		);
-
-		return this;
-
-	},
-
-	setRotationX : function ( theta ) {
-
-		var c = Math.cos( theta ), s = Math.sin( theta );
-
-		this.set(
-
-			1, 0,  0, 0,
-			0, c, -s, 0,
-			0, s,  c, 0,
-			0, 0,  0, 1
-
-		);
-
-		return this;
-
-	},
-
-	setRotationY : function( theta ) {
-
-		var c = Math.cos( theta ), s = Math.sin( theta );
-
-		this.set(
-
-			 c, 0, s, 0,
-			 0, 1, 0, 0,
-			-s, 0, c, 0,
-			 0, 0, 0, 1
-
-		);
-
-		return this;
-
-	},
-
-	setRotationZ : function( theta ) {
-
-		var c = Math.cos( theta ), s = Math.sin( theta );
-
-		this.set(
-
-			c, -s, 0, 0,
-			s,  c, 0, 0,
-			0,  0, 1, 0,
-			0,  0, 0, 1
-
-		);
-
-		return this;
-
-	},
-
-	setRotationAxis : function( axis, angle ) {
+/*	that.setRotationAxis = function( axis, angle ) {
 
 		// Based on http://www.gamedev.net/reference/articles/article1199.asp
 
@@ -426,30 +294,36 @@ GLOW.Matrix4 = function() {
 		 return this;
 
 	},
+*/
+	that.setPosition = function( x, y, z ) {
 
-	setPosition : function( v ) {
+		m[ 12 ] = x;
+		m[ 13 ] = y;
+		m[ 14 ] = z;
 
-		m[ 12 ] = v.x;
-		m[ 13 ] = v.y;
-		m[ 14 ] = v.z;
+		return that;
 
-		return this;
+	}
 
-	},
-	
-	getPosition : function() {
+	setRotation = function( x, y, z ) {
 		
-		if( !this.position ) {
+		that.rotation.set( x, y, z );
+		
+		return that;
+	}
+	
+/*	getPosition : function() {
+		
+		if( !that.position ) {
 			
-			this.position = new THREE.Vector3();
+			that.position = new GLOW.Vector3();
 			
 		}
 		
-		this.position.set( m[ 12 ], m[ 13 ], m[ 14 ] );
+		that.position.set( m[ 12 ], m[ 13 ], m[ 14 ] );
 		
-		return this.position;
-		
-	},
+		return that.position;
+	}
 
 	getColumnX : function() {
 		
@@ -489,10 +363,10 @@ GLOW.Matrix4 = function() {
 		
 		return this.columnZ;
 	},
+*/
+	that.setRotationFromEuler = function( v ) {
 
-	setRotationFromEuler : function( v ) {
-
-		var x = v.x, y = v.y, z = v.z,
+		var x = v.value[ 0 ], y = v.value[ 1 ], z = v.value[ 2 ],
 		a = Math.cos( x ), b = Math.sin( x ),
 		c = Math.cos( y ), d = Math.sin( y ),
 		e = Math.cos( z ), f = Math.sin( z ),
@@ -510,11 +384,10 @@ GLOW.Matrix4 = function() {
 		m[ 6 ] = ad * f + b * e;
 		m[ 10 ] = a * c;
 
-		return this;
+		return that;
+	}
 
-	},
-
-	setRotationFromQuaternion : function( q ) {
+/*	setRotationFromQuaternion : function( q ) {
 
 		var x = q.x, y = q.y, z = q.z, w = q.w,
 		x2 = x + x, y2 = y + y, z2 = z + z,
@@ -537,21 +410,20 @@ GLOW.Matrix4 = function() {
 		return this;
 
 	},
+*/
+	that.scale = function ( v ) {
 
-	scale : function ( v ) {
-
-		var x = v.x, y = v.y, z = v.z;
+		var x = v.value[ 0 ], y = v.value[ 1 ], z = v.value[ 2 ];
 
 		m[ 0 ] *= x; m[ 4 ] *= y; m[ 8 ] *= z;
 		m[ 1 ] *= x; m[ 5 ] *= y; m[ 9 ] *= z;
 		m[ 2 ] *= x; m[ 6 ] *= y; m[ 10 ] *= z;
 		m[ 3 ] *= x; m[ 7 ] *= y; m[ 11 ] *= z;
 
-		return this;
+		return that;
+	}
 
-	},
-
-	extractPosition : function ( m ) {
+/*	extractPosition : function ( m ) {
 
 		m[ 12 ] = m.n14;
 		m[ 13 ] = m.n24;
@@ -578,44 +450,52 @@ GLOW.Matrix4 = function() {
 	}
 */
 
-	return m.identity();
+	return that.identity();
 
 };
-/*
-THREE.Matrix4.makeInvert = function ( m1, m2 ) {
+
+GLOW.Matrix4.makeInverse = function ( m1, m2 ) {
 
 	// based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+	//m.n11 = m[ 0 ]; m.n12 = m[ 4 ]; m.n13 = m[ 8 ]; m.n14 = m[ 12 ];
+	//m.n21 = m[ 1 ]; m.n22 = m[ 5 ]; m.n23 = m[ 9 ]; m.n24 = m[ 13 ];
+	//m.n31 = m[ 2 ]; m.n32 = m[ 6 ]; m.n33 = m[ 10 ]; m.n34 = m[ 14 ];
+	//m.n41 = m[ 3 ]; m.n42 = m[ 7 ]; m.n43 = m[ 11 ]; m.n44 = m[ 15 ];
 
-	var n11 = m1.n11, n12 = m1.n12, n13 = m1.n13, n14 = m1.n14,
-	n21 = m1.n21, n22 = m1.n22, n23 = m1.n23, n24 = m1.n24,
-	n31 = m1.n31, n32 = m1.n32, n33 = m1.n33, n34 = m1.n34,
-	n41 = m1.n41, n42 = m1.n42, n43 = m1.n43, n44 = m1.n44;
+	if( m2 === undefined ) m2 = GLOW.Matrix4();
 
-	if( m2 === undefined ) m2 = new THREE.Matrix4();
+	var m1v = m1.value;
+	var m2v = m2.value;
 
-	m2.n11 = n23*n34*n42 - n24*n33*n42 + n24*n32*n43 - n22*n34*n43 - n23*n32*n44 + n22*n33*n44;
-	m2.n12 = n14*n33*n42 - n13*n34*n42 - n14*n32*n43 + n12*n34*n43 + n13*n32*n44 - n12*n33*n44;
-	m2.n13 = n13*n24*n42 - n14*n23*n42 + n14*n22*n43 - n12*n24*n43 - n13*n22*n44 + n12*n23*n44;
-	m2.n14 = n14*n23*n32 - n13*n24*n32 - n14*n22*n33 + n12*n24*n33 + n13*n22*n34 - n12*n23*n34;
-	m2.n21 = n24*n33*n41 - n23*n34*n41 - n24*n31*n43 + n21*n34*n43 + n23*n31*n44 - n21*n33*n44;
-	m2.n22 = n13*n34*n41 - n14*n33*n41 + n14*n31*n43 - n11*n34*n43 - n13*n31*n44 + n11*n33*n44;
-	m2.n23 = n14*n23*n41 - n13*n24*n41 - n14*n21*n43 + n11*n24*n43 + n13*n21*n44 - n11*n23*n44;
-	m2.n24 = n13*n24*n31 - n14*n23*n31 + n14*n21*n33 - n11*n24*n33 - n13*n21*n34 + n11*n23*n34;
-	m2.n31 = n22*n34*n41 - n24*n32*n41 + n24*n31*n42 - n21*n34*n42 - n22*n31*n44 + n21*n32*n44;
-	m2.n32 = n14*n32*n41 - n12*n34*n41 - n14*n31*n42 + n11*n34*n42 + n12*n31*n44 - n11*n32*n44;
-	m2.n33 = n13*n24*n41 - n14*n22*n41 + n14*n21*n42 - n11*n24*n42 - n12*n21*n44 + n11*n22*n44;
-	m2.n34 = n14*n22*n31 - n12*n24*n31 - n14*n21*n32 + n11*n24*n32 + n12*n21*n34 - n11*n22*n34;
-	m2.n41 = n23*n32*n41 - n22*n33*n41 - n23*n31*n42 + n21*n33*n42 + n22*n31*n43 - n21*n32*n43;
-	m2.n42 = n12*n33*n41 - n13*n32*n41 + n13*n31*n42 - n11*n33*n42 - n12*n31*n43 + n11*n32*n43;
-	m2.n43 = n13*n22*n41 - n12*n23*n41 - n13*n21*n42 + n11*n23*n42 + n12*n21*n43 - n11*n22*n43;
-	m2.n44 = n12*n23*n31 - n13*n22*n31 + n13*n21*n32 - n11*n23*n32 - n12*n21*n33 + n11*n22*n33;
-	m2.multiplyScalar( 1 / m1.determinant() );
+	var n11 = m1v[ 0 ], n12 = m1v[ 4 ], n13 = m1v[ 8  ], n14 = m1v[ 12 ],
+	    n21 = m1v[ 1 ], n22 = m1v[ 5 ], n23 = m1v[ 9  ], n24 = m1v[ 13 ],
+	    n31 = m1v[ 2 ], n32 = m1v[ 6 ], n33 = m1v[ 10 ], n34 = m1v[ 14 ],
+	    n41 = m1v[ 3 ], n42 = m1v[ 7 ], n43 = m1v[ 11 ], n44 = m1v[ 15 ];
+
+	m2v[ 0  ] = n23*n34*n42 - n24*n33*n42 + n24*n32*n43 - n22*n34*n43 - n23*n32*n44 + n22*n33*n44;
+	m2v[ 4  ] = n24*n33*n41 - n23*n34*n41 - n24*n31*n43 + n21*n34*n43 + n23*n31*n44 - n21*n33*n44;
+	m2v[ 8  ] = n22*n34*n41 - n24*n32*n41 + n24*n31*n42 - n21*n34*n42 - n22*n31*n44 + n21*n32*n44;
+	m2v[ 12  ] = n23*n32*n41 - n22*n33*n41 - n23*n31*n42 + n21*n33*n42 + n22*n31*n43 - n21*n32*n43;
+	m2v[ 1  ] = n14*n33*n42 - n13*n34*n42 - n14*n32*n43 + n12*n34*n43 + n13*n32*n44 - n12*n33*n44;
+	m2v[ 5  ] = n13*n34*n41 - n14*n33*n41 + n14*n31*n43 - n11*n34*n43 - n13*n31*n44 + n11*n33*n44;
+	m2v[ 9  ] = n14*n32*n41 - n12*n34*n41 - n14*n31*n42 + n11*n34*n42 + n12*n31*n44 - n11*n32*n44;
+	m2v[ 13  ] = n12*n33*n41 - n13*n32*n41 + n13*n31*n42 - n11*n33*n42 - n12*n31*n43 + n11*n32*n43;
+	m2v[ 2  ] = n13*n24*n42 - n14*n23*n42 + n14*n22*n43 - n12*n24*n43 - n13*n22*n44 + n12*n23*n44;
+	m2v[ 6  ] = n14*n23*n41 - n13*n24*n41 - n14*n21*n43 + n11*n24*n43 + n13*n21*n44 - n11*n23*n44;
+	m2v[ 10 ] = n13*n24*n41 - n14*n22*n41 + n14*n21*n42 - n11*n24*n42 - n12*n21*n44 + n11*n22*n44;
+	m2v[ 14 ] = n13*n22*n41 - n12*n23*n41 - n13*n21*n42 + n11*n23*n42 + n12*n21*n43 - n11*n22*n43;
+	m2v[ 3 ] = n14*n23*n32 - n13*n24*n32 - n14*n22*n33 + n12*n24*n33 + n13*n22*n34 - n12*n23*n34;
+	m2v[ 7 ] = n13*n24*n31 - n14*n23*n31 + n14*n21*n33 - n11*n24*n33 - n13*n21*n34 + n11*n23*n34;
+	m2v[ 11 ] = n14*n22*n31 - n12*n24*n31 - n14*n21*n32 + n11*n24*n32 + n12*n21*n34 - n11*n22*n34;
+	m2v[ 15 ] = n12*n23*n31 - n13*n22*n31 + n13*n21*n32 - n11*n23*n32 - n12*n21*n33 + n11*n22*n33;
+	
+	m2.multiplyScalar( 1 / m1.determinant());
 
 	return m2;
 
 };
 
-THREE.Matrix4.makeInvert3x3 = function ( m1 ) {
+/*THREE.Matrix4.makeInvert3x3 = function ( m1 ) {
 
 	// input:  THREE.Matrix4, output: THREE.Matrix3
 	// ( based on http://code.google.com/p/webgl-mjs/ )
@@ -649,12 +529,13 @@ THREE.Matrix4.makeInvert3x3 = function ( m1 ) {
 	return m33;
 
 }
+*/
 
-THREE.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
+GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
 
-	var m, x, y, a, b, c, d;
+	var m, mv, x, y, a, b, c, d;
 
-	m = new THREE.Matrix4();
+	m = new GLOW.Matrix4();
 	x = 2 * near / ( right - left );
 	y = 2 * near / ( top - bottom );
 	a = ( right + left ) / ( right - left );
@@ -662,16 +543,17 @@ THREE.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
 	c = - ( far + near ) / ( far - near );
 	d = - 2 * far * near / ( far - near );
 
-	m.n11 = x;  m.n12 = 0;  m.n13 = a;   m.n14 = 0;
-	m.n21 = 0;  m.n22 = y;  m.n23 = b;   m.n24 = 0;
-	m.n31 = 0;  m.n32 = 0;  m.n33 = c;   m.n34 = d;
-	m.n41 = 0;  m.n42 = 0;  m.n43 = - 1; m.n44 = 0;
+	mv = m.value;
+	mv[ 0 ] = x;  mv[ 1 ] = 0;  mv[ 2  ] = a;   mv[ 3 ] = 0;
+	mv[ 4 ] = 0;  mv[ 5 ] = y;  mv[ 6  ] = b;   mv[ 7 ] = 0;
+	mv[ 8 ] = 0;  mv[ 9 ] = 0;  mv[ 10 ] = c;   mv[ 11 ] = d;
+	mv[ 12 ] = 0;  mv[ 13 ] = 0;  mv[ 14 ] = - 1; mv[ 15 ] = 0;
 
 	return m;
 
 };
 
-THREE.Matrix4.makePerspective = function ( fov, aspect, near, far ) {
+GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
 
 	var ymax, ymin, xmin, xmax;
 
@@ -680,10 +562,10 @@ THREE.Matrix4.makePerspective = function ( fov, aspect, near, far ) {
 	xmin = ymin * aspect;
 	xmax = ymax * aspect;
 
-	return THREE.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far );
+	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far );
 
 };
-
+/*
 THREE.Matrix4.makeOrtho = function ( left, right, top, bottom, near, far ) {
 
 	var m, x, y, z, w, h, p;
@@ -705,6 +587,4 @@ THREE.Matrix4.makeOrtho = function ( left, right, top, bottom, near, far ) {
 
 };
 
-THREE.Matrix4.__v1 = new THREE.Vector3();
-THREE.Matrix4.__v2 = new THREE.Vector3();
-THREE.Matrix4.__v3 = new THREE.Vector3();*/
+*/

@@ -6,81 +6,88 @@ GLOW.Context = function( parameters ) {
 	
 	// construct
 	
-	var that = {};
+	var context = {};
 
 	if( parameters === undefined ) parameters = {};
 	
-	that.id                     = parameters.id                     !== undefined ? parameters.id                       : "Context" + GLOW.uniqueId();
-	that.alpha                  = parameters.alpha                  !== undefined ? parameters.alpha                    : true;
-	that.depth                  = parameters.depth                  !== undefined ? parameters.depth                    : true;
-	that.antialias              = parameters.antialias              !== undefined ? parameters.antialias                : true;
-	that.stencil                = parameters.stencil                !== undefined ? parameters.stencil                  : false;
-	that.premultipliedAlpha     = parameters.premultipliedAlpha     !== undefined ? parameters.premultipliedAlpha       : true;
-	that.preserveDrawingBuffer  = parameters.preserveDrawingBuffer  !== undefined ?	parameters.preserveDrawingBuffer    : false;
-	that.width                  = parameters.width                  !== undefined ? parameters.width                    : window.innerWidth;
-	that.height					= parameters.height                 !== undefined ? parmaeters.height                   : window.innerHeight;
+	context.id                     = parameters.id                     !== undefined ? parameters.id                       : "Context" + GLOW.uniqueId();
+	context.alpha                  = parameters.alpha                  !== undefined ? parameters.alpha                    : true;
+	context.depth                  = parameters.depth                  !== undefined ? parameters.depth                    : true;
+	context.antialias              = parameters.antialias              !== undefined ? parameters.antialias                : true;
+	context.stencil                = parameters.stencil                !== undefined ? parameters.stencil                  : false;
+	context.premultipliedAlpha     = parameters.premultipliedAlpha     !== undefined ? parameters.premultipliedAlpha       : true;
+	context.preserveDrawingBuffer  = parameters.preserveDrawingBuffer  !== undefined ? parameters.preserveDrawingBuffer    : false;
+	context.width                  = parameters.width                  !== undefined ? parameters.width                    : window.innerWidth;
+	context.height                 = parameters.height                 !== undefined ? parmaeters.height                   : window.innerHeight;
 	
 	
 	// create canvas and webgl context and register
 	
 	try {
 		
-		that.domElement	= document.createElement( 'canvas' );
-		that.GL         = that.domElement.getContext( 'experimental-webgl', { alpha:                 that.alpha, 
-                                                                              depth:                 that.depth, 
-                                                                              antialias:             that.antialias,
-                                                                              stencil:               that.stencil,
-                                                                              premultipliedAlpha:    that.premultipliedAlpha,
-                                                                              preserveDrawingBuffer: that.preserveDrawingBuffer } );
+		context.domElement	= document.createElement( 'canvas' );
+		context.GL         = context.domElement.getContext( 'experimental-webgl', { alpha:                 context.alpha, 
+                                                                                    depth:                 context.depth, 
+                                                                                    antialias:             context.antialias,
+                                                                                    stencil:               context.stencil,
+                                                                                    premultipliedAlpha:    context.premultipliedAlpha,
+                                                                                    preserveDrawingBuffer: context.preserveDrawingBuffer } );
 
-		that.domElement.width  = that.width;
-		that.domElement.height = that.height;
-		
-		that.GL.viewport( 0, 0, that.width, that.height );
+		context.domElement.width  = context.width;
+		context.domElement.height = context.height;
+		context.GL.viewport( 0, 0, context.width, context.height );
 
 	} catch( error ) {
 
 		console.error( "GLOW.Context.construct: " + error );
-		return;
+		return context;
 		
 	}
 
-	GLOW.registerContext( that );
+	GLOW.registerContext( context );
 	
 	
 	//--- setup clear color ---
 	
-	that.setupClearColor = function( setup ) {
+	context.setupClearColor = function( setup ) {
 		
 		var r = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : 0; 
 		var g = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : 0; 
 		var b = setup.blue  !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : 0; 
-		var a = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : 0; 
+		var a = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : 1; 
 		
 		GL.clearColor( r, g, b, a );
 		
-		return that;
+		return context;
+	}
+	
+	
+	//--- clear ---
+	
+	context.clear = function() {
+		
+		GL.clear( GL.COLOR_BUFFER_BIT | GL.STENCIL_BUFFER_BIT | GL.DEPTH_BUFFER_BIT )
 	}
 	
 
 	//--- enable blend ---
 	
-	that.enableBlend = function( flag, setup ) {
+	context.enableBlend = function( flag, setup ) {
 		
 		if( flag ) {
 
 			GL.enable( GL.BLEND );
-			if( setup ) that.setupBlend( setup );
+			if( setup ) context.setupBlend( setup );
 			
 		} else GL.disable( GL.BLEND );
 		
-		return that;
+		return context;
 	}
 	
 	
 	//--- setup blend ---
 	
-	that.setupBlend = function( setup ) {
+	context.setupBlend = function( setup ) {
 		
 		if( setup.equationRGB ) {
 
@@ -102,28 +109,28 @@ GLOW.Context = function( parameters ) {
 			
 		}
 		
-		return that;
+		return context;
 	}
 	
 	
 	//--- enable depth test ---
 	
-	that.enableDepthTest = function( flag, setup ) {
+	context.enableDepthTest = function( flag, setup ) {
 		
 		if( flag ) {
 			
 			GL.enable( GL.DEPTH_TEST );
-			if( setup ) that.setupDepthTest( setup );
+			if( setup ) context.setupDepthTest( setup );
 		
 		} else GL.disable( GL.DEPTH_TEST );
 		
-		return that;
+		return context;
 	}
 	
 	
 	//--- setup depth test ---
 	
-	that.setupDepthTest = function( setup ) {
+	context.setupDepthTest = function( setup ) {
 		
 		try {
 			
@@ -131,29 +138,29 @@ GLOW.Context = function( parameters ) {
 			
 		} catch( error ) { console.log( "GLOW.Context.setupDepthTest: " + error ); }
 		
-		return that;
+		return context;
 	
 	}
 	
 	
 	//--- enable stencil test ---
 	
-	that.enableStencilTest = function( flag, setup ) {
+	context.enableStencilTest = function( flag, setup ) {
 		
 		if( flag ) {
 			
 			GL.enable( GL.STENCIL_TEST );
-			if( setup ) that.setupStencilTest( setup );
+			if( setup ) context.setupStencilTest( setup );
 		
 		} else GL.disable( GL.STENCIL_TEST );
 		
-		return that;
+		return context;
 	}
 	
 	
 	//--- setup stencil test ---
 	
-	that.setupStencilTest = function( setup ) {
+	context.setupStencilTest = function( setup ) {
 		
 		try {
 			
@@ -161,29 +168,29 @@ GLOW.Context = function( parameters ) {
 			
 		} catch( error ) { console.log( "GLOW.Context.setupStencilTest: " + error ); }
 		
-		return that;
+		return context;
 	
 	}
 	
 	
 	//--- enable culling ---
 	
-	that.enableCulling = function( flag, setup ) {
+	context.enableCulling = function( flag, setup ) {
 		
 		if( flag ) {
 
 			GL.enable( GL.CULL_FACE );
-			if( setup ) that.setupCulling( setup );
+			if( setup ) context.setupCulling( setup );
 
 		} else GL.disable( GL.CULL_FACE );
 		
-		return that;
+		return context;
 	}
 
 
 	//--- setup culling ---
 	
-	that.setupCulling = function( setup ) {
+	context.setupCulling = function( setup ) {
 		
 		try {
 
@@ -196,42 +203,42 @@ GLOW.Context = function( parameters ) {
 
 		}
 		
-		return that;
+		return context;
 	}
 
 
 	//--- enable scissor test ---
 
-	that.enableScissorTest = function( flag, setup ) {
+	context.enableScissorTest = function( flag, setup ) {
 		
 		if( flag ) {
 	
 			GL.enable( GL.SCISSOR_TEST );
-			if( setup ) that.setupScissorTest( setup );
+			if( setup ) context.setupScissorTest( setup );
 
 		} else {
 			
 			GL.disable( GL.SCISSOR_TEST );
 		}
 		
-		return that;
+		return context;
 		
 	}
 
 
 	//--- setup scissor test ---
 	
-	that.setupScissorTest = function( setup ) {
+	context.setupScissorTest = function( setup ) {
 		
 		// TODO
 		
-		return that;
+		return context;
 		
 	}
 
 
 	//--- return public ---
 
-	return that;
+	return context;
 }
 

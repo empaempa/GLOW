@@ -3,9 +3,20 @@
 	<head>
 		<title>GLOW</title>
 		<meta charset="utf-8">
+		<style type="text/css">
+			body {
+				background:#000;
+				color:#fff;
+				padding:0;
+				margin:0;
+				overflow:hidden;
+				font-family:georgia;
+				text-align:center;
+			}
+		</style>
 	</head>
 	<body>
-		<div id="container"/>
+		<div id="container"></div>
 
 		<script type="text/javascript" src="src/GLOW.js"></script>
 		<script type="text/javascript" src="src/core/Context.js"></script>
@@ -13,8 +24,10 @@
 		<script type="text/javascript" src="src/core/Int.js"></script>
 		<script type="text/javascript" src="src/core/Matrix3.js"></script>
 		<script type="text/javascript" src="src/core/Matrix4.js"></script>
+		<script type="text/javascript" src="src/core/Vector3.js"></script>
 		<script type="text/javascript" src="src/core/Texture.js"></script>
 		<script type="text/javascript" src="src/core/Cache.js"></script>
+		<script type="text/javascript" src="src/core/Camera.js"></script>
 		
 		<script type="text/javascript" src="src/shader/Shader.js"></script>
 		<script type="text/javascript" src="src/shader/Uniform.js"></script>
@@ -22,43 +35,32 @@
 
 		<script type="text/javascript" src="src/extras/Helpers.js"></script>
 
-		<script type="text/javascript" src="examples/js/Detector.js"></script>
-		<script type="text/javascript" src="examples/js/RequestAnimationFrame.js"></script>
 		<script type="text/javascript" src="examples/js/Stats.js"></script>
 
 		<script type="text/javascript">
 		
 			var shaderInfo = {
 				
-				time:        GLOW.Float( 0 ),
-				isSomething: GLOW.Int( 1 ),
-				matrix3:     GLOW.Matrix3(),
-				matrix4:     GLOW.Matrix4(),
-				cloud:       GLOW.Texture( "examples/textures/clouds.jpg" ),
-				vertices:    GLOW.Helpers.randomVector3( 300, 100 ),
-				normals:     GLOW.Helpers.randomVector3( 300, 1 ),
-				elements:    GLOW.Helpers.straightFaces( 100 ),
+				clouds: GLOW.Texture( "examples/textures/clouds.jpg" ),
+				
+				transform:        GLOW.Matrix4(),
+				cameraInverse:    GLOW.defaultCamera.inverse,
+				cameraProjection: GLOW.defaultCamera.projection,
+
+				vertices:    GLOW.Helpers.cubeVertices( 300 ),
+				elements:    GLOW.Helpers.cubeElements(),
 	
 				vertexShader: [
 
-						"uniform	mat3 	matrix3;",
-						"uniform 	mat4 	matrix4;",
-						"uniform 	int 	isSomething;",
-						"uniform	float 	time;",
+						"uniform	mat4 	transform;",
+						"uniform 	mat4 	cameraInverse;",
+						"uniform 	mat4 	cameraProjection;",
 
 						"attribute 	vec3 	vertices;",
-						"attribute	vec3	normals;",
-						
-						"varying	vec3	normal;",
 
 						"void main(void)",
 						"{",
-							"if( isSomething == 0 ) {",
-								"normal = matrix3 * normals * time;",
-								"gl_Position = matrix4 * vec4( vertices, 1.0 );",
-							"} else {",
-								"gl_Position = vec4( 1.0 );",
-							"}",
+							"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices, 1.0 );",
 						"}"
 						
 					].join( "\n" ),
@@ -69,12 +71,11 @@
 							"precision highp float;",
 						"#endif",		
 
-						"uniform sampler2D 	cloud;",
-						"varying	vec3	normal;",
+						"uniform sampler2D 	clouds;",
 
 						"void main( void )",
 						"{",
-							"gl_FragColor = texture2D( cloud, normal.xy );",
+							"gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 );",
 						"}"
 
 					].join( "\n" )
@@ -84,61 +85,47 @@
 
 		<script type="text/javascript">
 
-			if( !Detector.webgl ) Detector.addGetWebGLMessage();
-
 			var container, stats;
 			var mouseX = 0, mouseY = 0;
 			var shader, context;
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
-
-			init();
-			animate();
-
-
-			//--- init ---
 			
-			function init() {
+			
+			// init
+			
+			context = GLOW.Context();
+			shader = GLOW.Shader( shaderInfo );
+			
+			context.setupClearColor( { red:0, green:1, blue:0, alpha:1 } );
+			context.enableCulling( false );
 
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				container = document.getElementById( 'container' );
+			container = document.getElementById( 'container' );
+			container.appendChild( context.domElement );
+			
+			GLOW.defaultCamera.setPosition( 0, 0, 700 );
+			GLOW.defaultCamera.update();
+			
+			
+			// stats
+
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			container.appendChild( stats.domElement );
+
 				
-				// create context
-				
-				context = GLOW.Context();
-				shader = GLOW.Shader( shaderInfo );
+			// render
 
-				container.appendChild( context.domElement );
-				
-				
-				
-				// stats
-
-				stats = new Stats();
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.top = '0px';
-				container.appendChild( stats.domElement );
-
-			}
-
-
-			//--- animate ---
-
-			function animate() {
-
-				requestAnimationFrame( animate );
-				render();
-				stats.update();
-
-			}
-
-
-			//--- render ---
+			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+			setInterval( render, 1000 / 60 );
 
 			function render() {
 
+				context.clear();
 				shader.draw();
+				stats.update();
 			}
 
 
@@ -150,9 +137,6 @@
 				mouseY = ( event.clientY - windowHalfY );
 
 			}
-			
-
 		</script>
-
 	</body>
 </html>

@@ -1,44 +1,53 @@
+/*
+* Cache
+*/
+
 GLOW.Cache = (function() {
 	
 	var cache = {};
 
 	//--- program cache --
 	
-	cache.programCache( program ) {
+	cache.programCached = function( program ) {
 		
 		return false;
-		
 	}
 
 	//--- uniform cache ---
 	
-	cache.uniformCached( uniform ) {
+	cache.uniformCached = function( uniform ) {
 		
 		return false;
-		
 	}
 
 
 	//--- attribute cached ---
 	
-	cache.attributeCached( attribute ) {
+	cache.attributeCached = function( attribute ) {
 		
 		return false;
-		
 	}
 
 
 	//--- texture cached ---
 	
-	cache.textureCached( texture ) {
+	cache.textureCached = function( texture ) {
 		
 		return false;
 	}
 
 
+	//--- elements cached ---
+	
+	cache.elementsCached = function( elements ) {
+		
+		return false;
+	}
+ 
+
 	//--- clear ---
 	
-	that.clear = function() {
+	cache.clear = function() {
 
 	}
 	

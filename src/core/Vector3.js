@@ -8,82 +8,84 @@
 GLOW.Vector3 = function( x, y, z ) {
 
 	var v = new Float32Array( 3 );
-	v[ 0 ] = x | 0;
-	v[ 1 ] = y | 0;
-	v[ 2 ] = z | 0;
+	var that = { value: v };
+	
+	v[ 0 ] = x !== undefined ? x : 0;
+	v[ 1 ] = y !== undefined ? y : 0;
+	v[ 2 ] = z !== undefined ? z : 0;
 
-	v.set = function ( x, y, z ) {
+	that.set = function ( x, y, z ) {
 
 		v[ 0 ] = x;
 		v[ 1 ] = y;
 		v[ 2 ] = z;
 
-		return v;
+		return that;
 	}
 
-	v.copy = function ( v ) {
+	that.copy = function ( v ) {
 
-		v.set( v[ 0 ], v[ 1 ], v[ 2 ] );
+		that.set( v[ 0 ], v[ 1 ], v[ 2 ] );
 
-		return v;
+		return that;
 	}
 
-	v.add = function ( a, b ) {
+	that.add = function ( a, b ) {
 
 		v[ 0 ] = a[ 0 ] + b[ 0 ];
 		v[ 1 ] = a[ 1 ] + b[ 1 ];
 		v[ 2 ] = a[ 2 ] + b[ 2 ];
 
-		return v;
+		return that;
 	}
 
-	v.addSelf = function ( a ) {
+	that.addSelf = function ( a ) {
 
 		v[ 0 ] = v[ 0 ] + a[ 0 ];
 		v[ 1 ] = v[ 1 ] + a[ 1 ];
 		v[ 2 ] = v[ 2 ] + a[ 2 ];
 
-		return v;
+		return that;
 	}
 
-	v.addScalar = function ( s ) {
+	that.addScalar = function ( s ) {
 
 		v[ 0 ] += s;
 		v[ 1 ] += s;
 		v[ 2 ] += s;
 
-		return v;
+		return that;
 	}
 
 
-	v.sub = function ( a, b ) {
+	that.sub = function ( a, b ) {
 
 		v[ 0 ] = a[ 0 ] - b[ 0 ];
 		v[ 1 ] = a[ 1 ] - b[ 1 ];
 		v[ 2 ] = a[ 2 ] - b[ 2 ];
 		
-		return v;
+		return that;
 	}
 
-	v.subSelf = function ( a ) {
+	that.subSelf = function ( a ) {
 
 		v[ 0 ] -= a[ 0 ];
 		v[ 1 ] -= a[ 1 ];
 		v[ 2 ] -= a[ 2 ];
 		
-		return v;
+		return that;
 	}
 
-	v.cross = function ( a, b ) {
+	that.cross = function ( a, b ) {
 
 		v[ 0 ] = a[ 1 ] * b[ 2 ] - a[ 2 ] * b[ 1 ];
 		v[ 1 ] = a[ 2 ] * b[ 0 ] - a[ 0 ] * b[ 2 ];
 		v[ 2 ] = a[ 0 ] * b[ 1 ] - a[ 1 ] * b[ 0 ];
 
-		return v;
+		return that;
 	}
 
-	v.crossSelf = function ( a ) {
+	that.crossSelf = function ( a ) {
 
 		var ax = a[ 0 ], ay = a[ 1 ], az = a[ 2 ];
 		var vx = v[ 0 ], vy = v[ 1 ], vz = v[ 2 ];
@@ -92,7 +94,7 @@ GLOW.Vector3 = function( x, y, z ) {
 		v[ 1 ] = az * vx - ax * vz;
 		v[ 2 ] = ax * vy - ay * vx;
 
-		return v;
+		return that;
 
 	}
 /*
@@ -274,6 +276,6 @@ GLOW.Vector3 = function( x, y, z ) {
 
 	}*/
 	
-	return v;
+	return that;
 
 };

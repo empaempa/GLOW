@@ -2,7 +2,7 @@
 * GLOW - Just-Above-Low-Level WebGL API
 */
 
-GLOW = (function() {
+var GLOW = (function() {
 	
 	var that = {}; 
 	var contexts = {};
@@ -76,4 +76,4 @@ GLOW = (function() {
 * Current GL - set to latest registered or enabled GL context 
 */
 
-GL = {};
+var GL = {};

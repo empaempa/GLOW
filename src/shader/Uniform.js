@@ -16,7 +16,9 @@ GLOW.Uniform = function( parameters ) {
 	
 	// set set-function
 	
-	if( uniform.length > 1 ) {
+	var isArray;
+	
+	if( uniform.length && uniform.length > 1 ) {
 		isArray = "_A";
 	} else {
 		isArray = "";
@@ -66,25 +68,25 @@ GLOW.UniformFunctions = {
 	
 	INT: 			function( location, data ) { GL.uniform1i ( location, data.value ); },
 	INT_A:	 		function( location, data ) { GL.uniform1iv( location, data.value ); },
-	INT_VEC2:		function( location, data ) { GL.uniform2i ( location, data[ 0 ], data[ 1 ] ); },
-	INT_VEC2_A:		function( location, data ) { GL.uniform2iv( location, data ); },
-	INT_VEC3:		function( location, data ) { GL.uniform3i ( location, data[ 0 ], data[ 1 ], data[ 2 ] ); },
-	INT_VEC3_A:		function( location, data ) { GL.uniform3iv( location, data ); },
-	INT_VEC4:		function( location, data ) { GL.uniform4i ( location, data[ 0 ], data[ 1 ], data[ 2 ], data[ 3 ] ); },
+	INT_VEC2:		function( location, data ) { GL.uniform2i ( location, data.value[ 0 ], data.value[ 1 ] ); },
+	INT_VEC2_A:		function( location, data ) { GL.uniform2iv( location, data.value ); },
+	INT_VEC3:		function( location, data ) { GL.uniform3i ( location, data.value[ 0 ], data.value[ 1 ], data.value[ 2 ] ); },
+	INT_VEC3_A:		function( location, data ) { GL.uniform3iv( location, data.value ); },
+	INT_VEC4:		function( location, data ) { GL.uniform4i ( location, data.value[ 0 ], data.value[ 1 ], data.value[ 2 ], data.value[ 3 ] ); },
 	INT_VEC4_A:		function( location, data ) { GL.uniform4iv( location, data ); },
 	
 	FLOAT: 			function( location, data ) { GL.uniform1f ( location, data.value ); },
 	FLOAT_A:	 	function( location, data ) { GL.uniform1fv( location, data.value ); },
-	FLOAT_VEC2:		function( location, data ) { GL.uniform2f ( location, data[ 0 ], data[ 1 ] ); },
-	FLOAT_VEC2_A:	function( location, data ) { GL.uniform2fv( location, data ); },
-	FLOAT_VEC3:		function( location, data ) { GL.uniform3f ( location, data[ 0 ], data[ 1 ], data[ 2 ] ); },
-	FLOAT_VEC3_A:	function( location, data ) { GL.uniform3fv( location, data ); },
-	FLOAT_VEC4:		function( location, data ) { GL.uniform4f ( location, data[ 0 ], data[ 1 ], data[ 2 ], data[ 3 ] ); },
-	FLOAT_VEC4_A:	function( location, data ) { GL.uniform4fv( location, data ); },
+	FLOAT_VEC2:		function( location, data ) { GL.uniform2f ( location, data.value[ 0 ], data.value[ 1 ] ); },
+	FLOAT_VEC2_A:	function( location, data ) { GL.uniform2fv( location, data.value ); },
+	FLOAT_VEC3:		function( location, data ) { GL.uniform3f ( location, data.value[ 0 ], data.value[ 1 ], data.value[ 2 ] ); },
+	FLOAT_VEC3_A:	function( location, data ) { GL.uniform3fv( location, data.value ); },
+	FLOAT_VEC4:		function( location, data ) { GL.uniform4f ( location, data.value[ 0 ], data.value[ 1 ], data.value[ 2 ], data.value[ 3 ] ); },
+	FLOAT_VEC4_A:	function( location, data ) { GL.uniform4fv( location, data.value ); },
 	
-	FLOAT_MAT2:		function( location, data ) { GL.uniformMatrix2fv( location, data.transpose, data ); },
-	FLOAT_MAT3:		function( location, data ) { GL.uniformMatrix3fv( location, data.transpose, data ); },
-	FLOAT_MAT4:		function( location, data ) { GL.uniformMatrix4fv( location, data.transpose, data ); },
+	FLOAT_MAT2:		function( location, data ) { GL.uniformMatrix2fv( location, data.transposeUniform, data.value ); },
+	FLOAT_MAT3:		function( location, data ) { GL.uniformMatrix3fv( location, data.transposeUniform, data.value ); },
+	FLOAT_MAT4:		function( location, data ) { GL.uniformMatrix4fv( location, data.transposeUniform, data.value ); },
 
 	SAMPLER_2D:	function( location, data ) { 
 		

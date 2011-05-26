@@ -9,7 +9,7 @@ GLOW.Attribute = function( parameters, interleave ) {
 	attribute.location = parameters.location;
 	attribute.stride   = 0;
 	attribute.offset   = 0;
-	attribute.size     = GLOW.AttributeSizes[ parameters.type ];
+	attribute.size     = GLOW.AttributeSize( parameters.type );
 
 	if( !interleave ) {
 		
@@ -19,32 +19,33 @@ GLOW.Attribute = function( parameters, interleave ) {
 			var s, sl = attribute.size;
 			var flat = new Float32Array( al * sl );
 			var data = attribute.data;
+			var i = 0;
 			
 			for( a = 0; a < al; a++ ) {
-				
+
 				for( s = 0; s < sl; s++ ) {
 					
-					flat[ i++ ] = 
+					flat[ i++ ] = data[ a ].value[ s ];
 				}
-				
 			}
 			
-			for( )
-			attribute.data = new Float32Array( attribute.data );
+			attribute.bufferData = flat;
+			
 		} else {
-			attribute.flatData = attribute.data;
+			
+			attribute.bufferData = attribute.data;
 		}
 
 		attribute.buffer = GL.createBuffer();
-		GL.bindBuffer( attribute.buffer );
-		GL.bufferData( GL.ARRAY_BUFFER,  attribute.data, GL.STATIC_DRAW );
+		GL.bindBuffer( GL.ARRAY_BUFFER, attribute.buffer );
+		GL.bufferData( GL.ARRAY_BUFFER, attribute.bufferData, GL.STATIC_DRAW );
 
 	}
 
 
 	//--- interleave ---
 	
-	attribute.interleave( float32array, stride, offset ) {
+	attribute.interleave = function( float32array, stride, offset ) {
 		
 		attribute.stride = stride;
 		attribute.offset = offset;
@@ -70,7 +71,7 @@ GLOW.Attribute = function( parameters, interleave ) {
 
 GLOW.AttributeSize = function( type ) { 
 	
-	switch( uniform.type ) {
+	switch( type ) {
 		
 		case GL.INT:      return 1;
 		case GL.INT_VEC2: return 2;
@@ -86,4 +87,6 @@ GLOW.AttributeSize = function( type ) {
 		case GL.FLOAT_MAT3: return 9;
 		case GL.FLOAT_MAT4: return 16;
 	}
+	
+	return 0;
 }
