@@ -6,6 +6,7 @@ GLOW.Uniform = function( parameters ) {
 	
 	var uniform = {};
 	
+	uniform.isUniform      = true;
 	uniform.id             = GLOW.uniqueId();
 	uniform.data           = parameters.data;
 	uniform.name           = parameters.name;

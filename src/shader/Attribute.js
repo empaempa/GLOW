@@ -2,6 +2,7 @@ GLOW.Attribute = function( parameters, interleave ) {
 	
 	var attribute = {};
 	
+	attribute.isAttribute    = true;
 	attribute.id             = GLOW.uniqueId();
 	attribute.data           = parameters.data;
 	attribute.name           = parameters.name;

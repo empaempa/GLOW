@@ -34,6 +34,7 @@ GLOW.Shader = function( _declaration ) {
 		console.error( "GLOW.Shader.construct: Missing vertex/fragment/program. Cannot create shader. Quitting." );
 	}
 	
+
 	extractAndCreateUniforms();
 	extractAndCreateAttributes();
 	createElements();
@@ -101,8 +102,19 @@ GLOW.Shader = function( _declaration ) {
 				
 				name = uniformInformation.name.split( "[" )[ 0 ]; 
 				
-				if( declaration[ name ] !== undefined ) {
+				// duck-type checking if declaration is GLOW.Uniform or not
+				
+				if( declaration[ name ] === undefined ) {
 					
+					console.error( "GLOW.Shader.extractAndCreateUniforms: missing declaration for uniform " + name );
+					return;
+
+				} else if( declaration[ name ].isUniform ) {
+
+					uniforms[ name ] = declaration[ name ];
+
+				} else {
+
 					uniformInformation.location       = GL.getUniformLocation( program, name );
 					uniformInformation.locationNumber = uniformLocation;
 					uniformInformation.data           = declaration[ name ];
@@ -111,12 +123,7 @@ GLOW.Shader = function( _declaration ) {
 						uniformInformation.data.load( ++textureUnit );
 					}
 					
-					uniforms[ name ] = GLOW.Uniform( uniformInformation );
-
-				} else {
-
-					console.error( "GLOW.Shader.extractAndCreateUniforms: missing declaration for uniform " + name );
-					return;
+					declaration[ name ] = uniforms[ name ] = GLOW.Uniform( uniformInformation );
 				}
 
 			} else break;
@@ -138,18 +145,22 @@ GLOW.Shader = function( _declaration ) {
 				
 				name = attributeInformation.name;
 				
-				if( declaration[ name ] !== undefined ) {
+				if( declaration[ name ] === undefined ) {
+					
+					console.error( "GLOW.Shader.extractAndCreateAttributes: missing declaration for attribute " + name );
+					return;
+					
+				} else if( declaration[ name ].isAttribute ) {
+					
+					attributes[ name ] = declaration[ name ];
+					
+				} else {
 					
 					attributeInformation.location       = GL.getAttribLocation( program, name );
 					attributeInformation.locationNumber = attributeLocation;
 					attributeInformation.data           = declaration[ name ];
 					
-					attributes[ name ] = GLOW.Attribute( attributeInformation, false );
-					
-				} else {
-					
-					console.error( "GLOW.Shader.extractAndCreateAttributes: missing declaration for attribute " + name );
-					return;
+					declaration[ name ] = attributes[ name ] = GLOW.Attribute( attributeInformation, false );
 				}
 				
 			} else break;
@@ -163,24 +174,34 @@ GLOW.Shader = function( _declaration ) {
 	
 	function createElements() {
 		
-		if( !declaration.elements ) {
+		// duck-type checking if element already been initialized 
+		
+		if( declaration.elements.id === undefined ) {
+
+			if( !declaration.elements ) {
+
+				for( var a in attributes ) { break;	}
+				declaration.elements = GLOW.Helpers.arrayElements( attributes[ a ].bufferData.length / ( attributes[ a ].size * 3 ));
+			}
+
+			if( !( declaration.elements instanceof Uint16Array )) {
+
+				declaration.elements = new Uint16Array( declaration.elements );
+			}
+		
+			elements = GL.createBuffer();
+			elements.id = GLOW.uniqueId();
+			elements.length = declaration.elements.length;
+
+			GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, elements );
+			GL.bufferData( GL.ELEMENT_ARRAY_BUFFER, declaration.elements, GL.STATIC_DRAW );
 			
-			for( var a in attributes ) { break;	}
-			declaration.elements = GLOW.Helpers.arrayElements( attributes[ a ].bufferData.length / ( attributes[ a ].size * 3 ));
-		}
-		
-		if( !( declaration.elements instanceof Uint16Array )) {
+			declaration.elements = elements;
 			
-			declaration.elements = new Uint16Array( declaration.elements );
+		} else {
+			
+			elements = declaration.elements;
 		}
-		
-		
-		elements = GL.createBuffer();
-		elements.id = GLOW.uniqueId();
-		elements.length = declaration.elements.length;
-		
-		GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, elements );
-		GL.bufferData( GL.ELEMENT_ARRAY_BUFFER, declaration.elements, GL.STATIC_DRAW );
 	}
 	
 	
