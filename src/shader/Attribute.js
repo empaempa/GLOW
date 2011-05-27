@@ -61,7 +61,6 @@ GLOW.Attribute = function( parameters, interleave ) {
 		
 		if( !GLOW.Cache.attributeCached( attribute )) {
 			
-			GL.enableVertexAttribArray( attribute.locationNumber );
 			GL.bindBuffer( GL.ARRAY_BUFFER, attribute.buffer );
 			GL.vertexAttribPointer( attribute.location, attribute.size, GL.FLOAT, false, attribute.stride, attribute.offset );
 		}

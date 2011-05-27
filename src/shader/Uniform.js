@@ -6,12 +6,13 @@ GLOW.Uniform = function( parameters ) {
 	
 	var uniform = {};
 	
-	uniform.id       = GLOW.uniqueId();
-	uniform.data     = parameters.data;
-	uniform.name     = parameters.name;
-	uniform.length   = parameters.length;
-	uniform.type     = parameters.type;
-	uniform.location = parameters.location;
+	uniform.id             = GLOW.uniqueId();
+	uniform.data           = parameters.data;
+	uniform.name           = parameters.name;
+	uniform.length         = parameters.length;
+	uniform.type           = parameters.type;
+	uniform.location       = parameters.location;
+	uniform.locationNumber = parameters.locationNumber;
 	
 	
 	// set set-function
@@ -50,7 +51,7 @@ GLOW.Uniform = function( parameters ) {
 	
 	uniform.set = function() {
 		
-		if( !GLOW.Cache.uniformCached( uniform.id )) {
+		if( !GLOW.Cache.uniformCached( uniform )) {
 			uniform.uniformFunction( uniform.location, uniform.data );
 		}
 	}

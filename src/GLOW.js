@@ -6,8 +6,9 @@ var GLOW = (function() {
 	
 	var that = {}; 
 	var contexts = {};
-	var currentContext;
 	var uniqueIdCounter = -1;
+
+	that.currentContext = {};
 
 
 	//--- register context ---
@@ -16,7 +17,6 @@ var GLOW = (function() {
 		
 		contexts[ context.id ] = context;
 		that.enableContext( context );
-		
 	};
 	
 	
@@ -27,12 +27,10 @@ var GLOW = (function() {
 		if( contexts[ id ] ) {
 			
 			return contexts[ id ];
-			
 		}
 			
-		console.error( "Couldn't find context id " + id + ", returning current with id " + currentContext.id );
-		return currentContext;
-		
+		console.error( "Couldn't find context id " + id + ", returning current with id " + that.currentContext.id );
+		return that.currentContext;
 	};
 
 
@@ -42,15 +40,14 @@ var GLOW = (function() {
 		
 		if( typeof( contextOrId ) === 'string' ) {
 			
-			currentContext = getContextById[ contextOrId ];
+			that.currentContext = getContextById[ contextOrId ];
 			
 		} else {
 			
-			currentContext = contextOrId;
-		
+			that.currentContext = contextOrId;
 		}
 		
-		GL = that.GL = currentContext.GL;
+		GL = that.GL = that.currentContext.GL;
 	
 	}
 
@@ -60,7 +57,6 @@ var GLOW = (function() {
 	that.uniqueId = function() {
 		
 		return ++uniqueIdCounter;
-		
 	}
 
 

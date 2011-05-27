@@ -9,6 +9,7 @@ GLOW.Context = function( parameters ) {
 	var context = {};
 	var depthTestEnabled = false;
 	var stencilTestEnabled = false;
+	var clearBits = 0;
 
 	if( parameters === undefined ) parameters = {};
 	
@@ -49,22 +50,26 @@ GLOW.Context = function( parameters ) {
 	GLOW.registerContext( context );
 
 	enableCulling( false );
-	enableDepthTest( true );
+	enableDepthTest( true, { func: GL.LEQUAL, write: true, zNear: 0, zFar: 1 } );
 	enableBlend( true );
-	setupClearColor( 0, 0, 0, 0 );
+	setupClear( { bits: GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT } );
 	clear();
 	
 	
-	//--- setup clear color ---
+	//--- setup clear ---
 	
-	function setupClearColor( setup ) {
+	function setupClear( setup ) {
 		
 		var r = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : 0; 
 		var g = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : 0; 
 		var b = setup.blue  !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : 0; 
-		var a = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : 1; 
-		
+		var a = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : 1;
+		var d = setup.depth !== undefined ? Math.min( 1, Math.max( 0, setup.depth )) : 1;
+		 
 		GL.clearColor( r, g, b, a );
+		GL.clearDepth( d );
+		
+		clearBits = setup.bits !== undefined ? setup.bits : clearBits;
 		
 		return context;
 	}
@@ -74,14 +79,10 @@ GLOW.Context = function( parameters ) {
 	
 	function clear( bits ) {
 		
-		if( bits === undefined ) {
-			
-			bits  = GL.COLOR_BUFFER_BIT;
-			bits |= depthTestEnabled ? GL.DEPTH_BUFFER_BIT : 0;
-			bits |= stencilTestEnabled ? GL.STENCIL_BUFFER_BIT : 0;
-		}
-		
-		GL.clear( bits )
+		if( bits === undefined ) bits = clearBits;
+		GL.clear( bits );
+
+		return context;
 	}
 	
 
@@ -92,7 +93,7 @@ GLOW.Context = function( parameters ) {
 		if( flag ) {
 
 			GL.enable( GL.BLEND );
-			if( setup ) context.setupBlend( setup );
+			if( setup ) setupBlend( setup );
 			
 		} else GL.disable( GL.BLEND );
 		
@@ -121,7 +122,6 @@ GLOW.Context = function( parameters ) {
 				if( setup.src      ) GL.blendFunc( setup.src, setup.dst );
 			
 			} catch( error ) { console.error( "GLOW.Context.setupBlend: " + error ); }
-			
 		}
 		
 		return context;
@@ -137,7 +137,7 @@ GLOW.Context = function( parameters ) {
 		if( flag ) {
 			
 			GL.enable( GL.DEPTH_TEST );
-			if( setup ) context.setupDepthTest( setup );
+			if( setup ) setupDepthTest( setup );
 		
 		} else GL.disable( GL.DEPTH_TEST );
 		
@@ -151,12 +151,16 @@ GLOW.Context = function( parameters ) {
 		
 		try {
 			
-			// TODO
+			if( setup.func  !== undefined ) GL.depthFunc( setup.func );
+			if( setup.write !== undefined ) GL.depthMask( setup.write );
+
+			if( setup.zNear !== undefined && setup.zFar !== undefined && setup.zNear <= setup.zFar ) {
+				GL.depthRange( Math.max( 0, Math.min( 1, setup.zNear )), Math.max( 0, Math.min( 1, setup.zFar )));
+			}
 			
 		} catch( error ) { console.log( "GLOW.Context.setupDepthTest: " + error ); }
 		
 		return context;
-	
 	}
 	
 	
@@ -169,7 +173,7 @@ GLOW.Context = function( parameters ) {
 		if( flag ) {
 			
 			GL.enable( GL.STENCIL_TEST );
-			if( setup ) context.setupStencilTest( setup );
+			if( setup ) setupStencilTest( setup );
 		
 		} else GL.disable( GL.STENCIL_TEST );
 		
@@ -199,7 +203,7 @@ GLOW.Context = function( parameters ) {
 		if( flag ) {
 
 			GL.enable( GL.CULL_FACE );
-			if( setup ) context.setupCulling( setup );
+			if( setup ) setupCulling( setup );
 
 		} else GL.disable( GL.CULL_FACE );
 		
@@ -219,7 +223,6 @@ GLOW.Context = function( parameters ) {
 		} catch( error ) {
 
 			console.error( "GLOW.Context.setupCulling: " + error );
-
 		}
 		
 		return context;
@@ -233,7 +236,7 @@ GLOW.Context = function( parameters ) {
 		if( flag ) {
 	
 			GL.enable( GL.SCISSOR_TEST );
-			if( setup ) context.setupScissorTest( setup );
+			if( setup ) setupScissorTest( setup );
 
 		} else {
 			
@@ -241,7 +244,6 @@ GLOW.Context = function( parameters ) {
 		}
 		
 		return context;
-		
 	}
 
 
@@ -252,24 +254,23 @@ GLOW.Context = function( parameters ) {
 		// TODO
 		
 		return context;
-		
 	}
 
 
 	//--- return public ---
 
-	context.setupClearColor = setupClearColor;
-	context.clear = clear;
-	context.enableBlend = enableBlend;
-	context.setupBlend = setupBlend;
-	context.enableDepthTest = enableDepthTest;
-	context.setupDepthTest = setupDepthTest;
+	context.setupClear    	  = setupClear;
+	context.clear             = clear;
+	context.enableBlend       = enableBlend;
+	context.setupBlend        = setupBlend;
+	context.enableDepthTest   = enableDepthTest;
+	context.setupDepthTest    = setupDepthTest;
 	context.enableStencilTest = enableStencilTest;
-	context.setupStencilTest = setupStencilTest;
-	context.enableCulling = enableCulling;
-	context.setupCulling = setupCulling;
+	context.setupStencilTest  = setupStencilTest;
+	context.enableCulling     = enableCulling;
+	context.setupCulling      = setupCulling;
 	context.enableScissorTest = enableScissorTest;
-	context.setupScissorTest = setupScissorTest;
+	context.setupScissorTest  = setupScissorTest;
 
 	return context;
 }

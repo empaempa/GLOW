@@ -87,7 +87,7 @@
 
 			var container, stats;
 			var mouseX = 0, mouseY = 0;
-			var shader, context, t = 0;
+			var shader, shader2, context, t = 0;
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
@@ -97,6 +97,10 @@
 			
 			context = GLOW.Context();
 			shader = GLOW.Shader( shaderInfo );
+			
+			shaderInfo.transform = GLOW.Matrix4();
+			shader2 = GLOW.Shader( shaderInfo );
+			
 			
 			container = document.getElementById( 'container' );
 			container.appendChild( context.domElement );
@@ -122,11 +126,20 @@
 
 				t += 0.001;
 
+				shader2.transform.setPosition( -100, 0, -300 );
+				shader2.transform.setRotation( Math.sin( -t ) * Math.PI * 2, Math.cos( -t * 2 ) * Math.PI * 2, 0 );
+				shader2.transform.update();
+				
+
+				shader.transform.setPosition( 100, 0, -200 );
 				shader.transform.setRotation( Math.sin( t ) * Math.PI * 2, Math.cos( t * 2 ) * Math.PI * 2, 0 );
 				shader.transform.update();
 
 				context.clear();
+				GLOW.Cache.clear();
 				shader.draw();
+				shader2.draw();
+
 				stats.update();
 			}
 

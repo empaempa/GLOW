@@ -15,9 +15,25 @@ GLOW.Shader = function( _declaration ) {
 
 	shader.id = GLOW.uniqueId();
 
-	compileVertexShader();
-	compileFragmentShader();
-	linkProgram();
+	if( declaration.vertexShader && declaration.fragmentShader ) {
+		
+		compileVertexShader();
+		compileFragmentShader();
+		linkProgram();
+	
+		delete declaration.vertexShader;
+		delete declaration.fragmentShader;
+		declaration.program = program;
+	
+	} else if( declaration.program ) {
+		
+		program = declaration.program;
+		
+	} else {
+		
+		console.error( "GLOW.Shader.construct: Missing vertex/fragment/program. Cannot create shader. Quitting." );
+	}
+	
 	extractAndCreateUniforms();
 	extractAndCreateAttributes();
 	createElements();
@@ -87,24 +103,20 @@ GLOW.Shader = function( _declaration ) {
 				
 				if( declaration[ name ] !== undefined ) {
 					
-					uniformInformation.location = GL.getUniformLocation( program, name );
-					uniformInformation.data     = declaration[ name ];
+					uniformInformation.location       = GL.getUniformLocation( program, name );
+					uniformInformation.locationNumber = uniformLocation;
+					uniformInformation.data           = declaration[ name ];
 					
-
 					if( uniformInformation.type === GL.SAMPLER_2D ) {
-						
 						uniformInformation.data.load( ++textureUnit );
-					
 					}
 					
-
 					uniforms[ name ] = GLOW.Uniform( uniformInformation );
 
 				} else {
 
 					console.error( "GLOW.Shader.extractAndCreateUniforms: missing declaration for uniform " + name );
 					return;
-
 				}
 
 			} else break;
@@ -138,13 +150,12 @@ GLOW.Shader = function( _declaration ) {
 					
 					console.error( "GLOW.Shader.extractAndCreateAttributes: missing declaration for attribute " + name );
 					return;
-					
 				}
 				
 			} else break;
 		}
 		
-		program.numberOfAttributes = attributeLocation - 1;
+		program.highestAttributeNumber = attributeLocation - 1;
 	}
 	
 	
@@ -188,9 +199,7 @@ GLOW.Shader = function( _declaration ) {
 			} else {
 		
 				console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data." );
-		
 			}
-		
 		}
 	
 	
@@ -203,7 +212,6 @@ GLOW.Shader = function( _declaration ) {
 			} else {
 			
 				console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data." );
-			
 			}
 		}
 	}
@@ -212,10 +220,32 @@ GLOW.Shader = function( _declaration ) {
 	//--- draw ---
 	
 	function draw() {
-		
+
 		if( !GLOW.Cache.programCached( program )) {
 			
-			// TODO: handle enable/disable vertex attrib location depending on program.numberOfAttributes
+			var diff = GLOW.Cache.setProgramHighestAttributeNumber( program );
+			
+			if( diff ) {
+				
+				// enable / disable attribute streams
+				
+				var highestAttrib = program.highestAttributeNumber;
+				var current = highestAttrib - diff + 1;
+				
+				if( diff > 0 ) {
+					
+					for( ; current <= highestAttrib; current++ ) {
+						GL.enableVertexAttribArray( current );
+					}
+
+				} else {
+					
+					for( ; current >= highestAttrib; current-- ) {
+						GL.disableVertexAttribArray( current ); 
+					}
+				}
+			}
+			
 			
 			GL.useProgram( program );
 		}
