@@ -43,11 +43,13 @@
 				
 				clouds: GLOW.Texture( "examples/textures/clouds.jpg" ),
 				
+				time:             GLOW.Float(),
+				pulse: 			  GLOW.Float(),
 				transform:        GLOW.Matrix4(),
 				cameraInverse:    GLOW.defaultCamera.inverse,
 				cameraProjection: GLOW.defaultCamera.projection,
 
-				vertices:    GLOW.Helpers.cubeVertices( 200 ),
+				vertices:    GLOW.Helpers.cubeVertices( 50 ),
 				elements:    GLOW.Helpers.cubeElements(),
 	
 				vertexShader: [
@@ -71,11 +73,13 @@
 							"precision highp float;",
 						"#endif",		
 
-						"uniform sampler2D 	clouds;",
+						"uniform 	sampler2D 	clouds;",
+						"uniform	float		glow;",
+						"uniform	float		time;",
 
 						"void main( void )",
 						"{",
-							"gl_FragColor = texture2D( clouds, vec2( gl_FragCoord.x / 100.0, gl_FragCoord.z * 1000.0 ));",
+							"gl_FragColor = texture2D( clouds, vec2( gl_FragCoord.x / 100.0, gl_FragCoord.z * 1000.0 )) * vec4( sin( glow + time ), cos( glow + time ), sin( glow + time * 2.0 ), 1.0 );",
 						"}"
 
 					].join( "\n" )
@@ -87,7 +91,7 @@
 
 			var container, stats;
 			var mouseX = 0, mouseY = 0;
-			var shader, shader2, context, t = 0;
+			var shaders, context, t = 0;
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
@@ -96,16 +100,24 @@
 			// init
 			
 			context = GLOW.Context();
-			shader = GLOW.Shader( shaderInfo );
+			shaders = [];
 			
-			shaderInfo.transform = GLOW.Matrix4();
-			shader2 = GLOW.Shader( shaderInfo );
+			for( var a = 0; a < 500; a++ ) {
+				
+				shaderInfo.glow      = GLOW.Float( Math.random());
+				shaderInfo.transform = GLOW.Matrix4().
+				                       setPosition( Math.random() * 1000 - 500, Math.random() * 1000 - 500, Math.random() * 1000 - 500 ).
+									   setRotation( Math.random() * Math.PI *2, Math.random() * Math.PI *2, Math.random() * Math.PI *2 ).
+									   update();
+
+				shaders.push( GLOW.Shader( shaderInfo ));
+			}
 			
 			
 			container = document.getElementById( 'container' );
 			container.appendChild( context.domElement );
 			
-			GLOW.defaultCamera.setPosition( 0, 0, 500 );
+			GLOW.defaultCamera.setPosition( 0, 0, 1500 );
 			GLOW.defaultCamera.update();
 			
 			
@@ -120,25 +132,25 @@
 			// render
 
 			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-			setInterval( render, 1000 / 60 );
+			setInterval( render, 1000 / 30 );
 
 			function render() {
 
-				t += 0.001;
+				var a, al = shaders.length;
+				var shader;
 
-				shader2.transform.setPosition( -100, 0, -300 );
-				shader2.transform.setRotation( Math.sin( -t ) * Math.PI * 2, Math.cos( -t * 2 ) * Math.PI * 2, 0 );
-				shader2.transform.update();
-				
+				t += 0.01;
 
-				shader.transform.setPosition( 100, 0, -200 );
-				shader.transform.setRotation( Math.sin( t ) * Math.PI * 2, Math.cos( t * 2 ) * Math.PI * 2, 0 );
-				shader.transform.update();
-
-				context.clear();
+				GLOW.defaultCamera.setPosition( mouseX * 250, -mouseY * 250, 1500 ).update();
 				GLOW.Cache.clear();
-				shader.draw();
-				shader2.draw();
+				context.clear();
+
+				shaders[ 0 ].time.value = t;
+				
+				for( a = 0; a < al; a++ ) {
+					
+					shaders[ a ].draw();
+				}
 
 				stats.update();
 			}
@@ -148,8 +160,8 @@
 			
 			function onDocumentMouseMove( event ) {
 
-				mouseX = ( event.clientX - windowHalfX );
-				mouseY = ( event.clientY - windowHalfY );
+				mouseX = ( event.clientX - windowHalfX ) / windowHalfX * 2; 
+				mouseY = ( event.clientY - windowHalfY ) / windowHalfY * 2;
 
 			}
 		</script>
