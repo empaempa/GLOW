@@ -93,16 +93,25 @@ GLOW.Shader = function( _declaration ) {
 	function extractAndCreateUniforms() {
 	
 		var uniformInformation, name, uniformLocation = -1, textureUnit = -1;
+
+		if( !declaration.uniformLocations ) {
+			declaration.uniformLocations = [];
+		}
 	
 		while( true ) {
 			
-			uniformInformation = GL.getActiveUniform( program, ++uniformLocation );
+			++uniformLocation;
+			
+			if( declaration.uniformLocations[ uniformLocation ] ) {
+				uniformInformation = declaration.uniformLocations[ uniformLocation ];
+			} else {
+				uniformInformation = declaration.uniformLocations[ uniformLocation ] = GL.getActiveUniform( program, uniformLocation );
+			}
+			
 
 			if( uniformInformation !== null && uniformInformation !== -1 && uniformInformation !== undefined ) {
 				
 				name = uniformInformation.name.split( "[" )[ 0 ]; 
-				
-				// duck-type checking if declaration is GLOW.Uniform or not
 				
 				if( declaration[ name ] === undefined ) {
 					
@@ -137,9 +146,20 @@ GLOW.Shader = function( _declaration ) {
 		
 		var attributeInformation, name, attributeLocation = -1;
 		
+		if( !declaration.attributeLocations ) {
+			declaration.attributeLocations = [];
+		}
+		
 		while( true ) {
 			
-			attributeInformation = GL.getActiveAttrib( program, ++attributeLocation );
+			++attributeLocation;
+			
+			if( declaration.attributeLocations[ attributeLocation ] ) {
+				attributeInformation = declaration.attributeLocations[ attributeLocation ];
+			} else {
+				attributeInformation = declaration.attributeLocations[ attributeLocation ] =GL.getActiveAttrib( program, attributeLocation );
+			}
+
 			
 			if( attributeInformation !== null && attributeInformation !== undefined && attributeInformation !== -1 ) {
 				

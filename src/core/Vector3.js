@@ -14,7 +14,7 @@ GLOW.Vector3 = function( x, y, z ) {
 	v[ 1 ] = y !== undefined ? y : 0;
 	v[ 2 ] = z !== undefined ? z : 0;
 
-	that.set = function ( x, y, z ) {
+	that.set = function( x, y, z ) {
 
 		v[ 0 ] = x;
 		v[ 1 ] = y;
@@ -32,6 +32,9 @@ GLOW.Vector3 = function( x, y, z ) {
 
 	that.add = function ( a, b ) {
 
+		a = a.value;
+		b = b.value;
+
 		v[ 0 ] = a[ 0 ] + b[ 0 ];
 		v[ 1 ] = a[ 1 ] + b[ 1 ];
 		v[ 2 ] = a[ 2 ] + b[ 2 ];
@@ -40,6 +43,8 @@ GLOW.Vector3 = function( x, y, z ) {
 	}
 
 	that.addSelf = function ( a ) {
+
+		a = a.value;
 
 		v[ 0 ] = v[ 0 ] + a[ 0 ];
 		v[ 1 ] = v[ 1 ] + a[ 1 ];
@@ -60,6 +65,9 @@ GLOW.Vector3 = function( x, y, z ) {
 
 	that.sub = function ( a, b ) {
 
+		a = a.value;
+		b = b.value;
+
 		v[ 0 ] = a[ 0 ] - b[ 0 ];
 		v[ 1 ] = a[ 1 ] - b[ 1 ];
 		v[ 2 ] = a[ 2 ] - b[ 2 ];
@@ -68,6 +76,8 @@ GLOW.Vector3 = function( x, y, z ) {
 	}
 
 	that.subSelf = function ( a ) {
+
+		a = a.value;
 
 		v[ 0 ] -= a[ 0 ];
 		v[ 1 ] -= a[ 1 ];
@@ -78,6 +88,9 @@ GLOW.Vector3 = function( x, y, z ) {
 
 	that.cross = function ( a, b ) {
 
+		a = a.value;
+		b = b.value;
+
 		v[ 0 ] = a[ 1 ] * b[ 2 ] - a[ 2 ] * b[ 1 ];
 		v[ 1 ] = a[ 2 ] * b[ 0 ] - a[ 0 ] * b[ 2 ];
 		v[ 2 ] = a[ 0 ] * b[ 1 ] - a[ 1 ] * b[ 0 ];
@@ -86,6 +99,8 @@ GLOW.Vector3 = function( x, y, z ) {
 	}
 
 	that.crossSelf = function ( a ) {
+
+		a = a.value;
 
 		var ax = a[ 0 ], ay = a[ 1 ], az = a[ 2 ];
 		var vx = v[ 0 ], vy = v[ 1 ], vz = v[ 2 ];
@@ -97,185 +112,136 @@ GLOW.Vector3 = function( x, y, z ) {
 		return that;
 
 	}
-/*
-	multiply : function ( a, b ) {
 
-		v.set(
+	that.multiply = function( a, b ) {
 
-			a[ 0 ] * b[ 0 ],
-			a[ 1 ] * b[ 1 ],
-			a[ 2 ] * b[ 2 ]
+		a = a.value;
+		b = b.value;
+		
+		v[ 0 ] = a[ 0 ] * b[ 0 ];
+		v[ 1 ] = a[ 1 ] * b[ 1 ];
+		v[ 2 ] = a[ 2 ] * b[ 2 ];
 
-		);
+		return that;
+	}
 
-		return v;
+	that.multiplySelf = function( a ) {
 
-	},
+		a = a.value;
+		
+		v[ 0 ] *= a[ 0 ];
+		v[ 1 ] *= a[ 1 ];
+		v[ 2 ] *= a[ 2 ];
 
-	multiplySelf : function ( v ) {
+		return that;
+	}
 
-		v.set(
+	that.multiplyScalar = function( s ) {
 
-			v[ 0 ] * v[ 0 ],
-			v[ 1 ] * v[ 1 ],
-			v[ 2 ] * v[ 2 ]
+		v[ 0 ] *= s;
+		v[ 1 ] *= s;
+		v[ 2 ] *= s;
 
-		);
+		return that;
+	}
 
-		return v;
+	that.divideSelf = function( a ) {
 
-	},
+		a = a.value;
 
-	multiplyScalar : function ( s ) {
+		v[ 0 ] /= a[ 0 ];
+		v[ 1 ] /= a[ 1 ];
+		v[ 2 ] /= a[ 2 ];
 
-		v.set(
+		return that;
+	}
 
-			v[ 0 ] * s,
-			v[ 1 ] * s,
-			v[ 2 ] * s
+	that.divideScalar = function( s ) {
 
-		);
+		v[ 0 ] /= s;
+		v[ 1 ] /= s;
+		v[ 2 ] /= s;
 
-		return v;
+		return that;
+	}
 
-	},
+	that.negate = function() {
 
-	divideSelf : function ( v ) {
+		v[ 0 ] = -v[ 0 ];
+		v[ 1 ] = -v[ 1 ];
+		v[ 2 ] = -v[ 2 ];
 
-		v.set(
+		return that;
+	}
 
-			v[ 0 ] / v[ 0 ],
-			v[ 1 ] / v[ 1 ],
-			v[ 2 ] / v[ 2 ]
+	that.dot = function( a ) {
 
-		);
+		a = a.value;
 
-		return v;
+		return v[ 0 ] * a[ 0 ] + v[ 1 ] * a[ 1 ] + v[ 2 ] * a[ 2 ];
+	}
 
-	},
+	that.distanceTo = function ( a ) {
 
-	divideScalar : function ( s ) {
+		return Math.sqrt( that.distanceToSquared( a ) );
+	}
 
-		v.set(
+	that.distanceToSquared = function( a ) {
+		
+		a = a.value;
 
-			v[ 0 ] / s,
-			v[ 1 ] / s,
-			v[ 2 ] / s
-
-		);
-
-		return v;
-
-	},
-
-	negate : function () {
-
-		v.set(
-
-			- v[ 0 ],
-			- v[ 1 ],
-			- v[ 2 ]
-
-		);
-
-		return v;
-
-	},
-
-	dot : function ( v ) {
-
-		return v[ 0 ] * v[ 0 ] + v[ 1 ] * v[ 1 ] + v[ 2 ] * v[ 2 ];
-
-	},
-
-	distanceTo : function ( v ) {
-
-		return Math.sqrt( v.distanceToSquared( v ) );
-
-	},
-
-	distanceToSquared : function ( v ) {
-
-		var dx = v[ 0 ] - v[ 0 ], dy = v[ 1 ] - v[ 1 ], dz = v[ 2 ] - v[ 2 ];
+		var dx = v[ 0 ] - a[ 0 ], dy = v[ 1 ] - a[ 1 ], dz = v[ 2 ] - a[ 2 ];
 		return dx * dx + dy * dy + dz * dz;
+	}
 
-	},
+	that.length = function() {
 
-	length : function () {
+		return Math.sqrt( that.lengthSq() );
+	}
 
-		return Math.sqrt( v.lengthSq() );
-
-	},
-
-	lengthSq : function () {
+	that.lengthSq = function() {
 
 		return v[ 0 ] * v[ 0 ] + v[ 1 ] * v[ 1 ] + v[ 2 ] * v[ 2 ];
+	}
 
-	},
-
-	lengthManhattan : function () {
+	that.lengthManhattan = function() {
 
 		return v[ 0 ] + v[ 1 ] + v[ 2 ];
+	}
 
-	},
+	that.normalize = function() {
 
-	normalize : function () {
+		var l = Math.sqrt( v[ 0 ] * v[ 0 ] + v[ 1 ] * v[ 1 ] + v[ 2 ] * v[ 2 ] );
 
-		var l = v.length();
+		l > 0 ? that.multiplyScalar( 1 / l ) : that.set( 0, 0, 0 );
 
-		l > 0 ? v.multiplyScalar( 1 / l ) : v.set( 0, 0, 0 );
+		return that;
+	}
 
-		return v;
+	that.setPositionFromMatrix = function( m ) {
 
-	},
+		m = m.value;
 
-	setPositionFromMatrix : function ( m ) {
+		v[ 0 ] = m[ 12 ];
+		v[ 1 ] = m[ 13 ];
+		v[ 2 ] = m[ 14 ];
+	}
 
-		v[ 0 ] = m.n14;
-		v[ 1 ] = m.n24;
-		v[ 2 ] = m.n34;
+	that.setLength = function( l ) {
 
-	},
+		return that.normalize().multiplyScalar( l );
+	}
 
-	setRotationFromMatrix : function ( m ) {
-
-		var cosY = Math.cos( v[ 1 ] );
-
-		v[ 1 ] = Math.asin( m.n13 );
-
-		if ( Math.abs( cosY ) > 0.00001 ) {
-
-			v[ 0 ] = Math.atan2( - m.n23 / cosY, m.n33 / cosY );
-			v[ 2 ] = Math.atan2( - m.n12 / cosY, m.n11 / cosY );
-
-		} else {
-
-			v[ 0 ] = 0;
-			v[ 2 ] = Math.atan2( m.n21, m.n22 );
-
-		}
-
-	},
-
-	setLength : function ( l ) {
-
-		return v.normalize().multiplyScalar( l );
-
-	},
-
-	isZero : function () {
+	that.isZero = function() {
 
 		var almostZero = 0.0001;
 		return ( Math.abs( v[ 0 ] ) < almostZero ) && ( Math.abs( v[ 1 ] ) < almostZero ) && ( Math.abs( v[ 2 ] ) < almostZero );
+	}
 
-	},
+	that.clone = function() {
 
-	clone : function () {
-
-		return new THREE.Vector3( v[ 0 ], v[ 1 ], v[ 2 ] );
-
-	}*/
+		return GLOW.Vector3( v[ 0 ], v[ 1 ], v[ 2 ] );
+	}
 	
 	return that;
-
 };

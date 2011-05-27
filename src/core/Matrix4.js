@@ -11,22 +11,10 @@
 GLOW.Matrix4 = function() {
 
 	var m = new Float32Array( 16 );
-	var that = { value: m };
-	var rotation = GLOW.Vector3();
+	var that = { value: m, transposeUniform: false };
+	var temp = GLOW.Vector3();
 	
-	that.transposeUniform = false;
-	that.autoUpdate = true;
-	that.children = [];
-	that.parent = undefined;
-
-
 	//--- methods ---
-
-	that.update = function() {
-		
-		that.setRotationFromEuler( rotation );
-		return that;
-	}
 
 	that.set = function( m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 ) {
 
@@ -50,49 +38,58 @@ GLOW.Matrix4 = function() {
 		return that;
 	}
 
-	that.copy = function ( m ) {
+	that.copy = function( a ) {
+
+		a = a.value;
 
 		that.set(
-			m[  0 ], m[  1 ], m[  2 ], m[  3 ],
-			m[  4 ], m[  5 ], m[  6 ], m[  7 ],
-			m[  8 ], m[  9 ], m[ 10 ], m[ 11 ],
-			m[ 12 ], m[ 13 ], m[ 14 ], m[ 15 ]
+			a[  0 ], a[  1 ], a[  2 ], a[  3 ],
+			a[  4 ], a[  5 ], a[  6 ], a[  7 ],
+			a[  8 ], a[  9 ], a[ 10 ], a[ 11 ],
+			a[ 12 ], a[ 13 ], a[ 14 ], a[ 15 ]
 		);
 
 		return that;
 	}
 
-/*	that.lookAt = function ( eye, center, up ) {
+	that.lookAt = function( focus, up ) {
 
-		var x = THREE.Matrix4.__v1, y = THREE.Matrix4.__v2, z = THREE.Matrix4.__v3;
+		var x = GLOW.Matrix4.tempVector3A, 
+		    y = GLOW.Matrix4.tempVector3B, 
+		    z = GLOW.Matrix4.tempVector3C;
+		var eye = that.getPosition();	
+		
+		eye.value[ 0 ] = m[ 12 ];
+		eye.value[ 1 ] = m[ 13 ];
+		eye.value[ 2 ] = m[ 14 ];
 
-		z.sub( eye, center ).normalize();
+		z.sub( eye, focus ).normalize();
 
-		if ( z.length() === 0 ) {
+		if( z.length() === 0 ) {
 
-			z.z = 1;
-
+			z.value[ 3 ] = 1;
 		}
 
 		x.cross( up, z ).normalize();
 
-		if ( x.length() === 0 ) {
+		if( x.length() === 0 ) {
 
-			z.x += 0.0001;
+			z.value[ 0 ] += 0.0001;
 			x.cross( up, z ).normalize();
-
 		}
 
 		y.cross( z, x ).normalize();
 
+		x = x.value;
+		y = y.value;
+		z = z.value;
 
-		m[ 0 ] = x.x; m[ 4 ] = y.x; m[  8 ] = z.x;
-		m[ 1 ] = x.y; m[ 5 ] = y.y; m[  9 ] = z.y;
-		m[ 2 ] = x.z; m[ 6 ] = y.z; m[ 10 ] = z.z;
+		m[ 0 ] = x[ 0 ]; m[ 4 ] = y[ 0 ]; m[  8 ] = z[ 0 ];
+		m[ 1 ] = x[ 1 ]; m[ 5 ] = y[ 1 ]; m[  9 ] = z[ 1 ];
+		m[ 2 ] = x[ 2 ]; m[ 6 ] = y[ 2 ]; m[ 10 ] = z[ 2 ];
 
-		return m;
-
-	},*/
+		return that;
+	}
 
 	that.multiplyVector3 = function ( v ) {
 
@@ -146,24 +143,24 @@ GLOW.Matrix4 = function() {
 
 	that.multiply = function ( a, b ) {
 
-/*
 //reference:
 //m.n11 = m[ 0 ]; m.n12 = m[ 4 ]; m.n13 = m[ 8 ]; m.n14 = m[ 12 ];
 //m.n21 = m[ 1 ]; m.n22 = m[ 5 ]; m.n23 = m[ 9 ]; m.n24 = m[ 13 ];
 //m.n31 = m[ 2 ]; m.n32 = m[ 6 ]; m.n33 = m[ 10 ]; m.n34 = m[ 14 ];
 //m.n41 = m[ 3 ]; m.n42 = m[ 7 ]; m.n43 = m[ 11 ]; m.n44 = m[ 15 ];
 
+		a = a.value;
+		b = b.value;
 
+		var a11 = a[ 0 ], a12 = a[ 4 ], a13 = a[ 8 ], a14 = a[ 12 ],
+		    a21 = a[ 1 ], a22 = a[ 5 ], a23 = a[ 9 ], a24 = a[ 13 ],
+		    a31 = a[ 2 ], a32 = a[ 6 ], a33 = a[ 10 ], a34 = a[ 14 ],
+		    a41 = a[ 3 ], a42 = a[ 7 ], a43 = a[ 11 ], a44 = a[ 15 ],
 
-		var a11 = a.n11, a12 = a.n12, a13 = a.n13, a14 = a.n14,
-		a21 = a.n21, a22 = a.n22, a23 = a.n23, a24 = a.n24,
-		a31 = a.n31, a32 = a.n32, a33 = a.n33, a34 = a.n34,
-		a41 = a.n41, a42 = a.n42, a43 = a.n43, a44 = a.n44,
-
-		b11 = b.n11, b12 = b.n12, b13 = b.n13, b14 = b.n14,
-		b21 = b.n21, b22 = b.n22, b23 = b.n23, b24 = b.n24,
-		b31 = b.n31, b32 = b.n32, b33 = b.n33, b34 = b.n34,
-		b41 = b.n41, b42 = b.n42, b43 = b.n43, b44 = b.n44;
+		b11 = b[ 0 ], b12 = b[ 4 ], b13 = b[ 8 ], b14 = b[ 12 ],
+		b21 = b[ 1 ], b22 = b[ 5 ], b23 = b[ 9 ], b24 = b[ 13 ],
+		b31 = b[ 2 ], b32 = b[ 6 ], b33 = b[ 10 ], b34 = b[ 14 ],
+		b41 = b[ 3 ], b42 = b[ 7 ], b43 = b[ 11 ], b44 = b[ 15 ];
 
 		m[ 0 ] = a11 * b11 + a12 * b21 + a13 * b31;
 		m[ 4 ] = a11 * b12 + a12 * b22 + a13 * b32;
@@ -186,13 +183,11 @@ GLOW.Matrix4 = function() {
 		m[ 15 ] = a41 * b14 + a42 * b24 + a43 * b34 + a44;
 
 		return that;
-*/
-	},
+	}
 
 	that.multiplySelf = function ( a ) {
 
 		this.multiply( m, a );
-
 		return that;
 	}
 
@@ -272,29 +267,6 @@ GLOW.Matrix4 = function() {
 	}
 
 
-/*	that.setRotationAxis = function( axis, angle ) {
-
-		// Based on http://www.gamedev.net/reference/articles/article1199.asp
-
-		var c = Math.cos( angle ),
-		s = Math.sin( angle ),
-		t = 1 - c,
-		x = axis.x, y = axis.y, z = axis.z,
-		tx = t * x, ty = t * y;
-
-		this.set(
-
-		 	tx * x + c, tx * y - s * z, tx * z + s * y, 0,
-			tx * y + s * z, ty * y + c, ty * z - s * x, 0,
-			tx * z - s * y, ty * z + s * x, t * z * z + c, 0,
-			0, 0, 0, 1
-
-		);
-
-		 return this;
-
-	},
-*/
 	that.setPosition = function( x, y, z ) {
 
 		m[ 12 ] = x;
@@ -302,75 +274,15 @@ GLOW.Matrix4 = function() {
 		m[ 14 ] = z;
 
 		return that;
-
 	}
+
 
 	that.setRotation = function( x, y, z ) {
-		
-		rotation.set( x, y, z );
-		
-		return that;
-	}
-	
-/*	getPosition : function() {
-		
-		if( !that.position ) {
-			
-			that.position = new GLOW.Vector3();
-			
-		}
-		
-		that.position.set( m[ 12 ], m[ 13 ], m[ 14 ] );
-		
-		return that.position;
-	}
 
-	getColumnX : function() {
-		
-		if( !this.columnX ) {
-			
-			this.columnX = new THREE.Vector3();
-			
-		}
-		
-		this.columnX.set( m[ 0 ], m[ 1 ], m[ 2 ] );
-		
-		return this.columnX;
-	},
-
-	getColumnY : function() {
-		
-		if( !this.columnY ) {
-			
-			this.columnY = new THREE.Vector3();
-			
-		}
-		
-		this.columnY.set( m[ 4 ], m[ 5 ], m[ 6 ] );
-		
-		return this.columnY;
-	},
-
-	getColumnZ : function() {
-		
-		if( !this.columnZ ) {
-			
-			this.columnZ = new THREE.Vector3();
-			
-		}
-		
-		this.columnZ.set( m[ 8 ], m[ 9 ], m[ 10 ] );
-		
-		return this.columnZ;
-	},
-*/
-	that.setRotationFromEuler = function( v ) {
-
-		var x = v.value[ 0 ], y = v.value[ 1 ], z = v.value[ 2 ],
-		a = Math.cos( x ), b = Math.sin( x ),
-		c = Math.cos( y ), d = Math.sin( y ),
-		e = Math.cos( z ), f = Math.sin( z ),
-		ad = a * d, bd = b * d;
+		var a = Math.cos( x ), b = Math.sin( x ),
+		    c = Math.cos( y ), d = Math.sin( y ),
+		    e = Math.cos( z ), f = Math.sin( z ),
+		    ad = a * d, bd = b * d;
 
 		m[ 0 ] = c * e;
 		m[ 4 ] = - c * f;
@@ -387,30 +299,31 @@ GLOW.Matrix4 = function() {
 		return that;
 	}
 
-/*	setRotationFromQuaternion : function( q ) {
+	that.getPosition = function() {
+		
+		temp.set( m[ 12 ], m[ 13 ], m[ 14 ] );
+		return temp;
+	}
 
-		var x = q.x, y = q.y, z = q.z, w = q.w,
-		x2 = x + x, y2 = y + y, z2 = z + z,
-		xx = x * x2, xy = x * y2, xz = x * z2,
-		yy = y * y2, yz = y * z2, zz = z * z2,
-		wx = w * x2, wy = w * y2, wz = w * z2;
+	that.getColumnX = function() {
+		
+		temp.set( m[ 0 ], m[ 1 ], m[ 2 ] );
+		return temp;
+	}
+	
+	that.getColumnY = function() {
+		
+		temp.set( m[ 4 ], m[ 5 ], m[ 6 ] );
+		return temp;
+	}
 
-		m[ 0 ] = 1 - ( yy + zz );
-		m[ 4 ] = xy - wz;
-		m[ 8 ] = xz + wy;
-
-		m[ 1 ] = xy + wz;
-		m[ 5 ] = 1 - ( xx + zz );
-		m[ 9 ] = yz - wx;
-
-		m[ 2 ] = xz - wy;
-		m[ 6 ] = yz + wx;
-		m[ 10 ] = 1 - ( xx + yy );
-
-		return this;
-
+	that.getColumnZ = function() {
+		
+		temp.set( m[ 8 ], m[ 9 ], m[ 10 ] );
+		return temp;
 	},
-*/
+
+
 	that.scale = function ( v ) {
 
 		var x = v.value[ 0 ], y = v.value[ 1 ], z = v.value[ 2 ];
@@ -423,33 +336,6 @@ GLOW.Matrix4 = function() {
 		return that;
 	}
 
-/*	extractPosition : function ( m ) {
-
-		m[ 12 ] = m.n14;
-		m[ 13 ] = m.n24;
-		m[ 14 ] = m.n34;
-
-	},
-
-	extractRotation : function ( m, s ) {
-
-		var invScaleX = 1 / s.x, invScaleY = 1 / s.y, invScaleZ = 1 / s.z;
-
-		m[ 0 ] = m.n11 * invScaleX;
-		m[ 1 ] = m.n21 * invScaleX;
-		m[ 2 ] = m.n31 * invScaleX;
-
-		m[ 4 ] = m.n12 * invScaleY;
-		m[ 5 ] = m.n22 * invScaleY;
-		m[ 6 ] = m.n32 * invScaleY;
-
-		m[ 8 ] = m.n13 * invScaleZ;
-		m[ 9 ] = m.n23 * invScaleZ;
-		m[ 10 ] = m.n33 * invScaleZ;
-
-	}
-*/
-
 	return that.identity();
 
 };
@@ -457,10 +343,6 @@ GLOW.Matrix4 = function() {
 GLOW.Matrix4.makeInverse = function ( m1, m2 ) {
 
 	// based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
-	//m.n11 = m[ 0 ]; m.n12 = m[ 4 ]; m.n13 = m[ 8 ]; m.n14 = m[ 12 ];
-	//m.n21 = m[ 1 ]; m.n22 = m[ 5 ]; m.n23 = m[ 9 ]; m.n24 = m[ 13 ];
-	//m.n31 = m[ 2 ]; m.n32 = m[ 6 ]; m.n33 = m[ 10 ]; m.n34 = m[ 14 ];
-	//m.n41 = m[ 3 ]; m.n42 = m[ 7 ]; m.n43 = m[ 11 ]; m.n44 = m[ 15 ];
 
 	if( m2 === undefined ) m2 = GLOW.Matrix4();
 
@@ -565,12 +447,12 @@ GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
 	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far );
 
 };
-/*
-THREE.Matrix4.makeOrtho = function ( left, right, top, bottom, near, far ) {
 
-	var m, x, y, z, w, h, p;
+GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far ) {
 
-	m = new THREE.Matrix4();
+	var m, mv, x, y, z, w, h, p;
+
+	m = GLOW.Matrix4();
 	w = right - left;
 	h = top - bottom;
 	p = far - near;
@@ -578,13 +460,19 @@ THREE.Matrix4.makeOrtho = function ( left, right, top, bottom, near, far ) {
 	y = ( top + bottom ) / h;
 	z = ( far + near ) / p;
 
-	m.n11 = 2 / w; m.n12 = 0;     m.n13 = 0;      m.n14 = -x;
-	m.n21 = 0;     m.n22 = 2 / h; m.n23 = 0;      m.n24 = -y;
-	m.n31 = 0;     m.n32 = 0;     m.n33 = -2 / p; m.n34 = -z;
-	m.n41 = 0;     m.n42 = 0;     m.n43 = 0;      m.n44 = 1;
+	mv = m.value;
+
+	mv[ 0 ] = 2 / w; mv[ 4 ] = 0;     mv[ 8  ] = 0;      mv[ 12 ] = -x;
+	mv[ 1 ] = 0;     mv[ 5 ] = 2 / h; mv[ 9  ] = 0;      mv[ 13 ] = -y;
+	mv[ 2 ] = 0;     mv[ 6 ] = 0;     mv[ 10 ] = -2 / p; mv[ 14 ] = -z;
+	mv[ 3 ] = 0;     mv[ 7 ] = 0;     mv[ 11 ] = 0;      mv[ 15 ] = 1;
 
 	return m;
 
 };
 
-*/
+
+GLOW.Matrix4.tempVector3A = GLOW.Vector3();
+GLOW.Matrix4.tempVector3B = GLOW.Vector3();
+GLOW.Matrix4.tempVector3C = GLOW.Vector3();
+GLOW.Matrix4.tempVector3D = GLOW.Vector3();
