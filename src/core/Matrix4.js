@@ -13,6 +13,8 @@ GLOW.Matrix4 = function() {
 	var m = new Float32Array( 16 );
 	var that = { value: m, transposeUniform: false };
 	var temp = GLOW.Vector3();
+	var rotation = GLOW.Vector3();
+	
 	
 	//--- methods ---
 
@@ -275,9 +277,17 @@ GLOW.Matrix4 = function() {
 
 		return that;
 	}
-
+	
+	that.addPosition = function( x, y, z ) {
+		
+		m[ 12 ] += x;
+		m[ 13 ] += y;
+		m[ 14 ] += z;
+	}
 
 	that.setRotation = function( x, y, z ) {
+
+		rotation.set( x, y, z );
 
 		var a = Math.cos( x ), b = Math.sin( x ),
 		    c = Math.cos( y ), d = Math.sin( y ),
@@ -297,6 +307,15 @@ GLOW.Matrix4 = function() {
 		m[ 10 ] = a * c;
 
 		return that;
+	}
+	
+	that.addRotation = function( x, y, z ) {
+		
+		rotation.value[ 0 ] += x;
+		rotation.value[ 1 ] += y;
+		rotation.value[ 2 ] += z;
+		
+		that.setRotation( rotation.value[ 0 ], rotation.value[ 1 ], rotation.value[ 2 ] );
 	}
 
 	that.getPosition = function() {
@@ -324,9 +343,21 @@ GLOW.Matrix4 = function() {
 	},
 
 
-	that.scale = function ( v ) {
+	that.scale = function( v, y, z ) {
 
-		var x = v.value[ 0 ], y = v.value[ 1 ], z = v.value[ 2 ];
+		var x;
+
+		if( y && z ) {
+			
+			x = v;
+			
+		} else {
+			
+			x = v.value[ 0 ];
+			y = v.value[ 1 ];
+			z = v.value[ 2 ];
+		}
+
 
 		m[ 0 ] *= x; m[ 4 ] *= y; m[ 8 ] *= z;
 		m[ 1 ] *= x; m[ 5 ] *= y; m[ 9 ] *= z;
@@ -337,8 +368,8 @@ GLOW.Matrix4 = function() {
 	}
 
 	return that.identity();
-
 };
+
 
 GLOW.Matrix4.makeInverse = function ( m1, m2 ) {
 

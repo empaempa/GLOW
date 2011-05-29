@@ -20,6 +20,7 @@
 
 		<script type="text/javascript" src="src/GLOW.js"></script>
 		<script type="text/javascript" src="src/core/Context.js"></script>
+		<script type="text/javascript" src="src/core/FBO.js"></script>
 		<script type="text/javascript" src="src/core/Float.js"></script>
 		<script type="text/javascript" src="src/core/Int.js"></script>
 		<script type="text/javascript" src="src/core/Vector3.js"></script>
@@ -33,7 +34,9 @@
 		<script type="text/javascript" src="src/shader/Uniform.js"></script>
 		<script type="text/javascript" src="src/shader/Attribute.js"></script>
 
-		<script type="text/javascript" src="src/extras/Helpers.js"></script>
+		<script type="text/javascript" src="src/extras/geometry/Geometry.js"></script>
+		<script type="text/javascript" src="src/extras/geometry/Cube.js"></script>
+		<script type="text/javascript" src="src/extras/geometry/Plane.js"></script>
 		<script type="text/javascript" src="src/extras/graph/Node.js"></script>
 
 		<script type="text/javascript" src="examples/js/Stats.js"></script>
@@ -42,48 +45,111 @@
 		
 			var shaderInfo = {
 				
-				clouds: GLOW.Texture( "examples/textures/clouds.jpg" ),
-				
-				time:             GLOW.Float(),
-				pulse: 			  GLOW.Float(),
-				transform:        GLOW.Matrix4(),
-				cameraInverse:    GLOW.defaultCamera.inverse,
-				cameraProjection: GLOW.defaultCamera.projection,
+				setup: function() {
+					
+					this.clouds = GLOW.Texture( "examples/textures/clouds.jpg" );
 
-				vertices:    GLOW.Helpers.cubeVertices( 50 ),
-				elements:    GLOW.Helpers.cubeElements(),
+					this.time = GLOW.Float();
+					this.pulse = GLOW.Float();
+					this.offset = GLOW.Float();
+					this.transform = GLOW.Matrix4();
+					this.cameraInverse = GLOW.defaultCamera.inverse;
+					this.cameraProjection = GLOW.defaultCamera.projection;
+
+					this.vertices = GLOW.Geometry.Cube.vertices( 50 );
+					this.elements = GLOW.Geometry.Cube.elements();
+					this.uvs = GLOW.Geometry.Cube.uvs();
+					this.normals = GLOW.Geometry.faceNormals( this.vertices, this.elements );
+					
+				},
 	
 				vertexShader: [
 
-						"uniform	mat4 	transform;",
-						"uniform 	mat4 	cameraInverse;",
-						"uniform 	mat4 	cameraProjection;",
+					"uniform	mat4 	transform;",
+					"uniform 	mat4 	cameraInverse;",
+					"uniform 	mat4 	cameraProjection;",
+					"uniform    float   offset;",
+					"uniform    float   time;",
 
-						"attribute 	vec3 	vertices;",
+					"attribute 	vec3 	vertices;",
+					"attribute  vec3	normals;",
+					
+					"varying 	float	lightWeight;",
 
-						"void main(void)",
-						"{",
-							"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices, 1.0 );",
-						"}"
+					"void main(void)",
+					"{",
+						"vec3 transformedNormal = mat3( transform[ 0 ].xyz, transform[ 1 ].xyz, transform[ 2 ].xyz ) * normals;",
+						"lightWeight = dot( transformedNormal, vec3( 0.0, 1.0, 0.0 ));",
+						"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices * ( sin( time * 5.0 + offset ) * 0.5 + 1.0 ), 1.0 );",
+					"}"
 						
-					].join( "\n" ),
+				].join( "\n" ),
 
 				fragmentShader: [ 	
 
-						"#ifdef GL_ES",
-							"precision highp float;",
-						"#endif",		
+					"#ifdef GL_ES",
+						"precision highp float;",
+					"#endif",		
 
-						"uniform 	sampler2D 	clouds;",
-						"uniform	float		glow;",
-						"uniform	float		time;",
+					"uniform 	sampler2D 	clouds;",
+					"uniform	float		glow;",
+					"uniform	float		time;",
+					"varying 	float		lightWeight;",
 
-						"void main( void )",
-						"{",
-							"gl_FragColor = vec4( sin( glow + time ), cos( glow + time ), sin( glow + time * 2.0 ), 1.0 );",
-						"}"
+					"void main( void )",
+					"{",
+						"gl_FragColor = vec4( sin( glow + time ), cos( glow + time ), sin( glow + time * 2.0 ), 1.0 );",
+					"}"
 
-					].join( "\n" )
+				].join( "\n" )
+			}
+			
+			shaderInfo.setup();
+			
+			
+			
+			var postShaderInfo = {
+				
+				aspect: GLOW.Float( window.innerHeight / window.innerWidth ),
+				cameraProjection: GLOW.defaultCamera.projection,
+				texture: undefined,
+				vertices: GLOW.Geometry.Plane.vertices(),
+				uvs: GLOW.Geometry.Plane.uvs(),
+				elements: GLOW.Geometry.Plane.elements(),
+				
+				vertexShader: [
+
+					"uniform    float   aspect;",
+					"uniform    mat4    cameraProjection;",
+
+					"attribute 	vec3 	vertices;",
+					"attribute  vec2	uvs;",
+					
+					"varying 	vec2	uv;",
+
+					"void main(void)",
+					"{",
+						"uv = uvs;",
+						"gl_Position = vec4( vertices.x, vertices.y, 1.0, 1.0 );",
+					"}"
+						
+				].join( "\n" ),
+
+				fragmentShader: [ 	
+
+					"#ifdef GL_ES",
+						"precision highp float;",
+					"#endif",		
+
+					"uniform 	sampler2D 	texture;",
+					"varying 	vec2		uv;",
+
+					"void main( void )",
+					"{",
+						"gl_FragColor = texture2D( texture, uv );// + vec4( 0.5, 0.0, 0.5, 0.0 );",
+					"}"
+
+				].join( "\n" )
 			}
 		
 		</script>
@@ -93,12 +159,14 @@
 			var container, stats;
 			var mouseX = 0, mouseY = 0;
 			var shaders, topNode, context, t = 0;
+			var postShader;
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
+			var FBO;
 			
 			
-			// init
+			// init cubes
 			
 			context = GLOW.Context();
 			shaders = [];
@@ -107,24 +175,33 @@
 			var thisNode;
 			var prevNode = topNode;
 			
-			for( var a = 0; a < 100; a++ ) {
+			for( var a = 0; a < 10; a++ ) {
 				
 				thisNode = GLOW.Node();
-				thisNode.localMatrix.
-				         setPosition( 0, 70, 0 ).
-						 setRotation( Math.random() * 0.5, Math.random() * 0.5, Math.random() * 0.5 );
-				
-				shaderInfo.transform = thisNode.globalMatrix;
-				shaderInfo.glow      = GLOW.Float( Math.random());
-
-				shaders.push( GLOW.Shader( shaderInfo ));
+				thisNode.localMatrix.setPosition( 50, 50, 0 );
 
 				prevNode.addChild( thisNode );
 				prevNode = thisNode;
+
+				
+				shaderInfo.transform = thisNode.globalMatrix;
+				shaderInfo.glow      = GLOW.Float( Math.random());
+				shaderInfo.offset    = GLOW.Float( a );
+
+				shaders.push( GLOW.Shader( shaderInfo ));
 			}
 			
 			topNode.update();
 			
+			
+			// init post shader
+			
+			postShaderInfo.texture = FBO = GLOW.FBO();
+			postShader = GLOW.Shader( postShaderInfo );
+			
+			
+			
+			// init dom and camera
 			
 			container = document.getElementById( 'container' );
 			container.appendChild( context.domElement );
@@ -153,8 +230,10 @@
 
 				t += 0.01;
 
-				GLOW.defaultCamera.setPosition( Math.sin( t ) * 2000, -mouseY * 250, Math.cos( t ) * 2000 ).update();
+				//GLOW.defaultCamera.setPosition( Math.sin( t ) * 1000, -mouseY * 2000, Math.cos( t ) * 1000 ).update();
 				GLOW.Cache.clear();
+				
+				FBO.bind();
 				context.clear();
 
 				shaders[ 0 ].time.value = t;
@@ -163,6 +242,9 @@
 					
 					shaders[ a ].draw();
 				}
+
+				FBO.unbind();
+				postShader.draw();
 
 				stats.update();
 			}

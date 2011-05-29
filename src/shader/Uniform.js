@@ -92,12 +92,11 @@ GLOW.UniformFunctions = {
 
 	SAMPLER_2D:	function( location, data ) { 
 		
-		if( data.texture !== undefined && !GLOW.Cache.textureCached( data )) {
+		if( data.texture !== undefined && data.textureUnit !== -1 && !GLOW.Cache.textureCached( data )) {
 			
 			GL.uniform1i( location, data.textureUnit ); 
 			GL.activeTexture( GL.TEXTURE0 + data.textureUnit );
 			GL.bindTexture( GL.TEXTURE_2D, data.texture ); 
-			
 		}
 	},
 	

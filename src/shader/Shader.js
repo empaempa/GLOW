@@ -129,7 +129,7 @@ GLOW.Shader = function( _declaration ) {
 					uniformInformation.data           = declaration[ name ];
 					
 					if( uniformInformation.type === GL.SAMPLER_2D ) {
-						uniformInformation.data.load( ++textureUnit );
+						uniformInformation.data.init( ++textureUnit );
 					}
 					
 					declaration[ name ] = uniforms[ name ] = GLOW.Uniform( uniformInformation );

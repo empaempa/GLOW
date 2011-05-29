@@ -7,9 +7,9 @@ GLOW.Texture = function( url ) {
 	texture.textureUnit = -1;
 	texture.texture = undefined;
 
-	//--- load ---
+	//--- init ---
 
-	function load( textureUnit ) {
+	function init( textureUnit ) {
 		
 		texture.textureUnit = textureUnit;
 		texture.image.onload = onLoad;
@@ -39,6 +39,6 @@ GLOW.Texture = function( url ) {
 	
 	//--- public ---
 	
-	texture.load = load;
+	texture.init = init;
 	return texture;
 }

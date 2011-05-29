@@ -51,7 +51,7 @@ GLOW.Context = function( parameters ) {
 
 	enableCulling( false );
 	enableDepthTest( true, { func: GL.LEQUAL, write: true, zNear: 0, zFar: 1 } );
-	enableBlend( true );
+	enableBlend( false );
 	setupClear( { bits: GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT } );
 	clear();
 	
