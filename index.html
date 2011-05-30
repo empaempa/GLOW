@@ -19,13 +19,15 @@
 		<div id="container"></div>
 
 		<script type="text/javascript" src="src/GLOW.js"></script>
+
+		<script type="text/javascript" src="src/math/Float.js"></script>
+		<script type="text/javascript" src="src/math/Int.js"></script>
+		<script type="text/javascript" src="src/math/Vector3.js"></script>
+		<script type="text/javascript" src="src/math/Matrix3.js"></script>
+		<script type="text/javascript" src="src/math/Matrix4.js"></script>
+
 		<script type="text/javascript" src="src/core/Context.js"></script>
 		<script type="text/javascript" src="src/core/FBO.js"></script>
-		<script type="text/javascript" src="src/core/Float.js"></script>
-		<script type="text/javascript" src="src/core/Int.js"></script>
-		<script type="text/javascript" src="src/core/Vector3.js"></script>
-		<script type="text/javascript" src="src/core/Matrix3.js"></script>
-		<script type="text/javascript" src="src/core/Matrix4.js"></script>
 		<script type="text/javascript" src="src/core/Texture.js"></script>
 		<script type="text/javascript" src="src/core/Cache.js"></script>
 		<script type="text/javascript" src="src/core/Camera.js"></script>
@@ -60,7 +62,6 @@
 					this.elements = GLOW.Geometry.Cube.elements();
 					this.uvs = GLOW.Geometry.Cube.uvs();
 					this.normals = GLOW.Geometry.faceNormals( this.vertices, this.elements );
-					
 				},
 	
 				vertexShader: [
