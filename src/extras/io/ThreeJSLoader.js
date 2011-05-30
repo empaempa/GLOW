@@ -1,8 +1,0 @@
-/*
-* 
-*/
-
-GLOW.ThreeJSLoader = function() {
-	
-	
-}
