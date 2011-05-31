@@ -1,111 +1,92 @@
 GLOW.Node = function( shader ) {
 	
-	var node = {};
-	var localMatrix = GLOW.Matrix4();
-	var globalMatrix = GLOW.Matrix4();
-	var viewMatrix = GLOW.Matrix4();
-	var children = [];
-	var position = { x: 0, y: 0, z: 0 };
-	var rotation = { x: 0, y: 0, z: 0 };
-	var scale    = { x: 0, y: 0, z: 0 };
+	"use strict";
 	
+	this.localMatrix  = new GLOW.Matrix4();
+	this.globalMatrix = new GLOW.Matrix4();
+	this.viewMatrix   = new GLOW.Matrix4();
+	
+	this.useXYZStyleTransform = false;
+	this.position = { x: 0, y: 0, z: 0 };
+	this.rotation = { x: 0, y: 0, z: 0 };
+	this.scale    = { x: 1, y: 1, z: 1 };
 
-	//--- update ---
-	
-	function update( parentGlobalMatrix, cameraInverseMatrix ) {
-		
-		if( node.useXYZStyleTransform ) {
-			
-			localMatrix.setPosition( position.x, position.y, position.z );
-			localMatrix.setRotation( rotation.x, rotation.y, rotation.z );
-			localMatrix.scale( scale.x, scale.y, scale.z );
-		}
-		
-		if( parentGlobalMatrix ) {
-
-			globalMatrix.multiply( parentGlobalMatrix, localMatrix );
-
-		} else {
-
-			globalMatrix.copy( localMatrix );
-		}
-		
-		
-		if( cameraInverseMatrix ) {
-			
-			viewMatrix.multiply( cameraInverseMatrix, globalMatrix );
-		}
-		
-
-		var c, cl = children.length;
-
-		for( c = 0; c < cl; c++ ) {
-			
-			children[ c ].update( globalMatrix, cameraInverseMatrix );
-		}
-		
-		return node;
-	}
-	
-	
-	//--- add child ---
-
-	function addChild( child ) {
-		
-		if( children.indexOf( child ) === -1 ) {
-			
-			children.push( child );
-			
-			if( child.parent ) {
-				
-				child.parent.removeChild( child );
-			}
-			
-			child.parent = node;
-		}
-		
-		return node;
-	}
-	
-	
-	//--- remove child ---
-	
-	function removeChild( child ) {
-		
-		var index = children.indexOf( child );
-		
-		if( index !== -1 ) {
-			
-			children.splice( 1, index );
-			child.parent = undefined;
-		}
-		
-		return node;
-	}
-	
-	
-	//--- public ---
+	this.children = [];
+	this.parent   = undefined;
 	
 	if( shader ) {
 		
-		node.shader = shader;
-		node.draw = shader.draw;
+		this.shader = shader;
+		this.draw = shader.draw;
+	}
+}
+
+/* 
+* Prototype
+*/ 
+
+GLOW.Node.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix ) {
+	
+	if( this.useXYZStyleTransform ) {
+		
+		this.localMatrix.setPosition( this.position.x, this.position.y, this.position.z );
+		this.localMatrix.setRotation( this.rotation.x, this.rotation.y, this.rotation.z );
+		this.localMatrix.scale( this.scale.x, this.scale.y, this.scale.z );
 	}
 	
-	node.localMatrix = localMatrix;
-	node.globalMatrix = globalMatrix;
+	if( parentGlobalMatrix ) {
 
-	node.useXYZStyleTransforms = true;
-	node.position = position;
-	node.rotation = rotation;
-	node.scale = scale;
+		this.globalMatrix.multiply( parentGlobalMatrix, this.localMatrix );
 
-	node.update = update;
+	} else {
+
+		this.globalMatrix.copy( this.localMatrix );
+	}
 	
-	node.parent = undefined;
-	node.children = children;
-	node.addChild = addChild;
-	node.removeChild = removeChild;
 	
-	return node;
+	if( cameraInverseMatrix ) {
+		
+		this.viewMatrix.multiply( cameraInverseMatrix, this.globalMatrix );
+	}
+	
+
+	var c, cl = this.children.length;
+
+	for( c = 0; c < cl; c++ ) {
+		
+		this.children[ c ].update( this.globalMatrix, cameraInverseMatrix );
+	}
+	
+	return this;
+}
+
+GLOW.Node.prototype.addChild = function( child ) {
+	
+	if( this.children.indexOf( child ) === -1 ) {
+		
+		this.children.push( child );
+		
+		if( child.parent ) {
+			
+			child.parent.removeChild( child );
+		}
+		
+		child.parent = this;
+	}
+	
+	return this;
+}
+
+
+GLOW.Node.prototype.removeChild = function( child ) {
+	
+	var index = this.children.indexOf( child );
+	
+	if( index !== -1 ) {
+		
+		this.children.splice( 1, index );
+		child.parent = undefined;
+	}
+	
+	return this;
 }

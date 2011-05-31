@@ -1,26 +1,25 @@
 GLOW.Attribute = function( parameters, interleave ) {
 	
-	var attribute = {};
+	"use strict";
 	
-	attribute.isAttribute    = true;
-	attribute.id             = GLOW.uniqueId();
-	attribute.data           = parameters.data;
-	attribute.name           = parameters.name;
-	attribute.type           = parameters.type;
-	attribute.location       = parameters.location;
-	attribute.locationNumber = parameters.locationNumber;
-	attribute.stride         = 0;
-	attribute.offset         = 0;
-	attribute.size           =  GLOW.AttributeSize( parameters.type );
+	this.id             = GLOW.uniqueId();
+	this.data           = parameters.data;
+	this.name           = parameters.name;
+	this.type           = parameters.type;
+	this.location       = parameters.location;
+	this.locationNumber = parameters.locationNumber;
+	this.stride         = 0;
+	this.offset         = 0;
+	this.size           =  GLOW.AttributeSize( parameters.type );
 
 	if( !interleave ) {
 		
-		if( !(attribute.data instanceof Float32Array )) {
+		if( !(this.data instanceof Float32Array )) {
 			
-			var a, al = attribute.data.length; 
-			var s, sl = attribute.size;
+			var a, al = this.data.length; 
+			var s, sl = this.size;
 			var flat = new Float32Array( al * sl );
-			var data = attribute.data;
+			var data = this.data;
 			var i = 0;
 			
 			for( a = 0; a < al; a++ ) {
@@ -31,45 +30,45 @@ GLOW.Attribute = function( parameters, interleave ) {
 				}
 			}
 			
-			attribute.bufferData = flat;
+			this.bufferData = flat;
 			
 		} else {
 			
-			attribute.bufferData = attribute.data;
+			this.bufferData = this.data;
 		}
 
-		attribute.buffer = GL.createBuffer();
-		GL.bindBuffer( GL.ARRAY_BUFFER, attribute.buffer );
-		GL.bufferData( GL.ARRAY_BUFFER, attribute.bufferData, GL.STATIC_DRAW );
+		this.buffer = GL.createBuffer();
+		GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+		GL.bufferData( GL.ARRAY_BUFFER, this.bufferData, GL.STATIC_DRAW );
 
 	}
-
-
-	//--- interleave ---
-	
-	attribute.interleave = function( float32array, stride, offset ) {
-		
-		attribute.stride = stride;
-		attribute.offset = offset;
-		
-		// TODO
-	}
-
-
-	//--- bind ---
-	
-	attribute.bind = function() {
-		
-		if( !GLOW.Cache.attributeCached( attribute )) {
-			
-			GL.bindBuffer( GL.ARRAY_BUFFER, attribute.buffer );
-			GL.vertexAttribPointer( attribute.location, attribute.size, GL.FLOAT, false, attribute.stride, attribute.offset );
-		}
-	}
-	
-	return attribute;
 }
 
+/*
+* Prototype
+*/
+
+GLOW.Attribute.prototype.interleave = function( float32array, stride, offset ) {
+	
+	this.stride = stride;
+	this.offset = offset;
+	
+	// TODO
+}
+
+GLOW.Attribute.prototype.bind = function() {
+	
+	if( !GLOW.currentContext.cache.attributeCached( this )) {
+		
+		GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+		GL.vertexAttribPointer( this.location, this.size, GL.FLOAT, false, this.stride, this.offset );
+	}
+}
+
+
+/*
+* Attribute Size
+*/
 
 GLOW.AttributeSize = function( type ) { 
 	

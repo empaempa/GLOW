@@ -4,61 +4,58 @@
 
 GLOW.Uniform = function( parameters ) {
 	
-	var uniform = {};
+	"use strict";
 	
-	uniform.isUniform      = true;
-	uniform.id             = GLOW.uniqueId();
-	uniform.data           = parameters.data;
-	uniform.name           = parameters.name;
-	uniform.length         = parameters.length;
-	uniform.type           = parameters.type;
-	uniform.location       = parameters.location;
-	uniform.locationNumber = parameters.locationNumber;
+	this.id             = GLOW.uniqueId();
+	this.data           = parameters.data;
+	this.name           = parameters.name;
+	this.length         = parameters.length;
+	this.type           = parameters.type;
+	this.location       = parameters.location;
+	this.locationNumber = parameters.locationNumber;
 	
 	
 	// set set-function
 	
 	var isArray;
 	
-	if( uniform.length && uniform.length > 1 ) {
+	if( this.length && this.length > 1 ) {
 		isArray = "_A";
 	} else {
 		isArray = "";
 	}
 	
-	switch( uniform.type ) {
+	switch( this.type ) {
 		
-		case GL.INT:      uniform.uniformFunction = GLOW.UniformFunctions[ "INT"      + isArray ]; break;
-		case GL.INT_VEC2: uniform.uniformFunction = GLOW.UniformFunctions[ "INT_VEC2" + isArray ]; break;
-		case GL.INT_VEC3: uniform.uniformFunction = GLOW.UniformFunctions[ "INT_VEC3" + isArray ]; break;
-		case GL.INT_VEC4: uniform.uniformFunction = GLOW.UniformFunctions[ "INT_VEC4" + isArray ]; break;
+		case GL.INT:      this.uniformFunction = GLOW.UniformFunctions[ "INT"      + isArray ]; break;
+		case GL.INT_VEC2: this.uniformFunction = GLOW.UniformFunctions[ "INT_VEC2" + isArray ]; break;
+		case GL.INT_VEC3: this.uniformFunction = GLOW.UniformFunctions[ "INT_VEC3" + isArray ]; break;
+		case GL.INT_VEC4: this.uniformFunction = GLOW.UniformFunctions[ "INT_VEC4" + isArray ]; break;
 		
-		case GL.FLOAT:      uniform.uniformFunction = GLOW.UniformFunctions[ "FLOAT"      + isArray ]; break;
-		case GL.FLOAT_VEC2: uniform.uniformFunction = GLOW.UniformFunctions[ "FLOAT_VEC2" + isArray ]; break;
-		case GL.FLOAT_VEC3: uniform.uniformFunction = GLOW.UniformFunctions[ "FLOAT_VEC3" + isArray ]; break;
-		case GL.FLOAT_VEC4: uniform.uniformFunction = GLOW.UniformFunctions[ "FLOAT_VEC4" + isArray ]; break;
+		case GL.FLOAT:      this.uniformFunction = GLOW.UniformFunctions[ "FLOAT"      + isArray ]; break;
+		case GL.FLOAT_VEC2: this.uniformFunction = GLOW.UniformFunctions[ "FLOAT_VEC2" + isArray ]; break;
+		case GL.FLOAT_VEC3: this.uniformFunction = GLOW.UniformFunctions[ "FLOAT_VEC3" + isArray ]; break;
+		case GL.FLOAT_VEC4: this.uniformFunction = GLOW.UniformFunctions[ "FLOAT_VEC4" + isArray ]; break;
 
-		case GL.FLOAT_MAT2: uniform.uniformFunction = GLOW.UniformFunctions[ "FLOAT_MAT2" ]; break;
-		case GL.FLOAT_MAT3: uniform.uniformFunction = GLOW.UniformFunctions[ "FLOAT_MAT3" ]; break;
-		case GL.FLOAT_MAT4: uniform.uniformFunction = GLOW.UniformFunctions[ "FLOAT_MAT4" ]; break;
+		case GL.FLOAT_MAT2: this.uniformFunction = GLOW.UniformFunctions[ "FLOAT_MAT2" ]; break;
+		case GL.FLOAT_MAT3: this.uniformFunction = GLOW.UniformFunctions[ "FLOAT_MAT3" ]; break;
+		case GL.FLOAT_MAT4: this.uniformFunction = GLOW.UniformFunctions[ "FLOAT_MAT4" ]; break;
 		
-		case GL.SAMPLER_2D:   uniform.uniformFunction = GLOW.UniformFunctions[ "SAMPLER_2D"   + isArray ]; break;
-		case GL.SAMPLER_CUBE: uniform.uniformFunction = GLOW.UniformFunctions[ "SAMPLER_CUBE" + isArray ]; break;
+		case GL.SAMPLER_2D:   this.uniformFunction = GLOW.UniformFunctions[ "SAMPLER_2D"   + isArray ]; break;
+		case GL.SAMPLER_CUBE: this.uniformFunction = GLOW.UniformFunctions[ "SAMPLER_CUBE" + isArray ]; break;
 		
 	}
+}
 
+/*
+* Prototype
+*/
 
-	//--- set ---
+GLOW.Uniform.prototype.set = function() {
 	
-	uniform.set = function() {
-		
-		if( !GLOW.Cache.uniformCached( uniform )) {
-			uniform.uniformFunction( uniform.location, uniform.data );
-		}
+	if( !GLOW.currentContext.cache.uniformCached( this )) {
+		this.uniformFunction( this.location, this.data );
 	}
-	
-	return uniform;
-
 }
 
 
@@ -92,7 +89,7 @@ GLOW.UniformFunctions = {
 
 	SAMPLER_2D:	function( location, data ) { 
 		
-		if( data.texture !== undefined && data.textureUnit !== -1 && !GLOW.Cache.textureCached( data )) {
+		if( data.texture !== undefined && data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( data )) {
 			
 			GL.uniform1i( location, data.textureUnit ); 
 			GL.activeTexture( GL.TEXTURE0 + data.textureUnit );

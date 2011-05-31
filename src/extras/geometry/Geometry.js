@@ -36,10 +36,10 @@ GLOW.Geometry = {
 		var normals = new Float32Array( vertices.length );
 		var e, el = elements.length;
 		var a, b, c;
-		var av = GLOW.Vector3();
-		var bv = GLOW.Vector3();
-		var cv = GLOW.Vector3();
-		var nv = GLOW.Vector3();
+		var av = new GLOW.Vector3();
+		var bv = new GLOW.Vector3();
+		var cv = new GLOW.Vector3();
+		var nv = new GLOW.Vector3();
 	
 		for( e = 0; e < el; ) {
 			

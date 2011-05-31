@@ -4,57 +4,57 @@
 
 var GLOW = (function() {
 	
-	var that = {}; 
+	var glow = {}; 
 	var contexts = {};
 	var uniqueIdCounter = -1;
 
-	that.currentContext = {};
+	glow.currentContext = {};
 
 
 	//--- register context ---
 
-	that.registerContext = function( context ) {
+	glow.registerContext = function( context ) {
 		
 		contexts[ context.id ] = context;
-		that.enableContext( context );
+		glow.enableContext( context );
 	};
 	
 	
 	//--- get context by id ---
 	
-	that.getContextById = function( id ) {
+	glow.getContextById = function( id ) {
 		
 		if( contexts[ id ] ) {
 			
 			return contexts[ id ];
 		}
 			
-		console.error( "Couldn't find context id " + id + ", returning current with id " + that.currentContext.id );
-		return that.currentContext;
+		console.error( "Couldn't find context id " + id + ", returning current with id " + glow.currentContext.id );
+		return glow.currentContext;
 	};
 
 
 	//--- enable context ---
 
-	that.enableContext = function( contextOrId ) {
+	glow.enableContext = function( contextOrId ) {
 		
 		if( typeof( contextOrId ) === 'string' ) {
 			
-			that.currentContext = getContextById[ contextOrId ];
+			glow.currentContext = getContextById[ contextOrId ];
 			
 		} else {
 			
-			that.currentContext = contextOrId;
+			glow.currentContext = contextOrId;
 		}
 		
-		GL = that.GL = that.currentContext.GL;
+		GL = glow.GL = glow.currentContext.GL;
 	
 	}
 
 
 	//--- unique id ---
 	
-	that.uniqueId = function() {
+	glow.uniqueId = function() {
 		
 		return ++uniqueIdCounter;
 	}
@@ -62,7 +62,7 @@ var GLOW = (function() {
 
 	//--- return public ---
 
-	return that;
+	return glow;
 	
 }());
 

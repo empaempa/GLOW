@@ -1,9 +1,10 @@
 GLOW.FBO = function( width, height, parameters ) {
 	
-	FBO = {};
+	"use strict";
 	
-	width  = width  !== undefined ? width  : window.innerWidth;
-	height = height !== undefined ? height : window.innerHeight;
+	this.id     = GLOW.uniqueId();
+	this.width  = width  !== undefined ? width  : window.innerWidth;
+	this.height = height !== undefined ? height : window.innerHeight;
 	
 	parameters = parameters !== undefined ? parameters : {};
 
@@ -15,34 +16,35 @@ GLOW.FBO = function( width, height, parameters ) {
 	var depth     = parameters.depth     !== undefined ? parameters.depth     : true;
 	var stencil   = parameters.stencil   !== undefined ? paramaters.stencil   : false;
 
-	var frameBuffer  = GL.createFramebuffer();
-	var renderBuffer = GL.createRenderbuffer();
-	var texture      = GL.createTexture();
-	var viewport     = { x: 0, y: 0, width: width, height: height };
+	this.frameBuffer  = GL.createFramebuffer();
+	this.renderBuffer = GL.createRenderbuffer();
+	this.texture      = GL.createTexture();
+	this.textureUnit  = -1;
+	this.viewport     = { x: 0, y: 0, width: this.width, height: this.height };
 
 	try {
 		
 		// setup texture
 
-		GL.bindTexture( GL.TEXTURE_2D, texture );
+		GL.bindTexture( GL.TEXTURE_2D, this.texture );
 		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, wrapS );
 		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, wrapT );
 		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, magFilter );
 		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, minFilter );
-		GL.texImage2D( GL.TEXTURE_2D, 0, format, width, height, 0, format, GL.UNSIGNED_BYTE, null );
+		GL.texImage2D( GL.TEXTURE_2D, 0, format, this.width, this.height, 0, format, GL.UNSIGNED_BYTE, null );
 
 
 		// setup buffers
 
-		GL.bindRenderbuffer( GL.RENDERBUFFER, renderBuffer );
-		GL.bindFramebuffer( GL.FRAMEBUFFER, frameBuffer );
+		GL.bindRenderbuffer( GL.RENDERBUFFER, this.renderBuffer );
+		GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
 
-		GL.framebufferTexture2D( GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, texture, 0 );
+		GL.framebufferTexture2D( GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, this.texture, 0 );
 
 		if( depth && !stencil ) {
 
-			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_COMPONENT16, width, height );
-			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, renderBuffer );
+			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_COMPONENT16, this.width, this.height );
+			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
 
 		/* For some reason combination !depth and stencil is not working. Defaulting to RGBA4.	
 		} else if( !renderTexture.depthBuffer && renderTexture.stencilBuffer ) {
@@ -52,12 +54,12 @@ GLOW.FBO = function( width, height, parameters ) {
 		*/
 		} else if( depth && stencil ) {
 
-			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_STENCIL, width, height );
-			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, renderBuffer );
+			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_STENCIL, this.width, this.height );
+			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
 
 		} else {
 
-			GL.renderbufferStorage( GL.RENDERBUFFER, GL.RGBA4, width, height );
+			GL.renderbufferStorage( GL.RENDERBUFFER, GL.RGBA4, this.width, this.height );
 		}
 
 		// release
@@ -71,82 +73,61 @@ GLOW.FBO = function( width, height, parameters ) {
 		console.error( "GLOW.FBO.construct: " + error );
 		return;
 	}
+}
 
+/*
+* Prototypes
+*/
 
-	//--- init ---
+GLOW.FBO.prototype.init = function( textureUnit ) {
 	
-	function init( textureUnit ) {
-		
-		FBO.textureUnit = textureUnit;
-	}
+	this.textureUnit = textureUnit;
+}
 
 
-	//--- bind ---
+GLOW.FBO.prototype.bind = function() {
 	
-	function bind() {
-		
-		GL.bindFramebuffer( GL.FRAMEBUFFER, frameBuffer );
-		GL.viewport( viewport.x, viewport.y, viewport.width, viewport.height );
-		
-		return FBO;
-	}
+	// TODO: add cache
 	
+	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
 	
-	//--- unbind ---
+	return this;
+}
 
-	function unbind() {
-		
-		GL.bindFramebuffer( GL.FRAMEBUFFER, null );
-		GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
-		
-		return FBO;
-	}
 
-	//--- set viewport ---
+GLOW.FBO.prototype.unbind = function() {
 	
-	function setupViewport( x, y, w, h ) {
-		
-		viewport.x = x;
-		viewport.y = y;
-		viewport.width = w;
-		viewport.height = h;
-		
-		return FBO;
-	}
-
-
-	//--- resize ---
+	// TODO: add cache
 	
-	function resize() {
-		
-		// TODO
-		
-		return FBO;
-	}
+	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
+	GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
 	
-	//--- generate mip maps ---
+	return this;
+}
+
+GLOW.FBO.prototype.setupViewport = function( setup ) {
 	
-	function generateMipMaps() {
+	this.viewport.x = setup.x !== undefined ? setup.x : 0;
+	this.viewport.y = setup.y !== undefined ? setup.y : 0;
+	this.viewport.width = setup.width !== undefined ? setup.width : window.innerWidth;
+	this.viewport.height = setup.height !== undefined ? setup.height : window.innerHeight;
+	
+	return this;
+}
 
-		GL.bindTexture( GL.TEXTURE_2D, texture );
-		GL.generateMipmap( GL.TEXTURE_2D );
-		GL.bindTexture( GL.TEXTURE_2D, null );
-		
-		return FBO;
-	}
+GLOW.FBO.prototype.resize = function() {
+	
+	// TODO
+	
+	return this;
+}
 
+GLOW.FBO.prototype.generateMipMaps = function() {
 
-	//--- public ---
-
-	FBO.id = GLOW.uniqueId();
-	FBO.texture = texture;
-	FBO.textureUnit = -1;
-	FBO.viewport = viewport;
-	FBO.init = init;
-	FBO.bind = bind;
-	FBO.unbind = unbind;
-	FBO.resize = resize;
-	FBO.generateMipMaps = generateMipMaps;
-
-	return FBO;
+	GL.bindTexture( GL.TEXTURE_2D, this.texture );
+	GL.generateMipmap( GL.TEXTURE_2D );
+	GL.bindTexture( GL.TEXTURE_2D, null );
+	
+	return this;
 }

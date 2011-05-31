@@ -1,93 +1,78 @@
 /*
 * Cache
+* @author: Mikael Emtinger, gomo.se
 */
 
-GLOW.Cache = (function() {
+GLOW.Cache = function() {
 	
-	var cache = {};
-	var highestAttributeNumber = -1;
-	var uniformByLocation = [];
-	var attributeByLocation = [];
-	var textureByLocation = [];
-	var elementId = -1;
-	var programId = -1;
+	"use strict";
+	this.highestAttributeNumber = -1;
+	this.uniformByLocation = [];
+	this.attributeByLocation = [];
+	this.textureByLocation = [];
+	this.elementId = -1;
+	this.programId = -1;
+}
+
+
+/*
+* Prototypes
+*/
+
+GLOW.Cache.prototype.programCached = function( program ) {
 	
-
-	//--- program cache --
+	if( program.id === this.programId ) return true;
 	
-	cache.programCached = function( program ) {
-		
-		if( program.id === programId ) return true;
-		
-		programId = program.id;
-		return false;
-	}
+	this.programId = program.id;
+	return false;
+}
 
-	cache.setProgramHighestAttributeNumber = function( program ) {
-		
-		var saveHighestAttributeNumber = highestAttributeNumber;
-		highestAttributeNumber = program.highestAttributeNumber;
-		
-		return program.highestAttributeNumber - saveHighestAttributeNumber;
-	}
- 
-
-	//--- uniform cache ---
+GLOW.Cache.prototype.setProgramHighestAttributeNumber = function( program ) {
 	
-	cache.uniformCached = function( uniform ) {
-		
-		if( uniformByLocation[ uniform.locationNumber ] === uniform.id ) return true;
-		
-		uniformByLocation[ uniform.locationNumber ] = uniform.id
-		return false;
-	}
-
-
-	//--- attribute cached ---
+	var saveHighestAttributeNumber = this.highestAttributeNumber;
+	this.highestAttributeNumber = program.highestAttributeNumber;
 	
-	cache.attributeCached = function( attribute ) {
-		
-		if( attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
-		
-		attributeByLocation[ attribute.locationNumber ] = attribute.id
-		return false;
-	}
+	return program.highestAttributeNumber - saveHighestAttributeNumber;
+}
 
-
-	//--- texture cached ---
+GLOW.Cache.prototype.uniformCached = function( uniform ) {
 	
-	cache.textureCached = function( texture ) {
-
-		if( textureByLocation[ texture.textureUnit ] === texture.id ) return true;
-		
-		textureByLocation[ texture.textureUnit ] = texture.id
-		return false;
-	}
-
-
-	//--- elements cached ---
+	if( this.uniformByLocation[ uniform.locationNumber ] === uniform.id ) return true;
 	
-	cache.elementsCached = function( elements ) {
-		
-		if( elements.id === elementId ) return true;
-		
-		elementId = elements.id;
-		return false;
-	}
- 
+	this.uniformByLocation[ uniform.locationNumber ] = uniform.id
+	return false;
+}
 
-	//--- clear ---
+GLOW.Cache.prototype.attributeCached = function( attribute ) {
 	
-	cache.clear = function() {
+	if( this.attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
+	
+	this.attributeByLocation[ attribute.locationNumber ] = attribute.id
+	return false;
+}
 
-		highestAttributeNumber = -1;
-		uniformByLocation.length = 0;
-		attributeByLocation.length = 0;
-		textureByLocation.length = 0;
-		elementId = -1;
-		programId = -1;
-	}
+GLOW.Cache.prototype.textureCached = function( texture ) {
+
+	if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
 	
-	return cache;
+	this.textureByLocation[ texture.textureUnit ] = texture.id
+	return false;
+}
+
+GLOW.Cache.prototype.elementsCached = function( elements ) {
 	
-}());
+	if( elements.id === this.elementId ) return true;
+	
+	this.elementId = elements.id;
+	return false;
+}
+
+GLOW.Cache.prototype.clear = function() {
+
+	this.highestAttributeNumber = -1;
+	this.uniformByLocation.length = 0;
+	this.attributeByLocation.length = 0;
+	this.textureByLocation.length = 0;
+	this.elementId = -1;
+	this.programId = -1;
+}

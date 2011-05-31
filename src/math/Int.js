@@ -1,7 +1,5 @@
 GLOW.Int = function( value ) {
-	
-	var that = {};
-	that.value = value !== undefined ? value : 0;
-	
-	return that;
+
+	"use strict";
+	this.value = value !== undefined ? value : 0;
 }

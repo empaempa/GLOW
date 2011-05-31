@@ -49,12 +49,12 @@
 				
 				setup: function() {
 					
-					this.clouds = GLOW.Texture( "examples/textures/clouds.jpg" );
+					this.clouds = new GLOW.Texture( "examples/textures/clouds.jpg" );
 
-					this.time = GLOW.Float();
-					this.pulse = GLOW.Float();
-					this.offset = GLOW.Float();
-					this.transform = GLOW.Matrix4();
+					this.time = new GLOW.Float();
+					this.pulse = new GLOW.Float();
+					this.offset = new GLOW.Float();
+					this.transform = new GLOW.Matrix4();
 					this.cameraInverse = GLOW.defaultCamera.inverse;
 					this.cameraProjection = GLOW.defaultCamera.projection;
 
@@ -166,16 +166,16 @@
 			
 			// init cubes
 			
-			context = GLOW.Context();
+			context = new GLOW.Context();
+			topNode = new GLOW.Node();
 			shaders = [];
-			topNode = GLOW.Node();
 			
 			var thisNode;
 			var prevNode = topNode;
 			
 			for( var a = 0; a < 1000; a++ ) {
 				
-				thisNode = GLOW.Node();
+				thisNode = new GLOW.Node();
 				thisNode.localMatrix.setPosition( 0, 50, 0 ).setRotation( Math.random()*0.5, Math.random()*0.5, Math.random()*0.5 );
 
 				prevNode.addChild( thisNode );
@@ -183,10 +183,10 @@
 
 				
 				shaderInfo.transform = thisNode.globalMatrix;
-				shaderInfo.glow      = GLOW.Float( Math.random());
-				shaderInfo.offset    = GLOW.Float( a );
+				shaderInfo.glow      = new GLOW.Float( Math.random());
+				shaderInfo.offset    = new GLOW.Float( a );
 
-				shaders.push( GLOW.Shader( shaderInfo ));
+				shaders.push( new GLOW.Shader( shaderInfo ));
 			}
 			
 			topNode.update();
@@ -194,9 +194,8 @@
 			
 			// init post shader
 			
-			postShaderInfo.fboTexture = FBO = GLOW.FBO();
-			postShader = GLOW.Shader( postShaderInfo );
-			
+			postShaderInfo.fboTexture = FBO = new GLOW.FBO();
+			postShader = new GLOW.Shader( postShaderInfo );
 			
 			
 			// init dom and camera
@@ -226,8 +225,8 @@
 				t += 0.01;
 
 				GLOW.defaultCamera.setPosition( Math.sin( t ) * 3000, -mouseY * 1000, Math.cos( t ) * 3000 ).update();
-				GLOW.Cache.clear();
 				
+				context.cache.clear();
 				FBO.bind();
 				context.clear();
 
@@ -253,7 +252,6 @@
 
 				mouseX = ( event.clientX - windowHalfX ) / windowHalfX * 2; 
 				mouseY = ( event.clientY - windowHalfY ) / windowHalfY * 2;
-
 			}
 		</script>
 	</body>
