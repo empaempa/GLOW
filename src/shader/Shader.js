@@ -18,7 +18,7 @@ GLOW.Shader = function( parameters ) {
 	if( parameters.use ) {
 		this.compiledData = parameters.use.clone( parameters.except );
 	} else {
-		this.compiledData = GLOW.Compiler.compile( parameters.vertexShader, parameters.fragmentShader, parameters.data, parameters.elements );
+		this.compiledData = GLOW.Compiler.compile( parameters.vertexShader, parameters.fragmentShader, parameters.data );
 	}
 	
 	this.attachData();
@@ -27,7 +27,6 @@ GLOW.Shader = function( parameters ) {
 /*
 * Prototype
 */
-
 
 GLOW.Shader.prototype.attachData = function() {
 	
@@ -93,6 +92,11 @@ GLOW.Shader.prototype.draw = function() {
 	}
 	
 	compiledData.elements.draw();
+}
+
+GLOW.Shader.prototype.clone = function( except ) {
+	
+	return new GLOW.Shader( { use: this.compiledData, except: except } );
 }
 
 

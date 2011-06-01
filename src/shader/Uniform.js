@@ -25,6 +25,8 @@ GLOW.Uniform = function( parameters, data ) {
 		isArray = "";
 	}
 	
+	// TODO: support other types of data than GLOW.Matrix/Vector
+	
 	switch( this.type ) {
 		
 		case GL.INT:      this.uniformFunction = GLOW.UniformFunctions[ "INT"      + isArray ]; break;

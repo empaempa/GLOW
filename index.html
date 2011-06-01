@@ -18,33 +18,35 @@
 	<body>
 		<div id="container"></div>
 
-		<script type="text/javascript" src="src/GLOW.js"></script>
+		<script type="text/javascript" src="build/GLOW.js"></script>
 
-		<script type="text/javascript" src="src/math/Float.js"></script>
-		<script type="text/javascript" src="src/math/Int.js"></script>
-		<script type="text/javascript" src="src/math/Vector3.js"></script>
-		<script type="text/javascript" src="src/math/Matrix3.js"></script>
-		<script type="text/javascript" src="src/math/Matrix4.js"></script>
-
-		<script type="text/javascript" src="src/core/Context.js"></script>
+<!--		<script type="text/javascript" src="src/core/Context.js"></script>
 		<script type="text/javascript" src="src/core/Compiler.js"></script>
 		<script type="text/javascript" src="src/core/CompiledData.js"></script>
 		<script type="text/javascript" src="src/core/FBO.js"></script>
 		<script type="text/javascript" src="src/core/Texture.js"></script>
 		<script type="text/javascript" src="src/core/Cache.js"></script>
-		<script type="text/javascript" src="src/core/Camera.js"></script>
 		
 		<script type="text/javascript" src="src/shader/Shader.js"></script>
 		<script type="text/javascript" src="src/shader/Elements.js"></script>
 		<script type="text/javascript" src="src/shader/Uniform.js"></script>
 		<script type="text/javascript" src="src/shader/Attribute.js"></script>
 
+		<script type="text/javascript" src="src/extras/math/Float.js"></script>
+		<script type="text/javascript" src="src/extras/math/Int.js"></script>
+		<script type="text/javascript" src="src/extras/math/Vector3.js"></script>
+		<script type="text/javascript" src="src/extras/math/Matrix3.js"></script>
+		<script type="text/javascript" src="src/extras/math/Matrix4.js"></script>
+
+		<script type="text/javascript" src="src/extras/graph/Node.js"></script>
+		<script type="text/javascript" src="src/extras/graph/Camera.js"></script>
+
 		<script type="text/javascript" src="src/extras/geometry/Geometry.js"></script>
 		<script type="text/javascript" src="src/extras/geometry/Cube.js"></script>
 		<script type="text/javascript" src="src/extras/geometry/Plane.js"></script>
-		<script type="text/javascript" src="src/extras/graph/Node.js"></script>
 
-		<script type="text/javascript" src="examples/js/Stats.js"></script>
+-->
+		<script type="text/javascript" src="examples/external/Stats.js"></script>
 
 		<script type="text/javascript">
 		
@@ -61,6 +63,8 @@
 				uvs: GLOW.Geometry.Cube.uvs(),
 				normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices( 50 ), GLOW.Geometry.Cube.elements()),
 				elements: GLOW.Geometry.Cube.elements(),
+
+				interleave: [[ "vertices", "uvs", "normals" ]],
 	
 				vertexShader: [
 
@@ -169,7 +173,7 @@
 			var thisNode;
 			var prevNode = topNode;
 			
-			for( var a = 0; a < 5000; a++ ) {
+			for( var a = 0; a < 100; a++ ) {
 				
 				thisNode = new GLOW.Node();
 				thisNode.localMatrix.setPosition( 0, 50, 0 ).setRotation( Math.random()*0.5, Math.random()*0.5, Math.random()*0.5 );
@@ -202,7 +206,7 @@
 			container = document.getElementById( 'container' );
 			container.appendChild( context.domElement );
 			
-			GLOW.defaultCamera.setPosition( 0, 0, 1500 );
+			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 1500 );
 			GLOW.defaultCamera.update();
 			
 			
@@ -223,7 +227,8 @@
 
 				t += 0.01;
 
-				GLOW.defaultCamera.setPosition( Math.sin( t ) * 3000, -mouseY * 1000, Math.cos( t ) * 3000 ).update();
+				GLOW.defaultCamera.localMatrix.setPosition( Math.sin( t ) * 3000, -mouseY * 1000, Math.cos( t ) * 3000 );
+				GLOW.defaultCamera.update();
 				
 				context.cache.clear();
 				FBO.bind();

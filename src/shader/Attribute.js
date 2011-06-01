@@ -11,6 +11,7 @@ GLOW.Attribute = function( parameters, data, interleave ) {
 	this.offset         = 0;
 	this.size           = GLOW.AttributeSize( parameters.type );
 	this.data           = data;
+	this.buffer         = GL.createBuffer();
 
 	if( !interleave ) {
 		
@@ -30,16 +31,12 @@ GLOW.Attribute = function( parameters, data, interleave ) {
 				}
 			}
 			
-			this.bufferData = flat;
+			this.setData( flat );
 			
 		} else {
 			
-			this.bufferData = this.data;
+			this.setData( this.data );
 		}
-
-		this.buffer = GL.createBuffer();
-		GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
-		GL.bufferData( GL.ARRAY_BUFFER, this.bufferData, GL.STATIC_DRAW );
 	}
 }
 
@@ -53,6 +50,14 @@ GLOW.Attribute.prototype.interleave = function( float32array, stride, offset ) {
 	this.offset = offset;
 	
 	// TODO
+}
+
+GLOW.Attribute.prototype.setData = function( data ) {
+	
+	this.data = data;
+	
+	GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+	GL.bufferData( GL.ARRAY_BUFFER, this.data, GL.STATIC_DRAW );
 }
 
 GLOW.Attribute.prototype.bind = function() {

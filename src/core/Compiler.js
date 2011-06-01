@@ -1,3 +1,9 @@
+/*
+* GLOW.Compiler
+* @author: Mikael Emtinger, gomo.se
+* Compiles vertex- and fragementshader, uniforms, attributes and elements into a GLOW.CompiledData
+*/
+
 GLOW.Compiler = (function() {
 	
 	"use strict";
@@ -8,9 +14,9 @@ GLOW.Compiler = (function() {
 	//--- compile ------------------------------------------
 	// vertexShaderCode = string, the vertex shader code
 	// fragmentShaderCode = string, the framgnet shader code
-	// data = object, for example { transform: GLOW.Matrix4 }
+	// data = object, for example { transform: GLOW.Matrix4, elements: [ 0, 1, 2... ] }
 	
-	compiler.compile = function( vertexShaderCode, fragmentShaderCode, data, elements ) {
+	compiler.compile = function( vertexShaderCode, fragmentShaderCode, data ) {
 		
 		var c, cl = compiledCode.length;
 		var code;
@@ -39,9 +45,9 @@ GLOW.Compiler = (function() {
 		}
 		
 		return new GLOW.CompiledData( program, 
-			                          compiler.extractAndCreateUniforms  ( program, data ),
-			                          compiler.extractAndCreateAttributes( program, data ),
-			                          compiler.createElements            ( elements ));
+			                          compiler.createUniforms  ( compiler.extractUniforms  ( program ), data ),
+			                          compiler.createAttributes( compiler.extractAttributes( program ), data ),
+			                          compiler.createElements  ( data.elements ));
 	}
 
 
@@ -109,88 +115,126 @@ GLOW.Compiler = (function() {
 	}
 	
 	
-	//--- extract and create uniforms ---
+	//--- extract uniforms ---
 
-	compiler.extractAndCreateUniforms = function( program, data ) {
+	compiler.extractUniforms = function( program ) {
 
 		var uniforms = {};
-		var information, name;
-		var locationNumber = 0, textureUnit = 0;
+		var uniform;
+		var locationNumber = 0;
 
 		while( true ) {
 
-			information = GL.getActiveUniform( program, locationNumber );
+			uniform = GL.getActiveUniform( program, locationNumber );
 
-			if( information !== null && information !== -1 && information !== undefined ) {
+			if( uniform !== null && uniform !== -1 && uniform !== undefined ) {
 
-				name = information.name.split( "[" )[ 0 ];
+				uniform.name           = uniform.name.split( "[" )[ 0 ];
+				uniform.location       = GL.getUniformLocation( program, uniform.name );
+				uniform.locationNumber = locationNumber;
+			
+				uniforms[ uniform.name ] = uniform;
+			
+			} else break;
 
-				if( data[ name ] === undefined ) {
+			locationNumber++;
+		}
 
-					console.warn( "GLOW.Compiler.extractAndCreateUniforms: missing declaration for uniform " + name );
+		return uniforms;
+	}
 
-				} else if( data[ name ] instanceof GLOW.Uniform ) {
 
-					uniforms[ name ] = data[ name ];
+	//--- extract attributes ---
+	
+	compiler.extractAttributes = function( program ) {
 
-				} else {
+		var attribute, locationNumber = 0;
+		var attributes = {};
 
-					information.location       = GL.getUniformLocation( program, name );
-					information.locationNumber = locationNumber;
+		while( true ) {
 
-					uniforms[ name ] = new GLOW.Uniform( information, data[ name ] );
+			attribute = GL.getActiveAttrib( program, locationNumber );
 
-					if( uniforms[ name ].type === GL.SAMPLER_2D ) {
-						uniforms[ name ].data.init( textureUnit++ );
-					}
-				}
+			if( attribute !== null && attribute !== -1 && attribute !== undefined ) {
 
-				locationNumber++;
+				attribute.location       = GL.getAttribLocation( program, attribute.name );
+				attribute.locationNumber = locationNumber;
+				
+				attributes[ attribute.name ] = attribute;
 
 			} else break;
+
+			locationNumber++;
+		}
+
+		program.highestAttributeNumber = locationNumber - 1;
+		return attributes;
+	}
+	
+
+	//--- create uniforms ---
+
+	compiler.createUniforms = function( uniformInformation, data ) {
+
+		var u;
+		var uniforms = {};
+		var uniform, name;
+		var textureUnit = 0;
+
+		for( u in uniformInformation ) {
+			
+			uniform = uniformInformation[ u ];
+			name    = uniform.name;
+			
+			if( data[ name ] === undefined ) {
+
+				console.warn( "GLOW.Compiler.createUniforms: missing declaration for uniform " + name );
+
+			} else if( data[ name ] instanceof GLOW.Uniform ) {
+
+				uniforms[ name ] = data[ name ];
+
+			} else {
+
+				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
+
+				if( uniforms[ name ].type === GL.SAMPLER_2D ) {
+					uniforms[ name ].data.init( textureUnit++ );
+				}
+			}
 		}
 		
 		return uniforms;
 	}
 
 
-	//--- extract and create attributes ---
+	//--- create attributes ---
 
-	compiler.extractAndCreateAttributes = function( program, data ) {
+	compiler.createAttributes = function( attributeInformation, data ) {
 
-		var information, name, locationNumber = 0;
+		var a;
+		var attribute, name;
 		var attributes = {};
 
-		while( true ) {
+		for( a in attributeInformation ) {
 
-			information = GL.getActiveAttrib( program, locationNumber );
+			attribute = attributeInformation[ a ];
+			name      = attribute.name;
+			
+			if( data[ name ] === undefined ) {
 
-			if( information !== null && information !== -1 && information !== undefined ) {
+				console.warning( "GLOW.Compiler.createAttributes: missing declaration for attribute " + name );
 
-				name = information.name;
+			} else if( data[ name ] instanceof GLOW.Attribute ) {
 
-				if( data[ name ] === undefined ) {
+				attributes[ name ] = data[ name ];
 
-					console.warning( "GLOW.Compiler.extractAndCreateAttributes: missing declaration for attribute " + name );
+			} else {
 
-				} else if( data[ name ] instanceof GLOW.Attribute ) {
-
-					attributes[ name ] = data[ name ];
-
-				} else {
-
-					information.location       = GL.getAttribLocation( program, name );
-					information.locationNumber = locationNumber;
-
-					attributes[ name ] = new GLOW.Attribute( information, data[ name ] );
-				}
-
-				locationNumber++;
-
-			} else break;
+				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ] );
+			}
 		}
 
-		program.highestAttributeNumber = locationNumber - 1;
 		return attributes;
 	}
 	
@@ -206,7 +250,7 @@ GLOW.Compiler = (function() {
 			console.error( "GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting." );
 			return;
 
-		} else if( data instanceof WebGLBuffer ) {
+		} else if( data instanceof GLOW.Elements ) {
 
 			elements = data;
 
@@ -222,7 +266,6 @@ GLOW.Compiler = (function() {
 
 		return elements;
 	}
-	
 	
 	return compiler;
 	

@@ -1,3 +1,8 @@
+/*
+* GLOW.Node
+* @author: Mikael Emtinger, gomo.se
+*/
+
 GLOW.Node = function( shader ) {
 	
 	"use strict";
@@ -90,3 +95,4 @@ GLOW.Node.prototype.removeChild = function( child ) {
 	
 	return this;
 }
+

@@ -158,11 +158,7 @@ GLOW.Context.prototype.enableStencilTest = function( flag, setup ) {
 
 GLOW.Context.prototype.setupStencilTest = function( setup ) {
 	
-	try {
-		
-		// TODO
-		
-	} catch( error ) { console.log( "GLOW.Context.setupStencilTest: " + error ); }
+	// TODO
 	
 	return this;
 }
