@@ -14,9 +14,10 @@ GLOW.Compiler = (function() {
 	//--- compile ------------------------------------------
 	// vertexShaderCode = string, the vertex shader code
 	// fragmentShaderCode = string, the framgnet shader code
-	// data = object, for example { transform: GLOW.Matrix4, elements: [ 0, 1, 2... ] }
+	// uniformsAndAttributes = object, for example { transform: GLOW.Matrix4 }
+	// elements = array or UInt16Array with elements
 	
-	compiler.compile = function( vertexShaderCode, fragmentShaderCode, data ) {
+	compiler.compile = function( vertexShaderCode, fragmentShaderCode, uniformAndAttributeData, elements ) {
 		
 		var c, cl = compiledCode.length;
 		var code;
@@ -45,9 +46,9 @@ GLOW.Compiler = (function() {
 		}
 		
 		return new GLOW.CompiledData( program, 
-			                          compiler.createUniforms  ( compiler.extractUniforms  ( program ), data ),
-			                          compiler.createAttributes( compiler.extractAttributes( program ), data ),
-			                          compiler.createElements  ( data.elements ));
+			                          compiler.createUniforms  ( compiler.extractUniforms  ( program ), uniformAndAttributeData ),
+			                          compiler.createAttributes( compiler.extractAttributes( program ), uniformAndAttributeData ),
+			                          compiler.createElements  ( elements ));
 	}
 
 

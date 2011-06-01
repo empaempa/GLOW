@@ -16,11 +16,11 @@ GLOW.Matrix4 = function() {
 	this.value = new Float32Array( 16 );
 	this.transposeUniform = false;
 
+	this.rotation = new GLOW.Vector3();
 	this.position = new GLOW.Vector3();
 	this.columnX  = new GLOW.Vector3();
 	this.columnY  = new GLOW.Vector3();
 	this.columnZ  = new GLOW.Vector3();
-	this.rotation = new GLOW.Vector3();
 	
 	this.identity();
 }
@@ -314,7 +314,7 @@ GLOW.Matrix4.prototype.addRotation = function( x, y, z ) {
 	this.rotation.value[ 1 ] += y;
 	this.rotation.value[ 2 ] += z;
 	
-	this.setRotation( rotation.value[ 0 ], rotation.value[ 1 ], rotation.value[ 2 ] );
+	this.setRotation( this.rotation.value[ 0 ], this.rotation.value[ 1 ], this.rotation.value[ 2 ] );
 }
 
 GLOW.Matrix4.prototype.getPosition = function() {

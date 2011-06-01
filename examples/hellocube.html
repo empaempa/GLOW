@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>GLOW - Hello Cube - Please Check Source</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		<div id="container"></div>
+		<script type="text/javascript" src="../build/GLOW.js"></script>
+		<script type="text/javascript">
+		
+			// for sake of simplicity, create an object that
+			// keep all information about our cube.
+			
+			// GLOW.Shader takes an object with the following properties:
+			// vertexShader: the vertex shader code
+			// fragmentShader: the fragment shader code
+			// data: the uniform and attribute data
+			// elements: the element data 
+		
+			var cubeInfo = {
+				
+				// create vertex shader (note: cameraInverse * transform is usually done in JS)
+
+				vertexShader: [
+
+					"uniform	mat4 	transform;",
+					"uniform 	mat4 	cameraInverse;",
+					"uniform 	mat4 	cameraProjection;",
+
+					"attribute 	vec3 	vertices;",
+					"attribute  vec3	normals;",
+					"attribute  vec2    uvs;",
+					
+					"varying    vec2    uv;",
+
+					"void main(void)",
+					"{",
+						"uv = uvs;",
+						"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices, 1.0 );",
+					"}"
+						
+				].join( "\n" ),
+
+
+				// create fragment shader
+
+				fragmentShader: [ 	
+
+					"#ifdef GL_ES",
+						"precision highp float;",
+					"#endif",		
+
+					"uniform 	sampler2D 	texture;",
+					"varying 	vec2		uv;",
+
+					"void main( void )",
+					"{",
+						"gl_FragColor = texture2D( texture, uv );",
+					"}"
+
+				].join( "\n" ),
+
+
+				// create all uniform and attribute data
+
+				data: {
+					
+					// create uniform data
+
+					transform: new GLOW.Matrix4(),
+					cameraInverse: GLOW.defaultCamera.inverse,
+					cameraProjection: GLOW.defaultCamera.projection,
+					texture: new GLOW.Texture( "textures/clouds.jpg" ),
+
+
+					// create attribute data
+
+					vertices: GLOW.Geometry.Cube.vertices( 500 ),
+					uvs: GLOW.Geometry.Cube.uvs(),
+				},
+				
+
+				// create element data
+				
+				elements: GLOW.Geometry.Cube.elements(),
+			}
+			
+
+			// To get GLOW going, you need to create a GLOW.Context
+			// We also set the background color to white
+			
+			context = new GLOW.Context();
+			context.setupClear( { red: 1, green: 1, blue: 1 } );
+
+
+			// Then you can create a Shader using the info object created above 
+
+			cube = new GLOW.Shader( cubeInfo );
+			
+
+			// Attach the dom element
+			
+			document.getElementById( "container" ).appendChild( context.domElement );
+			
+			
+			// Update the default camera position
+			
+			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 1500 );
+			GLOW.defaultCamera.update();
+			
+			
+			// Render (using setInterval as WebGL Inspector have problem with requestAnimationFrame)
+ 
+			setInterval( render, 1000 / 30 );
+
+			function render() {
+
+				// clear the context cache and the graphics
+				
+				context.cache.clear();
+				context.clear();
+
+				// update rotation on cube
+				
+				cube.transform.addRotation( 0.05, 0.05, 0.05 );
+				
+				// draw cube
+				
+				cube.draw();
+			}
+		</script>
+	</body>
+</html>
