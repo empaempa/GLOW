@@ -2,17 +2,17 @@
 * Uniform
 */
 
-GLOW.Uniform = function( parameters ) {
+GLOW.Uniform = function( parameters, data ) {
 	
 	"use strict";
 	
 	this.id             = GLOW.uniqueId();
-	this.data           = parameters.data;
 	this.name           = parameters.name;
 	this.length         = parameters.length;
 	this.type           = parameters.type;
 	this.location       = parameters.location;
 	this.locationNumber = parameters.locationNumber;
+	this.data           = data;
 	
 	
 	// set set-function

@@ -27,12 +27,15 @@
 		<script type="text/javascript" src="src/math/Matrix4.js"></script>
 
 		<script type="text/javascript" src="src/core/Context.js"></script>
+		<script type="text/javascript" src="src/core/Compiler.js"></script>
+		<script type="text/javascript" src="src/core/CompiledData.js"></script>
 		<script type="text/javascript" src="src/core/FBO.js"></script>
 		<script type="text/javascript" src="src/core/Texture.js"></script>
 		<script type="text/javascript" src="src/core/Cache.js"></script>
 		<script type="text/javascript" src="src/core/Camera.js"></script>
 		
 		<script type="text/javascript" src="src/shader/Shader.js"></script>
+		<script type="text/javascript" src="src/shader/Elements.js"></script>
 		<script type="text/javascript" src="src/shader/Uniform.js"></script>
 		<script type="text/javascript" src="src/shader/Attribute.js"></script>
 
@@ -47,22 +50,17 @@
 		
 			var shaderInfo = {
 				
-				setup: function() {
-					
-					this.clouds = new GLOW.Texture( "examples/textures/clouds.jpg" );
-
-					this.time = new GLOW.Float();
-					this.pulse = new GLOW.Float();
-					this.offset = new GLOW.Float();
-					this.transform = new GLOW.Matrix4();
-					this.cameraInverse = GLOW.defaultCamera.inverse;
-					this.cameraProjection = GLOW.defaultCamera.projection;
-
-					this.vertices = GLOW.Geometry.Cube.vertices( 50 );
-					this.elements = GLOW.Geometry.Cube.elements();
-					this.uvs = GLOW.Geometry.Cube.uvs();
-					this.normals = GLOW.Geometry.faceNormals( this.vertices, this.elements );
-				},
+				clouds: new GLOW.Texture( "examples/textures/clouds.jpg" ),
+				time: new GLOW.Float(),
+				glow: new GLOW.Float(),
+				offset: new GLOW.Float(),
+				transform: new GLOW.Matrix4(),
+				cameraInverse: GLOW.defaultCamera.inverse,
+				cameraProjection: GLOW.defaultCamera.projection,
+				vertices: GLOW.Geometry.Cube.vertices( 50 ),
+				uvs: GLOW.Geometry.Cube.uvs(),
+				normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices( 50 ), GLOW.Geometry.Cube.elements()),
+				elements: GLOW.Geometry.Cube.elements(),
 	
 				vertexShader: [
 
@@ -106,10 +104,6 @@
 
 				].join( "\n" )
 			}
-			
-			shaderInfo.setup();
-			
-			
 			
 			var postShaderInfo = {
 				
@@ -157,7 +151,7 @@
 			var container, stats;
 			var mouseX = 0, mouseY = 0;
 			var shaders, topNode, context, t = 0;
-			var postShader;
+			var postShader, t = 0;
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
@@ -168,12 +162,14 @@
 			
 			context = new GLOW.Context();
 			topNode = new GLOW.Node();
+			compiledData = GLOW.Compiler.compile( shaderInfo.vertexShader, shaderInfo.fragmentShader, shaderInfo, shaderInfo.elements );
 			shaders = [];
+			
 			
 			var thisNode;
 			var prevNode = topNode;
 			
-			for( var a = 0; a < 1000; a++ ) {
+			for( var a = 0; a < 5000; a++ ) {
 				
 				thisNode = new GLOW.Node();
 				thisNode.localMatrix.setPosition( 0, 50, 0 ).setRotation( Math.random()*0.5, Math.random()*0.5, Math.random()*0.5 );
@@ -181,21 +177,24 @@
 				prevNode.addChild( thisNode );
 				prevNode = thisNode;
 
-				
-				shaderInfo.transform = thisNode.globalMatrix;
-				shaderInfo.glow      = new GLOW.Float( Math.random());
-				shaderInfo.offset    = new GLOW.Float( a );
+				instanceData = {};
+				instanceData.transform = thisNode.globalMatrix;
+				instanceData.glow      = new GLOW.Float( Math.random());
+				instanceData.offset    = new GLOW.Float( a );
 
-				shaders.push( new GLOW.Shader( shaderInfo ));
+				shaders.push( new GLOW.Shader( { use: compiledData, except: instanceData } ));
 			}
 			
 			topNode.update();
-			
+
 			
 			// init post shader
 			
 			postShaderInfo.fboTexture = FBO = new GLOW.FBO();
-			postShader = new GLOW.Shader( postShaderInfo );
+			postShader = new GLOW.Shader( { vertexShader:   postShaderInfo.vertexShader, 
+				                            fragmentShader: postShaderInfo.fragmentShader, 
+											data:           postShaderInfo, 
+											elements:       postShaderInfo.elements } );
 			
 			
 			// init dom and camera

@@ -1,16 +1,16 @@
-GLOW.Attribute = function( parameters, interleave ) {
+GLOW.Attribute = function( parameters, data, interleave ) {
 	
 	"use strict";
 	
 	this.id             = GLOW.uniqueId();
-	this.data           = parameters.data;
 	this.name           = parameters.name;
 	this.type           = parameters.type;
 	this.location       = parameters.location;
 	this.locationNumber = parameters.locationNumber;
 	this.stride         = 0;
 	this.offset         = 0;
-	this.size           =  GLOW.AttributeSize( parameters.type );
+	this.size           = GLOW.AttributeSize( parameters.type );
+	this.data           = data;
 
 	if( !interleave ) {
 		
@@ -40,7 +40,6 @@ GLOW.Attribute = function( parameters, interleave ) {
 		this.buffer = GL.createBuffer();
 		GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
 		GL.bufferData( GL.ARRAY_BUFFER, this.bufferData, GL.STATIC_DRAW );
-
 	}
 }
 
