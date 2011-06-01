@@ -1,9 +1,10 @@
 /*
 * Uniform
 */
-"use strict";
 
 GLOW.Uniform = function(parameters, data) {
+    "use strict"; "use restrict";
+
     this.id = GLOW.uniqueId();
     this.data = data;
     this.location = parameters.location;
@@ -60,8 +61,12 @@ GLOW.Uniform = function(parameters, data) {
         GLOW.Uniform.setvFns[this.type] : GLOW.Uniform.setFns[this.type];
 };
 
-GLOW.Uniform.prototype.set = function() {
-    if (!GLOW.currentContext.cache.uniformCached(this)) {
-        this.uniformFn(this.location, this.data);
-    }
-};
+(function() {
+    "use strict"; "use restrict";
+
+    GLOW.Uniform.prototype.set = function() {
+        if (!GLOW.currentContext.cache.uniformCached(this)) {
+            this.uniformFn(this.location, this.data);
+        }
+    };
+})();
