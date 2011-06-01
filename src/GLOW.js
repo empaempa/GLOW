@@ -3,6 +3,8 @@
 */
 
 var GLOW = (function() {
+    "use strict"; "use restrict";
+
     var glow = {};
     var contexts = {};
     var uniqueIdCounter = -1;
