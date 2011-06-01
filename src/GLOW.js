@@ -40,7 +40,7 @@ var GLOW = (function() {
 		
 		if( typeof( contextOrId ) === 'string' ) {
 			
-			glow.currentContext = getContextById[ contextOrId ];
+			glow.currentContext = getContextById(contextOrId);
 			
 		} else {
 			
