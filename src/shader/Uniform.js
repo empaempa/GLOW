@@ -59,14 +59,14 @@ GLOW.Uniform = (function() {
         this.length = parameters.length;
         this.type = parameters.type;
 
-        this.uniformFn = (this.length !== undefined && this.length > 1) ?
+        this.uniformFunction = (this.length !== undefined && this.length > 1) ?
             setvFunctions[this.type] : setFunctions[this.type];
     }
 
     // methods
     uniform.prototype.set = function() {
         if (!GLOW.currentContext.cache.uniformCached(this)) {
-            this.uniformFn(this.location, this.data);
+            this.uniformFunction(this.location, this.data);
         }
     };
 
