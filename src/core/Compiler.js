@@ -134,7 +134,7 @@ GLOW.Compiler = (function() {
 				uniform.location       = GL.getUniformLocation( program, uniform.name );
 				uniform.locationNumber = locationNumber;
 			
-				uniforms[ uniform.name ] = uniform;
+				uniforms[ uniform.name ] = uniform;
 			
 			} else break;
 
