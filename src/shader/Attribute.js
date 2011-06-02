@@ -1,97 +1,77 @@
-GLOW.Attribute = function( parameters, data, interleave ) {
-	
-	"use strict";
-	
-	this.id             = GLOW.uniqueId();
-	this.name           = parameters.name;
-	this.type           = parameters.type;
-	this.location       = parameters.location;
-	this.locationNumber = parameters.locationNumber;
-	this.stride         = 0;
-	this.offset         = 0;
-	this.size           = GLOW.AttributeSize( parameters.type );
-	this.data           = data;
-	this.buffer         = GL.createBuffer();
+GLOW.Attribute = (function() {
+    "use strict"; "use restrict";
 
-	if( !interleave ) {
-		
-		if( !(this.data instanceof Float32Array )) {
-			
-			var a, al = this.data.length; 
-			var s, sl = this.size;
-			var flat = new Float32Array( al * sl );
-			var data = this.data;
-			var i = 0;
-			
-			for( a = 0; a < al; a++ ) {
+    // private data, methods and initializations here
+    var sizes = [];
 
-				for( s = 0; s < sl; s++ ) {
-					
-					flat[ i++ ] = data[ a ].value[ s ];
-				}
-			}
-			
-			this.setData( flat );
-			
-		} else {
-			
-			this.setData( this.data );
-		}
-	}
-}
+    // constructor
+    function attribute(parameters, data, interleave) {
+        // lazy initialization so we know we got GL bound to a context
+        if (sizes.length === 0) {
+            sizes[GL.INT] = 1;
+            sizes[GL.INT_VEC2] = 2;
+            sizes[GL.INT_VEC3] = 3;
+            sizes[GL.INT_VEC4] = 4;
+            sizes[GL.FLOAT] = 1;
+            sizes[GL.FLOAT_VEC2] = 2;
+            sizes[GL.FLOAT_VEC3] = 3;
+            sizes[GL.FLOAT_VEC4] = 4;
+            sizes[GL.FLOAT_MAT2] = 4;
+            sizes[GL.FLOAT_MAT3] = 9;
+            sizes[GL.FLOAT_MAT4] = 16;
+        }
 
-/*
-* Prototype
-*/
+        this.id = GLOW.uniqueId();
+        this.data = data;
+        this.location = parameters.location;
+        this.locationNumber = parameters.locationNumber;
+        this.stride = 0;
+        this.offset = 0;
+        this.size = sizes[parameters.type];
+        this.buffer = GL.createBuffer();
 
-GLOW.Attribute.prototype.interleave = function( float32array, stride, offset ) {
-	
-	this.stride = stride;
-	this.offset = offset;
-	
-	// TODO
-}
+        // todo should all of these really get stored?
+        this.name = parameters.name;
+        this.type = parameters.type;
 
-GLOW.Attribute.prototype.setData = function( data ) {
-	
-	this.data = data;
-	
-	GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
-	GL.bufferData( GL.ARRAY_BUFFER, this.data, GL.STATIC_DRAW );
-}
+        if (!interleave) {
+            if (this.data instanceof Float32Array) {
+                this.setData(this.data);
+            }
+            else {
+                var al = this.data.length;
+                var sl = this.size;
+                var flat = new Float32Array(al * sl);
+                var i = 0;
+                for (var a = 0; a < al; a++) {
+                    for(var s = 0; s < sl; s++) {
+                        flat[i++] = data[a].value[s];
+                    }
+                }
+                this.setData(flat);
+            }
+        }
+    }
 
-GLOW.Attribute.prototype.bind = function() {
-	
-	if( !GLOW.currentContext.cache.attributeCached( this )) {
-		
-		GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
-		GL.vertexAttribPointer( this.location, this.size, GL.FLOAT, false, this.stride, this.offset );
-	}
-}
+    // methods
+    attribute.prototype.interleave = function(float32array, stride, offset) {
+        this.stride = stride;
+        this.offset = offset;
+        // TODO
+    };
 
+    attribute.prototype.setData = function(data) {
+        this.data = data;
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
+        GL.bufferData(GL.ARRAY_BUFFER, this.data, GL.STATIC_DRAW);
+    };
 
-/*
-* Attribute Size
-*/
+    attribute.prototype.bind = function() {
+        if (!GLOW.currentContext.cache.attributeCached(this)) {
+            GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
+            GL.vertexAttribPointer(this.location, this.size, GL.FLOAT, false, this.stride, this.offset);
+        }
+    };
 
-GLOW.AttributeSize = function( type ) { 
-	
-	switch( type ) {
-		
-		case GL.INT:      return 1;
-		case GL.INT_VEC2: return 2;
-		case GL.INT_VEC3: return 3;
-		case GL.INT_VEC4: return 4;
-		
-		case GL.FLOAT:      return 1;
-		case GL.FLOAT_VEC2: return 2;
-		case GL.FLOAT_VEC3: return 3;
-		case GL.FLOAT_VEC4: return 4;
-
-		case GL.FLOAT_MAT2: return 4;
-		case GL.FLOAT_MAT3: return 9;
-		case GL.FLOAT_MAT4: return 16;
-	}
-	
-	return 0;
-}
+    return attribute;
+})();
