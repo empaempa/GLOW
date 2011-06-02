@@ -59,8 +59,13 @@ GLOW.Uniform = (function() {
         this.length = parameters.length;
         this.type = parameters.type;
 
-        this.uniformFunction = (this.length !== undefined && this.length > 1) ?
-            setvFunctions[this.type] : setFunctions[this.type];
+        if (parameters.set) {
+            this.uniformFunction = parameters.set;
+        }
+        else {
+            this.uniformFunction = (this.length !== undefined && this.length > 1) ?
+                setvFunctions[this.type] : setFunctions[this.type];
+        }
     }
 
     // methods
