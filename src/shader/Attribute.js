@@ -1,24 +1,29 @@
 GLOW.Attribute = (function() {
     "use strict"; "use restrict";
 
-    // private data, methods and initializations here
+    // private data, functions and initializations here
+    var once = false;
     var sizes = [];
+    function lazyInit() {
+        // lazy initialization so we know we got GL bound to a context
+        sizes[GL.INT] = 1;
+        sizes[GL.INT_VEC2] = 2;
+        sizes[GL.INT_VEC3] = 3;
+        sizes[GL.INT_VEC4] = 4;
+        sizes[GL.FLOAT] = 1;
+        sizes[GL.FLOAT_VEC2] = 2;
+        sizes[GL.FLOAT_VEC3] = 3;
+        sizes[GL.FLOAT_VEC4] = 4;
+        sizes[GL.FLOAT_MAT2] = 4;
+        sizes[GL.FLOAT_MAT3] = 9;
+        sizes[GL.FLOAT_MAT4] = 16;
+    }
 
     // constructor
     function attribute(parameters, data, interleave) {
-        // lazy initialization so we know we got GL bound to a context
-        if (sizes.length === 0) {
-            sizes[GL.INT] = 1;
-            sizes[GL.INT_VEC2] = 2;
-            sizes[GL.INT_VEC3] = 3;
-            sizes[GL.INT_VEC4] = 4;
-            sizes[GL.FLOAT] = 1;
-            sizes[GL.FLOAT_VEC2] = 2;
-            sizes[GL.FLOAT_VEC3] = 3;
-            sizes[GL.FLOAT_VEC4] = 4;
-            sizes[GL.FLOAT_MAT2] = 4;
-            sizes[GL.FLOAT_MAT3] = 9;
-            sizes[GL.FLOAT_MAT4] = 16;
+        if (!once) {
+            once = true;
+            lazyInit();
         }
 
         this.id = GLOW.uniqueId();
