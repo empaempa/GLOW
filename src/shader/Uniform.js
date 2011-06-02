@@ -11,13 +11,13 @@ GLOW.Uniform = (function() {
 
         // TODO: support other types of data than GLOW.Matrix/Vector
         setFunctions[GL.INT] = function() { GL.uniform1i(this.location, this.value()); };
-        setFunctions[GL.INT_VEC2] = function() { GL.uniform2i(this.location, this.value()[0], this.value()[1]); };
-        setFunctions[GL.INT_VEC3] = function() { GL.uniform3i(this.location, this.value()[0], this.value()[1], this.value()[2]); };
-        setFunctions[GL.INT_VEC4] = function() { GL.uniform4i(this.location, this.value()[0], this.value()[1], this.value()[2], this.value()[3]); };
+        setFunctions[GL.INT_VEC2] = function() { GL.uniform2i(this.location, this.value(0), this.value(1)); };
+        setFunctions[GL.INT_VEC3] = function() { GL.uniform3i(this.location, this.value(0), this.value(1), this.value(2)); };
+        setFunctions[GL.INT_VEC4] = function() { GL.uniform4i(this.location, this.value(0), this.value(1), this.value(2), this.value(3)); };
         setFunctions[GL.FLOAT] = function() { GL.uniform1f(this.location, this.value()); };
-        setFunctions[GL.FLOAT_VEC2] = function() { GL.uniform2f(this.location, this.value()[0], this.value()[1]); };
-        setFunctions[GL.FLOAT_VEC3] = function() { GL.uniform3f(this.location, this.value()[0], this.value()[1], this.value()[2]); };
-        setFunctions[GL.FLOAT_VEC4] = function() { GL.uniform4f(this.location, this.value()[0], this.value()[1], this.value()[2], this.value()[3]); };
+        setFunctions[GL.FLOAT_VEC2] = function() { GL.uniform2f(this.location, this.value(0), this.value(1)); };
+        setFunctions[GL.FLOAT_VEC3] = function() { GL.uniform3f(this.location, this.value(0), this.value(1), this.value(2)); };
+        setFunctions[GL.FLOAT_VEC4] = function() { GL.uniform4f(this.location, this.value(0), this.value(1), this.value(2), this.value(3)); };
 
         setFunctions[GL.FLOAT_MAT2] = function() { GL.uniformMatrix2fv(this.location, this.transposeUniform(), this.value()); };
         setFunctions[GL.FLOAT_MAT3] = function() { GL.uniformMatrix3fv(this.location, this.transposeUniform(), this.value()); };
@@ -77,8 +77,8 @@ GLOW.Uniform = (function() {
     };
 
     // default data converters
-    uniform.prototype.value = function() {
-        return this.data.value;
+    uniform.prototype.value = function(element) {
+        return element === undefined ? this.data.value : this.data.value[element];
     };
     uniform.prototype.transposeUniform = function() {
         return this.data.transposeUniform;
