@@ -1,5 +1,5 @@
 /*
-* Glow - Just-Above-Low-Level WebGL API
+* GLOW - Just-Above-Low-Level WebGL API
 */
 
 var GLOW = (function() {
