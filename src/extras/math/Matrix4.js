@@ -14,7 +14,6 @@ GLOW.Matrix4 = function() {
 	"use strict";
 
 	this.value = new Float32Array( 16 );
-	this.transposeUniform = false;
 
 	this.rotation = new GLOW.Vector3();
 	this.position = new GLOW.Vector3();

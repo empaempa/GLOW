@@ -8,7 +8,6 @@ GLOW.Matrix3 = function () {
 	"use strict";
 
 	this.value = new Float32Array( 9 );
-	this.transposeUniform = false;
 };
 
 /*

@@ -19,9 +19,9 @@ GLOW.Uniform = (function() {
         setFunctions[GL.FLOAT_VEC3] = function() { GL.uniform3f(this.location, this.value(0), this.value(1), this.value(2)); };
         setFunctions[GL.FLOAT_VEC4] = function() { GL.uniform4f(this.location, this.value(0), this.value(1), this.value(2), this.value(3)); };
 
-        setFunctions[GL.FLOAT_MAT2] = function() { GL.uniformMatrix2fv(this.location, this.transposeUniform(), this.value()); };
-        setFunctions[GL.FLOAT_MAT3] = function() { GL.uniformMatrix3fv(this.location, this.transposeUniform(), this.value()); };
-        setFunctions[GL.FLOAT_MAT4] = function() { GL.uniformMatrix4fv(this.location, this.transposeUniform(), this.value()); };
+        setFunctions[GL.FLOAT_MAT2] = function() { GL.uniformMatrix2fv(this.location, false, this.value()); };
+        setFunctions[GL.FLOAT_MAT3] = function() { GL.uniformMatrix3fv(this.location, false, this.value()); };
+        setFunctions[GL.FLOAT_MAT4] = function() { GL.uniformMatrix4fv(this.location, false, this.value()); };
         setFunctions[GL.SAMPLER_2D] = function() {
             if (this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached(this.data)) {
                 GL.uniform1i(this.location, this.data.textureUnit);
@@ -79,9 +79,6 @@ GLOW.Uniform = (function() {
     // default data converters
     uniform.prototype.value = function(element) {
         return element === undefined ? this.data.value : this.data.value[element];
-    };
-    uniform.prototype.transposeUniform = function() {
-        return this.data.transposeUniform;
     };
 
     return uniform;
