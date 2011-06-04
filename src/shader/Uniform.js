@@ -1,72 +1,88 @@
-/*
-* Uniform
-*/
-
-GLOW.Uniform = function(parameters, data) {
+GLOW.Uniform = (function() {
     "use strict"; "use restrict";
 
-    this.id = GLOW.uniqueId();
-    this.data = data;
-    this.location = parameters.location;
-    this.locationNumber = parameters.locationNumber;
+    // private data, functions and initializations here
+    var once = false;
+    var setFunctions = [];
+    var setvFunctions = [];
 
-    // todo should all of these really get stored?
-    this.name = parameters.name;
-    this.length = parameters.length;
-    this.type = parameters.type;
+    function lazyInit() {
+        // lazy initialization so we know we got GL bound to a context
 
-    // lazy initialization so we know we got GL bound to a context
-    // TODO: support other types of data than GLOW.Matrix/Vector
-    GLOW.Uniform.setFns = GLOW.Uniform.setFns || (function() {
-        var fns = [];
-        fns[GL.INT] = function(location, data) { GL.uniform1i(location, data.value); };
-        fns[GL.INT_VEC2] = function(location, data) { GL.uniform2i(location, data.value[0], data.value[1]); };
-        fns[GL.INT_VEC3] = function(location, data) { GL.uniform3i(location, data.value[0], data.value[1], data.value[2]); };
-        fns[GL.INT_VEC4] = function(location, data) { GL.uniform4i(location, data.value[0], data.value[1], data.value[2], data.value[3]); };
-        fns[GL.FLOAT] = function(location, data) { GL.uniform1f(location, data.value); };
-        fns[GL.FLOAT_VEC2] = function(location, data) { GL.uniform2f(location, data.value[0], data.value[1]); };
-        fns[GL.FLOAT_VEC3] = function(location, data) { GL.uniform3f(location, data.value[0], data.value[1], data.value[2]); };
-        fns[GL.FLOAT_VEC4] = function(location, data) { GL.uniform4f(location, data.value[0], data.value[1], data.value[2], data.value[3]); };
+        // TODO: support other types of data than GLOW.Matrix/Vector
+        setFunctions[GL.INT] = function() { GL.uniform1i(this.location, this.value()); };
+        setFunctions[GL.INT_VEC2] = function() { GL.uniform2i(this.location, this.value(0), this.value(1)); };
+        setFunctions[GL.INT_VEC3] = function() { GL.uniform3i(this.location, this.value(0), this.value(1), this.value(2)); };
+        setFunctions[GL.INT_VEC4] = function() { GL.uniform4i(this.location, this.value(0), this.value(1), this.value(2), this.value(3)); };
+        setFunctions[GL.FLOAT] = function() { GL.uniform1f(this.location, this.value()); };
+        setFunctions[GL.FLOAT_VEC2] = function() { GL.uniform2f(this.location, this.value(0), this.value(1)); };
+        setFunctions[GL.FLOAT_VEC3] = function() { GL.uniform3f(this.location, this.value(0), this.value(1), this.value(2)); };
+        setFunctions[GL.FLOAT_VEC4] = function() { GL.uniform4f(this.location, this.value(0), this.value(1), this.value(2), this.value(3)); };
 
-        fns[GL.FLOAT_MAT2] = function(location, data) { GL.uniformMatrix2fv(location, data.transposeUniform, data.value); };
-        fns[GL.FLOAT_MAT3] = function(location, data) { GL.uniformMatrix3fv(location, data.transposeUniform, data.value); };
-        fns[GL.FLOAT_MAT4] = function(location, data) { GL.uniformMatrix4fv(location, data.transposeUniform, data.value); };
-        fns[GL.SAMPLER_2D] = function(location, data) {
-            if (data.texture !== undefined && data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached(data)) {
-                GL.uniform1i( location, data.textureUnit);
-                GL.activeTexture(GL.TEXTURE0 + data.textureUnit);
-                GL.bindTexture(GL.TEXTURE_2D, data.texture);
+        setFunctions[GL.FLOAT_MAT2] = function() { GL.uniformMatrix2fv(this.location, this.transposeUniform(), this.value()); };
+        setFunctions[GL.FLOAT_MAT3] = function() { GL.uniformMatrix3fv(this.location, this.transposeUniform(), this.value()); };
+        setFunctions[GL.FLOAT_MAT4] = function() { GL.uniformMatrix4fv(this.location, this.transposeUniform(), this.value()); };
+        setFunctions[GL.SAMPLER_2D] = function() {
+            if (this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached(this.data)) {
+                GL.uniform1i(this.location, this.data.textureUnit);
+                GL.activeTexture(GL.TEXTURE0 + this.data.textureUnit);
+                GL.bindTexture(GL.TEXTURE_2D, this.data.texture);
             }
         };
-        fns[GL.SAMPLER_CUBE] = function(location, data) {
+        setFunctions[GL.SAMPLER_CUBE] = function() {
             /* TODO */
         };
-        return fns;
-    })();
 
-    GLOW.Uniform.setvFns = GLOW.Uniform.setvFns || (function() {
-        var fns = [];
-        fns[GL.INT] = function(location, data) { GL.uniform1iv(location, data.value); };
-        fns[GL.INT_VEC2] = function(location, data) { GL.uniform2iv(location, data.value); };
-        fns[GL.INT_VEC3] = function(location, data) { GL.uniform3iv(location, data.value); };
-        fns[GL.INT_VEC4] = function(location, data) { GL.uniform4iv(location, data.value); };
-        fns[GL.FLOAT] = function(location, data) { GL.uniform1fv(location, data.value); };
-        fns[GL.FLOAT_VEC2] = function(location, data) { GL.uniform2fv(location, data.value); };
-        fns[GL.FLOAT_VEC3] = function(location, data) { GL.uniform3fv(location, data.value); };
-        fns[GL.FLOAT_VEC4] = function(location, data) { GL.uniform4fv(location, data.value); };
-        return fns;
-    })();
+        setvFunctions[GL.INT] = function() { GL.uniform1iv(this.location, this.value()); };
+        setvFunctions[GL.INT_VEC2] = function() { GL.uniform2iv(this.location, this.value()); };
+        setvFunctions[GL.INT_VEC3] = function() { GL.uniform3iv(this.location, this.value()); };
+        setvFunctions[GL.INT_VEC4] = function() { GL.uniform4iv(this.location, this.value()); };
+        setvFunctions[GL.FLOAT] = function() { GL.uniform1fv(this.location, this.value()); };
+        setvFunctions[GL.FLOAT_VEC2] = function() { GL.uniform2fv(this.location, this.value()); };
+        setvFunctions[GL.FLOAT_VEC3] = function() { GL.uniform3fv(this.location, this.value()); };
+        setvFunctions[GL.FLOAT_VEC4] = function() { GL.uniform4fv(this.location, this.value()); };
+    }
 
-    this.uniformFn = (this.length !== undefined && this.length > 1) ?
-        GLOW.Uniform.setvFns[this.type] : GLOW.Uniform.setFns[this.type];
-};
+    // constructor
+    function uniform(parameters, data) {
+        if (!once) {
+            once = true;
+            lazyInit();
+        }
 
-(function() {
-    "use strict"; "use restrict";
+        this.id = GLOW.uniqueId();
+        this.data = data;
+        this.location = parameters.location;
+        this.locationNumber = parameters.locationNumber;
 
-    GLOW.Uniform.prototype.set = function() {
+        // todo should all of these really get stored?
+        this.name = parameters.name;
+        this.length = parameters.length;
+        this.type = parameters.type;
+
+        if (parameters.set) {
+            this.uniformFunction = parameters.set;
+        }
+        else {
+            this.uniformFunction = (this.length !== undefined && this.length > 1) ?
+                setvFunctions[this.type] : setFunctions[this.type];
+        }
+    }
+
+    // methods
+    uniform.prototype.set = function() {
         if (!GLOW.currentContext.cache.uniformCached(this)) {
-            this.uniformFn(this.location, this.data);
+            this.uniformFunction();
         }
     };
+
+    // default data converters
+    uniform.prototype.value = function(element) {
+        return element === undefined ? this.data.value : this.data.value[element];
+    };
+    uniform.prototype.transposeUniform = function() {
+        return this.data.transposeUniform;
+    };
+
+    return uniform;
 })();

@@ -9,99 +9,90 @@
 * elements: elements (array or UInt16Array)
 */
 
-GLOW.Shader = function( parameters ) {
-	
-	"use strict";
-	
-	this.id = GLOW.uniqueId();
+GLOW.Shader = (function() {
+    "use strict"; "use restrict";
 
-	if( parameters.use ) {
-		this.compiledData = parameters.use.clone( parameters.except );
-	} else {
-		this.compiledData = GLOW.Compiler.compile( parameters.vertexShader, parameters.fragmentShader, parameters.data, parameters.elements );
-	}
-	
-	this.attachData();
-}
+    // private data, functions and initializations here
 
-/*
-* Prototype
-*/
+    // constructor
+    function shader(parameters) {
+        this.id = GLOW.uniqueId();
 
-GLOW.Shader.prototype.attachData = function() {
-	
-	var u, a;
-	
-	for( u in this.compiledData.uniforms ) {
-		
-		if( this[ u ] === undefined ) {
-			this[ u ] = this.compiledData.uniforms[ u ].data;
-		} else {
-			console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data." );
-		}
-	}
+        this.compiledData = parameters.use ?
+            parameters.use.clone(parameters.except) :
+            GLOW.Compiler.compile(parameters.vertexShader, parameters.fragmentShader, parameters.data, parameters.elements);
 
-	for( a in this.compiledData.attributes ) {
-		
-		if( this[ a ] === undefined ) {
-			this[ a ] = this.compiledData.attributes[ a ].data;
-		} else {
-			console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data." );
-		}
-	}
-}
+        this.attachData();
+    }
 
-GLOW.Shader.prototype.draw = function() {
+    // methods
+    shader.prototype.attachData = function() {
+        var u, a;
 
-	var compiledData = this.compiledData;
+        for (u in this.compiledData.uniforms) {
+            if (this[u] === undefined) {
+                this[u] = this.compiledData.uniforms[u].data;
+            }
+            else {
+                console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data.");
+            }
+        }
 
-	if( !GLOW.currentContext.cache.programCached( compiledData.program )) {
-		
-		var diff = GLOW.currentContext.cache.setProgramHighestAttributeNumber( compiledData.program );
-		
-		if( diff ) {
-			
-			// enable / disable attribute streams
-			
-			var highestAttrib = compiledData.program.highestAttributeNumber;
-			var current = highestAttrib - diff + 1;
-			
-			if( diff > 0 ) {
-				
-				for( ; current <= highestAttrib; current++ ) {
-					GL.enableVertexAttribArray( current );
-				}
+        for (a in this.compiledData.attributes) {
+            if (this[a] === undefined) {
+                this[a] = this.compiledData.attributes[a].data;
+            }
+            else {
+                console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data.");
+            }
+        }
+    };
 
-			} else {
-				
-				for( ; current >= highestAttrib; current-- ) {
-					GL.disableVertexAttribArray( current ); 
-				}
-			}
-		}
-		
-		GL.useProgram( compiledData.program );
-	}
-	
-	for( var u in compiledData.uniforms ) {
-		compiledData.uniforms[ u ].set();
-	}
-	
-	for( var a in compiledData.attributes ) {
-		compiledData.attributes[ a ].bind();
-	}
-	
-	compiledData.elements.draw();
-}
+    shader.prototype.draw = function() {
+        var compiledData = this.compiledData;
 
-GLOW.Shader.prototype.clone = function( except ) {
-	
-	return new GLOW.Shader( { use: this.compiledData, except: except } );
-}
+        if (!GLOW.currentContext.cache.programCached(compiledData.program)) {
+            var diff = GLOW.currentContext.cache.setProgramHighestAttributeNumber(compiledData.program);
+            if (diff) {
+                // enable / disable attribute streams
+                var highestAttrib = compiledData.program.highestAttributeNumber;
+                var current = highestAttrib - diff + 1;
+
+                if (diff > 0) {
+                    for (; current <= highestAttrib; current++) {
+                        GL.enableVertexAttribArray(current);
+                    }
+                }
+                else {
+                    for (; current >= highestAttrib; current--) {
+                        GL.disableVertexAttribArray(current); 
+                    }
+                }
+            }
+            GL.useProgram(compiledData.program);
+        }
+        
+        for (var u in compiledData.uniforms) {
+            compiledData.uniforms[u].set();
+        }
+        
+        for (var a in compiledData.attributes) {
+            compiledData.attributes[a].bind();
+        }
+        
+        compiledData.elements.draw();
+    };
+
+    shader.prototype.clone = function(except) {
+        return new GLOW.Shader({ use: this.compiledData, except: except });
+    };
+
+    shader.prototype.dispose = function() {
+        // TODO
+    };
+
+    return shader;
+})();
 
 
-GLOW.Shader.prototype.dispose = function() {
-	
-	// TODO
-}
 
