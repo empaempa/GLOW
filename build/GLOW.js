@@ -880,9 +880,10 @@ GLOW.Shader = (function() {
 
     shader.prototype.draw = function() {
         var compiledData = this.compiledData;
+        var cache = GLOW.currentContext.cache;
 
-        if (!GLOW.currentContext.cache.programCached(compiledData.program)) {
-            var diff = GLOW.currentContext.cache.setProgramHighestAttributeNumber(compiledData.program);
+        if (!cache.programCached(compiledData.program)) {
+            var diff = cache.setProgramHighestAttributeNumber(compiledData.program);
             if (diff) {
                 // enable / disable attribute streams
                 var highestAttrib = compiledData.program.highestAttributeNumber;
@@ -901,13 +902,17 @@ GLOW.Shader = (function() {
             }
             GL.useProgram(compiledData.program);
         }
-        
+
         for (var u in compiledData.uniforms) {
-            compiledData.uniforms[u].set();
+            if (!cache.uniformCached(compiledData.uniforms[u])) {
+                compiledData.uniforms[u].load();
+            }
         }
         
         for (var a in compiledData.attributes) {
-            compiledData.attributes[a].bind();
+            if (!cache.attributeCached(compiledData.attributes[a])) {
+                compiledData.attributes[a].bind();
+            }
         }
         
         compiledData.elements.draw();
@@ -977,9 +982,9 @@ GLOW.Uniform = (function() {
         setFunctions[GL.FLOAT_VEC3] = function() { GL.uniform3f(this.location, this.value(0), this.value(1), this.value(2)); };
         setFunctions[GL.FLOAT_VEC4] = function() { GL.uniform4f(this.location, this.value(0), this.value(1), this.value(2), this.value(3)); };
 
-        setFunctions[GL.FLOAT_MAT2] = function() { GL.uniformMatrix2fv(this.location, this.transposeUniform(), this.value()); };
-        setFunctions[GL.FLOAT_MAT3] = function() { GL.uniformMatrix3fv(this.location, this.transposeUniform(), this.value()); };
-        setFunctions[GL.FLOAT_MAT4] = function() { GL.uniformMatrix4fv(this.location, this.transposeUniform(), this.value()); };
+        setFunctions[GL.FLOAT_MAT2] = function() { GL.uniformMatrix2fv(this.location, false, this.value()); };
+        setFunctions[GL.FLOAT_MAT3] = function() { GL.uniformMatrix3fv(this.location, false, this.value()); };
+        setFunctions[GL.FLOAT_MAT4] = function() { GL.uniformMatrix4fv(this.location, false, this.value()); };
         setFunctions[GL.SAMPLER_2D] = function() {
             if (this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached(this.data)) {
                 GL.uniform1i(this.location, this.data.textureUnit);
@@ -1018,28 +1023,16 @@ GLOW.Uniform = (function() {
         this.length = parameters.length;
         this.type = parameters.type;
 
-        if (parameters.set) {
-            this.uniformFunction = parameters.set;
-        }
-        else {
-            this.uniformFunction = (this.length !== undefined && this.length > 1) ?
-                setvFunctions[this.type] : setFunctions[this.type];
-        }
+        this.load = parameters.load ||
+            (this.length !== undefined && this.length > 1) ?
+            setvFunctions[this.type] : setFunctions[this.type];
     }
 
     // methods
-    uniform.prototype.set = function() {
-        if (!GLOW.currentContext.cache.uniformCached(this)) {
-            this.uniformFunction();
-        }
-    };
 
     // default data converters
     uniform.prototype.value = function(element) {
         return element === undefined ? this.data.value : this.data.value[element];
-    };
-    uniform.prototype.transposeUniform = function() {
-        return this.data.transposeUniform;
     };
 
     return uniform;
@@ -1118,10 +1111,8 @@ GLOW.Attribute = (function() {
     };
 
     attribute.prototype.bind = function() {
-        if (!GLOW.currentContext.cache.attributeCached(this)) {
-            GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
-            GL.vertexAttribPointer(this.location, this.size, GL.FLOAT, false, this.stride, this.offset);
-        }
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
+        GL.vertexAttribPointer(this.location, this.size, GL.FLOAT, false, this.stride, this.offset);
     };
 
     return attribute;
@@ -1406,7 +1397,6 @@ GLOW.Matrix3 = function () {
 	"use strict";
 
 	this.value = new Float32Array( 9 );
-	this.transposeUniform = false;
 };
 
 /*
@@ -1443,7 +1433,6 @@ GLOW.Matrix4 = function() {
 	"use strict";
 
 	this.value = new Float32Array( 16 );
-	this.transposeUniform = false;
 
 	this.rotation = new GLOW.Vector3();
 	this.position = new GLOW.Vector3();
