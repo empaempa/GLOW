@@ -3,25 +3,28 @@
 * @author: Mikael Emtinger, gomo.se
 */
 
-GLOW.Elements = function( data ) {
-	
-	"use strict";
-	
-	this.id       = GLOW.uniqueId();
-	this.elements = GL.createBuffer();
-	this.length   = data.length;
+GLOW.Elements = (function() {
+    "use strict"; "use restrict";
 
-	GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, this.elements );
-	GL.bufferData( GL.ELEMENT_ARRAY_BUFFER, data, GL.STATIC_DRAW );
-}
+    // private data, functions and initializations here
 
+    // constructor
+    function elements(data) {
+        this.id = GLOW.uniqueId();
+        this.elements = GL.createBuffer();
+        this.length = data.length;
 
-GLOW.Elements.prototype.draw = function() {
-	
-	if( !GLOW.currentContext.cache.elementsCached( this )) {
+        GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements);
+        GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, data, GL.STATIC_DRAW);
+    }
 
-		GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, this.elements );
-	}
-	
-	GL.drawElements( GL.TRIANGLES, this.length, GL.UNSIGNED_SHORT, 0 );		
-}
+    // methods
+    elements.prototype.draw = function() {
+        if (!GLOW.currentContext.cache.elementsCached(this)) {
+            GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements);
+        }
+        GL.drawElements(GL.TRIANGLES, this.length, GL.UNSIGNED_SHORT, 0);
+    };
+
+    return elements;
+})();
