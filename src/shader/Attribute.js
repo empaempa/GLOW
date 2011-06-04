@@ -72,10 +72,8 @@ GLOW.Attribute = (function() {
     };
 
     attribute.prototype.bind = function() {
-        if (!GLOW.currentContext.cache.attributeCached(this)) {
-            GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
-            GL.vertexAttribPointer(this.location, this.size, GL.FLOAT, false, this.stride, this.offset);
-        }
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
+        GL.vertexAttribPointer(this.location, this.size, GL.FLOAT, false, this.stride, this.offset);
     };
 
     return attribute;

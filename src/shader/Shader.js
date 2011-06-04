@@ -80,7 +80,9 @@ GLOW.Shader = (function() {
         }
         
         for (var a in compiledData.attributes) {
-            compiledData.attributes[a].bind();
+            if (!cache.attributeCached(compiledData.attributes[a])) {
+                compiledData.attributes[a].bind();
+            }
         }
         
         compiledData.elements.draw();
