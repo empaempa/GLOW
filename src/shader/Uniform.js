@@ -60,21 +60,12 @@ GLOW.Uniform = (function() {
         this.length = parameters.length;
         this.type = parameters.type;
 
-        if (parameters.set) {
-            this.uniformFunction = parameters.set;
-        }
-        else {
-            this.uniformFunction = (this.length !== undefined && this.length > 1) ?
-                setvFunctions[this.type] : setFunctions[this.type];
-        }
+        this.load = parameters.load ||
+            (this.length !== undefined && this.length > 1) ?
+            setvFunctions[this.type] : setFunctions[this.type];
     }
 
     // methods
-    uniform.prototype.set = function() {
-        if (!GLOW.currentContext.cache.uniformCached(this)) {
-            this.uniformFunction();
-        }
-    };
 
     // default data converters
     uniform.prototype.value = function(element) {
