@@ -4,6 +4,7 @@
 */
 
 GLOW.Elements = (function() {
+    
     "use strict"; "use restrict";
 
     // private data, functions and initializations here

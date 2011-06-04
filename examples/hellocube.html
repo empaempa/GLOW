@@ -90,16 +90,16 @@
 			// To get GLOW going, you need to create a GLOW.Context
 			// We also set the background color to white
 			
-			context = new GLOW.Context();
+			var context = new GLOW.Context();
 			context.setupClear( { red: 1, green: 1, blue: 1 } );
 
 
 			// Then you can create a Shader using the info object created above 
 
-			cube = new GLOW.Shader( cubeInfo );
+			var cube = new GLOW.Shader( cubeInfo );
 			
 
-			// Attach the dom element
+			// Attach the context's DOM element
 			
 			document.getElementById( "container" ).appendChild( context.domElement );
 			
@@ -112,18 +112,18 @@
 			
 			// Render (using setInterval as WebGL Inspector have problem with requestAnimationFrame)
  
-			setInterval( render, 1000 / 30 );
+			setInterval( render, 1000 / 60 );
 
 			function render() {
 
-				// clear the context cache and the graphics
+				// clear the context cache and graphics
 				
 				context.cache.clear();
 				context.clear();
 
 				// update rotation on cube
 				
-				cube.transform.addRotation( 0.05, 0.05, 0.05 );
+				cube.transform.addRotation( 0.01, 0.01, 0.01 );
 				
 				// draw cube
 				

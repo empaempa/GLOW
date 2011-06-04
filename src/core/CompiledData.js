@@ -3,17 +3,23 @@
 * @author: Mikael Emtinger, gomo.se
 */
 
-GLOW.CompiledData = function( program, uniforms, attributes, elements ) {
-	this.program = program;
-	this.uniforms = uniforms !== undefined ? uniforms : {};
-	this.attributes = attributes !== undefined ? attributes : {};
-	this.elements = elements;
-}
-
-(function() {
+GLOW.CompiledData = (function() {
+    
     "use strict"; "use restrict";
+    
+    // private data, functions and initializations here
 
-    GLOW.CompiledData.prototype.clone = function( except ) {
+    // constructor
+    
+    function compiledData( program, uniforms, attributes, elements ) {
+	    this.program = program;
+	    this.uniforms = uniforms !== undefined ? uniforms : {};
+	    this.attributes = attributes !== undefined ? attributes : {};
+	    this.elements = elements;
+    }
+
+
+    compiledData.prototype.clone = function( except ) {
     	var clone = new GLOW.CompiledData();
 
     	var u;
@@ -42,5 +48,8 @@ GLOW.CompiledData = function( program, uniforms, attributes, elements ) {
 
     	clone.program = this.program;
     	return clone;
-    }
+    };
+    
+    return compiledData;
 })();
+

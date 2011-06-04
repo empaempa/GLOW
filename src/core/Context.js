@@ -21,7 +21,6 @@ GLOW.Context = function( parameters ) {
 	// create canvas and webgl context and register
 	
 	try {
-		
 		this.domElement = document.createElement( 'canvas' );
 		this.GL         = this.domElement.getContext( 'experimental-webgl', { alpha:                 this.alpha, 
                                                                               depth:                 this.depth, 
@@ -33,11 +32,8 @@ GLOW.Context = function( parameters ) {
 		this.domElement.width  = this.width;
 		this.domElement.height = this.height;
 		this.GL.viewport( 0, 0, this.width, this.height );	// TODO: move into setupViewport
-
 	} catch( error ) {
-
 		console.error( "GLOW.Context.construct: " + error );
-		return context;
 	}
 
 	GLOW.registerContext( this );

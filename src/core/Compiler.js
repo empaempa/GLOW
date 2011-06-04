@@ -6,7 +6,8 @@
 
 GLOW.Compiler = (function() {
 	
-	"use strict"; "use restrict";
+	"use strict"; 
+	"use restrict";
 	
 	var compiler = {};
 	var compiledCode = [];
@@ -111,17 +112,22 @@ GLOW.Compiler = (function() {
 		var uniforms = {};
 		var uniform;
 		var locationNumber = 0;
+		var result;
 
 		while( true ) {
 
-			uniform = GL.getActiveUniform( program, locationNumber );
+			result = GL.getActiveUniform( program, locationNumber );
 
-			if( uniform !== null && uniform !== -1 && uniform !== undefined ) {
+			if( result !== null && result !== -1 && result !== undefined ) {
 
-				uniform.name           = uniform.name.split( "[" )[ 0 ];
-				uniform.location       = GL.getUniformLocation( program, uniform.name );
-				uniform.locationNumber = locationNumber;
-			
+                uniform = {
+                    name: result.name.split( "[" )[ 0 ],
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getUniformLocation( program, result.name.split( "[" )[ 0 ] ),
+                    locationNumber: locationNumber
+                };
+                
 				uniforms[ uniform.name ] = uniform;
 			
 			} else break;
@@ -139,16 +145,22 @@ GLOW.Compiler = (function() {
 
 		var attribute, locationNumber = 0;
 		var attributes = {};
+        var result;
 
 		while( true ) {
 
-			attribute = GL.getActiveAttrib( program, locationNumber );
+			result = GL.getActiveAttrib( program, locationNumber );
 
-			if( attribute !== null && attribute !== -1 && attribute !== undefined ) {
+			if( result !== null && result !== -1 && result !== undefined ) {
 
-				attribute.location       = GL.getAttribLocation( program, attribute.name );
-				attribute.locationNumber = locationNumber;
-				
+                attribute = {
+                    name: result.name,
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getAttribLocation( program, result.name ),
+                    locationNumber: locationNumber
+                }
+                
 				attributes[ attribute.name ] = attribute;
 
 			} else break;
@@ -235,18 +247,11 @@ GLOW.Compiler = (function() {
 		var elements;
 
 		if( !data ) {
-
 			console.error( "GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting." );
-			return;
-
 		} else if( data instanceof GLOW.Elements ) {
-
 			elements = data;
-
 		} else {
-
 			if( !( data instanceof Uint16Array )) {
-
 				data = new Uint16Array( data );
 			}
 
@@ -258,4 +263,4 @@ GLOW.Compiler = (function() {
 	
 	return compiler;
 	
-}());
+})();

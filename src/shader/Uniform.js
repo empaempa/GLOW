@@ -9,7 +9,6 @@ GLOW.Uniform = (function() {
     function lazyInit() {
         // lazy initialization so we know we got GL bound to a context
 
-        // TODO: support other types of data than GLOW.Matrix/Vector
         setFunctions[GL.INT] = function() { GL.uniform1i(this.location, this.value()); };
         setFunctions[GL.INT_VEC2] = function() { GL.uniform2i(this.location, this.value(0), this.value(1)); };
         setFunctions[GL.INT_VEC3] = function() { GL.uniform3i(this.location, this.value(0), this.value(1), this.value(2)); };
@@ -52,13 +51,11 @@ GLOW.Uniform = (function() {
 
         this.id = GLOW.uniqueId();
         this.data = data;
-        this.location = parameters.location;
-        this.locationNumber = parameters.locationNumber;
-
-        // todo should all of these really get stored?
         this.name = parameters.name;
         this.length = parameters.length;
         this.type = parameters.type;
+        this.location = parameters.location;
+        this.locationNumber = parameters.locationNumber;
 
         if (parameters.set) {
             this.uniformFunction = parameters.set;
