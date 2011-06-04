@@ -6,7 +6,7 @@
 
 GLOW.Compiler = (function() {
 	
-	"use strict";
+	"use strict"; "use restrict";
 	
 	var compiler = {};
 	var compiledCode = [];
@@ -18,30 +18,24 @@ GLOW.Compiler = (function() {
 	// elements = array or UInt16Array with elements
 	
 	compiler.compile = function( vertexShaderCode, fragmentShaderCode, uniformAndAttributeData, elements ) {
-		
 		var c, cl = compiledCode.length;
 		var code;
 		var program;
 		
 		for( c = 0; c < cl; c++ ) {
-			
 			code = compiledCode[ c ];
-			
 			if( vertexShaderCode   === code.vertexShaderCode &&
 				fragmentShaderCode === code.fragmentShaderCode ) { break; }
 		}
 
 		if( c === cl ) {
-			
 			program = compiler.linkProgram( compiler.compileVertexShader  ( vertexShaderCode   ),
 			                                compiler.compileFragmentShader( fragmentShaderCode ));
 
 			compiledCode.push( { vertexShaderCode: vertexShaderCode, 
 				                 fragmentShaderCode: fragmentShaderCode,
 				                 program: program } );
-
 		} else {
-			
 			program = code.program;
 		}
 		
@@ -57,7 +51,6 @@ GLOW.Compiler = (function() {
 	compiler.compileVertexShader = function( vertexShaderCode ) {
 
 		var vertexShader;
-
 		vertexShader    = GL.createShader( GL.VERTEX_SHADER );
 		vertexShader.id = GLOW.uniqueId();
 		
@@ -65,7 +58,6 @@ GLOW.Compiler = (function() {
 		GL.compileShader( vertexShader );
 
 	    if( !GL.getShaderParameter( vertexShader, GL.COMPILE_STATUS )) {
-
 			console.error( "GLOW.Compiler.compileVertexShader: " + GL.getShaderInfoLog( vertexShader ));
 		}
 		
@@ -78,7 +70,6 @@ GLOW.Compiler = (function() {
 	compiler.compileFragmentShader = function( fragmentShaderCode ) {
 
 		var fragmentShader;
-
 		fragmentShader    = GL.createShader( GL.FRAGMENT_SHADER );
 		fragmentShader.id = GLOW.uniqueId();
 		
@@ -86,7 +77,6 @@ GLOW.Compiler = (function() {
 		GL.compileShader( fragmentShader );
 
 	    if( !GL.getShaderParameter( fragmentShader, GL.COMPILE_STATUS )) {
-
 			console.error( "GLOW.Compiler.compileFragmentShader: " + GL.getShaderInfoLog( fragmentShader ));
 		}
 		
@@ -99,7 +89,6 @@ GLOW.Compiler = (function() {
 	compiler.linkProgram = function( vertexShader, fragmentShader ) {
 
 		var program;
-
 	    program    = GL.createProgram();
 		program.id = GLOW.uniqueId();
 
@@ -108,7 +97,6 @@ GLOW.Compiler = (function() {
 	    GL.linkProgram ( program );
 
 	    if( !GL.getProgramParameter( program, GL.LINK_STATUS )) {
-
 			console.error( "GLOW.Compiler.linkProgram: Could not initialise program" );
 	    }
 	
