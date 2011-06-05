@@ -57,8 +57,8 @@ GLOW.Uniform = (function() {
         this.location = parameters.location;
         this.locationNumber = parameters.locationNumber;
 
-        if (parameters.set) {
-            this.uniformFunction = parameters.set;
+        if (parameters.uniformFunction) {
+            this.uniformFunction = parameters.uniformFunction;
         }
         else {
             this.uniformFunction = (this.length !== undefined && this.length > 1) ?
