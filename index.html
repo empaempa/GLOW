@@ -61,8 +61,6 @@
 				uvs: GLOW.Geometry.Cube.uvs(),
 				normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices( 50 ), GLOW.Geometry.Cube.elements()),
 				elements: GLOW.Geometry.Cube.elements(),
-
-				interleave: [[ "vertices", "uvs", "normals" ]],
 	
 				vertexShader: [
 
@@ -149,7 +147,7 @@
 		</script>
 
 		<script type="text/javascript">
-
+				
 			var container, stats;
 			var mouseX = 0, mouseY = 0;
 			var shaders, topNode, context, t = 0;
@@ -229,7 +227,7 @@
 				GLOW.defaultCamera.update();
 				
 				context.cache.clear();
-				FBO.bind();
+		//		FBO.bind();
 				context.clear();
 
 				shaders[ 0 ].time.value = t;
@@ -240,8 +238,8 @@
 					shaders[ a ].draw();
 				}
 
-				FBO.unbind();
-				postShader.draw();
+		//		FBO.unbind();
+		//		postShader.draw();
 
 
 				stats.update();
