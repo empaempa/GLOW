@@ -6,7 +6,8 @@
 
 GLOW.Compiler = (function() {
 	
-	"use strict";
+	"use strict"; 
+	"use restrict";
 	
 	var compiler = {};
 	var compiledCode = [];
@@ -18,30 +19,24 @@ GLOW.Compiler = (function() {
 	// elements = array or UInt16Array with elements
 	
 	compiler.compile = function( vertexShaderCode, fragmentShaderCode, uniformAndAttributeData, elements ) {
-		
 		var c, cl = compiledCode.length;
 		var code;
 		var program;
 		
 		for( c = 0; c < cl; c++ ) {
-			
 			code = compiledCode[ c ];
-			
 			if( vertexShaderCode   === code.vertexShaderCode &&
 				fragmentShaderCode === code.fragmentShaderCode ) { break; }
 		}
 
 		if( c === cl ) {
-			
 			program = compiler.linkProgram( compiler.compileVertexShader  ( vertexShaderCode   ),
 			                                compiler.compileFragmentShader( fragmentShaderCode ));
 
 			compiledCode.push( { vertexShaderCode: vertexShaderCode, 
 				                 fragmentShaderCode: fragmentShaderCode,
 				                 program: program } );
-
 		} else {
-			
 			program = code.program;
 		}
 		
@@ -57,7 +52,6 @@ GLOW.Compiler = (function() {
 	compiler.compileVertexShader = function( vertexShaderCode ) {
 
 		var vertexShader;
-
 		vertexShader    = GL.createShader( GL.VERTEX_SHADER );
 		vertexShader.id = GLOW.uniqueId();
 		
@@ -65,7 +59,6 @@ GLOW.Compiler = (function() {
 		GL.compileShader( vertexShader );
 
 	    if( !GL.getShaderParameter( vertexShader, GL.COMPILE_STATUS )) {
-
 			console.error( "GLOW.Compiler.compileVertexShader: " + GL.getShaderInfoLog( vertexShader ));
 		}
 		
@@ -78,7 +71,6 @@ GLOW.Compiler = (function() {
 	compiler.compileFragmentShader = function( fragmentShaderCode ) {
 
 		var fragmentShader;
-
 		fragmentShader    = GL.createShader( GL.FRAGMENT_SHADER );
 		fragmentShader.id = GLOW.uniqueId();
 		
@@ -86,7 +78,6 @@ GLOW.Compiler = (function() {
 		GL.compileShader( fragmentShader );
 
 	    if( !GL.getShaderParameter( fragmentShader, GL.COMPILE_STATUS )) {
-
 			console.error( "GLOW.Compiler.compileFragmentShader: " + GL.getShaderInfoLog( fragmentShader ));
 		}
 		
@@ -99,7 +90,6 @@ GLOW.Compiler = (function() {
 	compiler.linkProgram = function( vertexShader, fragmentShader ) {
 
 		var program;
-
 	    program    = GL.createProgram();
 		program.id = GLOW.uniqueId();
 
@@ -108,7 +98,6 @@ GLOW.Compiler = (function() {
 	    GL.linkProgram ( program );
 
 	    if( !GL.getProgramParameter( program, GL.LINK_STATUS )) {
-
 			console.error( "GLOW.Compiler.linkProgram: Could not initialise program" );
 	    }
 	
@@ -123,17 +112,22 @@ GLOW.Compiler = (function() {
 		var uniforms = {};
 		var uniform;
 		var locationNumber = 0;
+		var result;
 
 		while( true ) {
 
-			uniform = GL.getActiveUniform( program, locationNumber );
+			result = GL.getActiveUniform( program, locationNumber );
 
-			if( uniform !== null && uniform !== -1 && uniform !== undefined ) {
+			if( result !== null && result !== -1 && result !== undefined ) {
 
-				uniform.name           = uniform.name.split( "[" )[ 0 ];
-				uniform.location       = GL.getUniformLocation( program, uniform.name );
-				uniform.locationNumber = locationNumber;
-			
+                uniform = {
+                    name: result.name.split( "[" )[ 0 ],
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getUniformLocation( program, result.name.split( "[" )[ 0 ] ),
+                    locationNumber: locationNumber
+                };
+                
 				uniforms[ uniform.name ] = uniform;
 			
 			} else break;
@@ -151,16 +145,22 @@ GLOW.Compiler = (function() {
 
 		var attribute, locationNumber = 0;
 		var attributes = {};
+        var result;
 
 		while( true ) {
 
-			attribute = GL.getActiveAttrib( program, locationNumber );
+			result = GL.getActiveAttrib( program, locationNumber );
 
-			if( attribute !== null && attribute !== -1 && attribute !== undefined ) {
+			if( result !== null && result !== -1 && result !== undefined ) {
 
-				attribute.location       = GL.getAttribLocation( program, attribute.name );
-				attribute.locationNumber = locationNumber;
-				
+                attribute = {
+                    name: result.name,
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getAttribLocation( program, result.name ),
+                    locationNumber: locationNumber
+                }
+                
 				attributes[ attribute.name ] = attribute;
 
 			} else break;
@@ -247,18 +247,11 @@ GLOW.Compiler = (function() {
 		var elements;
 
 		if( !data ) {
-
 			console.error( "GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting." );
-			return;
-
 		} else if( data instanceof GLOW.Elements ) {
-
 			elements = data;
-
 		} else {
-
 			if( !( data instanceof Uint16Array )) {
-
 				data = new Uint16Array( data );
 			}
 
@@ -270,4 +263,4 @@ GLOW.Compiler = (function() {
 	
 	return compiler;
 	
-}());
+})();

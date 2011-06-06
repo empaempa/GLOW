@@ -20,7 +20,6 @@ GLOW.Node = function( shader ) {
 	this.parent   = undefined;
 	
 	if( shader ) {
-		
 		this.shader = shader;
 		this.draw = shader.draw;
 	}

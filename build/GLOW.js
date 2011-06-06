@@ -73,7 +73,6 @@ GLOW.Context = function( parameters ) {
 	// create canvas and webgl context and register
 	
 	try {
-		
 		this.domElement = document.createElement( 'canvas' );
 		this.GL         = this.domElement.getContext( 'experimental-webgl', { alpha:                 this.alpha, 
                                                                               depth:                 this.depth, 
@@ -85,11 +84,8 @@ GLOW.Context = function( parameters ) {
 		this.domElement.width  = this.width;
 		this.domElement.height = this.height;
 		this.GL.viewport( 0, 0, this.width, this.height );	// TODO: move into setupViewport
-
 	} catch( error ) {
-
 		console.error( "GLOW.Context.construct: " + error );
-		return context;
 	}
 
 	GLOW.registerContext( this );
@@ -278,7 +274,8 @@ GLOW.Context.prototype.setupViewport = function( setup ) {
 
 GLOW.Compiler = (function() {
 	
-	"use strict";
+	"use strict"; 
+	"use restrict";
 	
 	var compiler = {};
 	var compiledCode = [];
@@ -290,30 +287,24 @@ GLOW.Compiler = (function() {
 	// elements = array or UInt16Array with elements
 	
 	compiler.compile = function( vertexShaderCode, fragmentShaderCode, uniformAndAttributeData, elements ) {
-		
 		var c, cl = compiledCode.length;
 		var code;
 		var program;
 		
 		for( c = 0; c < cl; c++ ) {
-			
 			code = compiledCode[ c ];
-			
 			if( vertexShaderCode   === code.vertexShaderCode &&
 				fragmentShaderCode === code.fragmentShaderCode ) { break; }
 		}
 
 		if( c === cl ) {
-			
 			program = compiler.linkProgram( compiler.compileVertexShader  ( vertexShaderCode   ),
 			                                compiler.compileFragmentShader( fragmentShaderCode ));
 
 			compiledCode.push( { vertexShaderCode: vertexShaderCode, 
 				                 fragmentShaderCode: fragmentShaderCode,
 				                 program: program } );
-
 		} else {
-			
 			program = code.program;
 		}
 		
@@ -329,7 +320,6 @@ GLOW.Compiler = (function() {
 	compiler.compileVertexShader = function( vertexShaderCode ) {
 
 		var vertexShader;
-
 		vertexShader    = GL.createShader( GL.VERTEX_SHADER );
 		vertexShader.id = GLOW.uniqueId();
 		
@@ -337,7 +327,6 @@ GLOW.Compiler = (function() {
 		GL.compileShader( vertexShader );
 
 	    if( !GL.getShaderParameter( vertexShader, GL.COMPILE_STATUS )) {
-
 			console.error( "GLOW.Compiler.compileVertexShader: " + GL.getShaderInfoLog( vertexShader ));
 		}
 		
@@ -350,7 +339,6 @@ GLOW.Compiler = (function() {
 	compiler.compileFragmentShader = function( fragmentShaderCode ) {
 
 		var fragmentShader;
-
 		fragmentShader    = GL.createShader( GL.FRAGMENT_SHADER );
 		fragmentShader.id = GLOW.uniqueId();
 		
@@ -358,7 +346,6 @@ GLOW.Compiler = (function() {
 		GL.compileShader( fragmentShader );
 
 	    if( !GL.getShaderParameter( fragmentShader, GL.COMPILE_STATUS )) {
-
 			console.error( "GLOW.Compiler.compileFragmentShader: " + GL.getShaderInfoLog( fragmentShader ));
 		}
 		
@@ -371,7 +358,6 @@ GLOW.Compiler = (function() {
 	compiler.linkProgram = function( vertexShader, fragmentShader ) {
 
 		var program;
-
 	    program    = GL.createProgram();
 		program.id = GLOW.uniqueId();
 
@@ -380,7 +366,6 @@ GLOW.Compiler = (function() {
 	    GL.linkProgram ( program );
 
 	    if( !GL.getProgramParameter( program, GL.LINK_STATUS )) {
-
 			console.error( "GLOW.Compiler.linkProgram: Could not initialise program" );
 	    }
 	
@@ -395,17 +380,22 @@ GLOW.Compiler = (function() {
 		var uniforms = {};
 		var uniform;
 		var locationNumber = 0;
+		var result;
 
 		while( true ) {
 
-			uniform = GL.getActiveUniform( program, locationNumber );
+			result = GL.getActiveUniform( program, locationNumber );
 
-			if( uniform !== null && uniform !== -1 && uniform !== undefined ) {
+			if( result !== null && result !== -1 && result !== undefined ) {
 
-				uniform.name           = uniform.name.split( "[" )[ 0 ];
-				uniform.location       = GL.getUniformLocation( program, uniform.name );
-				uniform.locationNumber = locationNumber;
-			
+                uniform = {
+                    name: result.name.split( "[" )[ 0 ],
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getUniformLocation( program, result.name.split( "[" )[ 0 ] ),
+                    locationNumber: locationNumber
+                };
+                
 				uniforms[ uniform.name ] = uniform;
 			
 			} else break;
@@ -423,16 +413,22 @@ GLOW.Compiler = (function() {
 
 		var attribute, locationNumber = 0;
 		var attributes = {};
+        var result;
 
 		while( true ) {
 
-			attribute = GL.getActiveAttrib( program, locationNumber );
+			result = GL.getActiveAttrib( program, locationNumber );
 
-			if( attribute !== null && attribute !== -1 && attribute !== undefined ) {
+			if( result !== null && result !== -1 && result !== undefined ) {
 
-				attribute.location       = GL.getAttribLocation( program, attribute.name );
-				attribute.locationNumber = locationNumber;
-				
+                attribute = {
+                    name: result.name,
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getAttribLocation( program, result.name ),
+                    locationNumber: locationNumber
+                }
+                
 				attributes[ attribute.name ] = attribute;
 
 			} else break;
@@ -519,18 +515,11 @@ GLOW.Compiler = (function() {
 		var elements;
 
 		if( !data ) {
-
 			console.error( "GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting." );
-			return;
-
 		} else if( data instanceof GLOW.Elements ) {
-
 			elements = data;
-
 		} else {
-
 			if( !( data instanceof Uint16Array )) {
-
 				data = new Uint16Array( data );
 			}
 
@@ -542,108 +531,120 @@ GLOW.Compiler = (function() {
 	
 	return compiler;
 	
-}());/*
+})();/*
 * Shader Compiled Data
 * @author: Mikael Emtinger, gomo.se
 */
 
-GLOW.CompiledData = function( program, uniforms, attributes, elements ) {
-	
-	this.program = program;
-	this.uniforms = uniforms !== undefined ? uniforms : {};
-	this.attributes = attributes !== undefined ? attributes : {};
-	this.elements = elements;
-}
+GLOW.CompiledData = (function() {
+    
+    "use strict"; "use restrict";
+    
+    // private data, functions and initializations here
 
-GLOW.CompiledData.prototype.clone = function( except ) {
-	
-	var clone = new GLOW.CompiledData();
-	
-	var u;
-	for( u in this.uniforms ) {
-		
-		if( except[ u ] ) {
-			clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
-		} else {
-			clone.uniforms[ u ] = this.uniforms[ u ];
-		}
-	}
+    // constructor
+    
+    function compiledData( program, uniforms, attributes, elements ) {
+	    this.program = program;
+	    this.uniforms = uniforms !== undefined ? uniforms : {};
+	    this.attributes = attributes !== undefined ? attributes : {};
+	    this.elements = elements;
+    }
 
-	var a;
-	for( a in this.attributes ) {
-		
-		if( except[ a ] ) {
-			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
-		} else {
-			clone.attributes[ a ] = this.attributes[ a ];
-		}
-	}
 
-	if( except.elements ) {
-		clone.elements = new GLOW.Elements( except.elements );
-	} else {
-		clone.elements = this.elements;
-	}
+    compiledData.prototype.clone = function( except ) {
+    	var clone = new GLOW.CompiledData();
 
-	clone.program = this.program;
-	
-	return clone;
-}/*
+    	var u;
+    	for( u in this.uniforms ) {
+    		if( except[ u ] ) {
+    			clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
+    		} else {
+    			clone.uniforms[ u ] = this.uniforms[ u ];
+    		}
+    	}
+
+    	var a;
+    	for( a in this.attributes ) {
+    		if( except[ a ] ) {
+    			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
+    		} else {
+    			clone.attributes[ a ] = this.attributes[ a ];
+    		}
+    	}
+
+    	if( except.elements ) {
+    		clone.elements = new GLOW.Elements( except.elements );
+    	} else {
+    		clone.elements = this.elements;
+    	}
+
+    	clone.program = this.program;
+    	return clone;
+    };
+    
+    return compiledData;
+})();
+
+/*
 * Cache
 * @author: Mikael Emtinger, gomo.se
 */
 
-GLOW.Cache = function() {
+GLOW.Cache = (function() {
+    
     "use strict"; "use restrict";
 
-    this.highestAttributeNumber = -1;
-    this.uniformByLocation = [];
-    this.attributeByLocation = [];
-    this.textureByLocation = [];
-    this.elementId = -1;
-    this.programId = -1;
-};
+    // private data, functions and initializations here
 
-(function() {
-    "use strict"; "use restrict";
+    // constructor
+    function cache() {
+        this.highestAttributeNumber = -1;
+        this.uniformByLocation = [];
+        this.attributeByLocation = [];
+        this.textureByLocation = [];
+        this.elementId = -1;
+        this.programId = -1;
+    }
 
-    GLOW.Cache.prototype.programCached = function( program ) {
+    // methods
+    cache.prototype.programCached = function( program ) {
         if( program.id === this.programId ) return true;
         this.programId = program.id;
         return false;
     };
 
-    GLOW.Cache.prototype.setProgramHighestAttributeNumber = function( program ) {
+    cache.prototype.setProgramHighestAttributeNumber = function( program ) {
         var saveHighestAttributeNumber = this.highestAttributeNumber;
         this.highestAttributeNumber = program.highestAttributeNumber;
         return program.highestAttributeNumber - saveHighestAttributeNumber;
     };
 
-    GLOW.Cache.prototype.uniformCached = function( uniform ) {
+    cache.prototype.uniformCached = function( uniform ) {
         if( this.uniformByLocation[ uniform.locationNumber ] === uniform.id ) return true;
         this.uniformByLocation[ uniform.locationNumber ] = uniform.id
         return false;
     };
 
-    GLOW.Cache.prototype.attributeCached = function( attribute ) {
+    cache.prototype.attributeCached = function( attribute ) {
         if( this.attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
         this.attributeByLocation[ attribute.locationNumber ] = attribute.id
         return false;
     };
 
-    GLOW.Cache.prototype.textureCached = function( texture ) {
+    cache.prototype.textureCached = function( texture ) {
         if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
         this.textureByLocation[ texture.textureUnit ] = texture.id
         return false;
     };
 
-    GLOW.Cache.prototype.elementsCached = function( elements ) {
+    cache.prototype.elementsCached = function( elements ) {
         if( elements.id === this.elementId ) return true;
         this.elementId = elements.id;
         return false;
     };
 
-    GLOW.Cache.prototype.clear = function() {
+    cache.prototype.clear = function() {
         this.highestAttributeNumber = -1;
         this.uniformByLocation.length = 0;
         this.attributeByLocation.length = 0;
@@ -651,140 +652,128 @@ GLOW.Cache = function() {
         this.elementId = -1;
         this.programId = -1;
     };
+    
+    return cache;
 })();
-GLOW.FBO = function( width, height, parameters ) {
-	
-	"use strict";
-	
-	this.id     = GLOW.uniqueId();
-	this.width  = width  !== undefined ? width  : window.innerWidth;
-	this.height = height !== undefined ? height : window.innerHeight;
-	
-	parameters = parameters !== undefined ? parameters : {};
+GLOW.FBO = (function() {
+    
+    "use strict"; "use restrict";
 
-	var wrapS     = parameters.wrapS     !== undefined ? parameters.wrapS     : GL.CLAMP_TO_EDGE;
-	var wrapT     = parameters.wrapT     !== undefined ? parameters.wrapT     : GL.CLAMP_TO_EDGE;
-	var magFilter = parameters.magFilter !== undefined ? parameters.magFilter : GL.LINEAR;
-	var minFilter = parameters.minFilter !== undefined ? parameters.minFilter : GL.LINEAR;
-	var format    = parameters.format    !== undefined ? parameters.format    : GL.RGBA;
-	var depth     = parameters.depth     !== undefined ? parameters.depth     : true;
-	var stencil   = parameters.stencil   !== undefined ? paramaters.stencil   : false;
+    // privates
+	var wrapS;
+	var wrapT;
+	var magFilter;
+	var minFilter;
+	var format;
+	var depth;
+	var stencil;
+	var width;
+	var height;
+	var textureUnit;
 
-	this.frameBuffer  = GL.createFramebuffer();
-	this.renderBuffer = GL.createRenderbuffer();
-	this.texture      = GL.createTexture();
-	this.textureUnit  = -1;
-	this.viewport     = { x: 0, y: 0, width: this.width, height: this.height };
+	// constructor
+	function fbo( parameters ) {
 
-	try {
-		
-		// setup texture
+    	this.id     = GLOW.uniqueId();
 
-		GL.bindTexture( GL.TEXTURE_2D, this.texture );
-		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, wrapS );
-		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, wrapT );
-		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, magFilter );
-		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, minFilter );
-		GL.texImage2D( GL.TEXTURE_2D, 0, format, this.width, this.height, 0, format, GL.UNSIGNED_BYTE, null );
+    	parameters = parameters !== undefined ? parameters : {};
 
+    	width     = parameters.width     !== undefined ? parameters.width     : window.innerWidth;
+    	height    = parameters.height    !== undefined ? parameters.height    : window.innerHeight;
+    	wrapS     = parameters.wrapS     !== undefined ? parameters.wrapS     : GL.CLAMP_TO_EDGE;
+    	wrapT     = parameters.wrapT     !== undefined ? parameters.wrapT     : GL.CLAMP_TO_EDGE;
+    	magFilter = parameters.magFilter !== undefined ? parameters.magFilter : GL.LINEAR;
+    	minFilter = parameters.minFilter !== undefined ? parameters.minFilter : GL.LINEAR;
+    	format    = parameters.format    !== undefined ? parameters.format    : GL.RGBA;
+    	depth     = parameters.depth     !== undefined ? parameters.depth     : true;
+    	stencil   = parameters.stencil   !== undefined ? paramaters.stencil   : false;
 
-		// setup buffers
+    	this.textureUnit  = -1;
+    	this.frameBuffer  = GL.createFramebuffer();
+    	this.renderBuffer = GL.createRenderbuffer();
+    	this.texture      = GL.createTexture();
+    	this.viewport     = { x: 0, y: 0, width: width, height: height };
 
-		GL.bindRenderbuffer( GL.RENDERBUFFER, this.renderBuffer );
-		GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+    	try {
+    		// setup texture
+    		GL.bindTexture( GL.TEXTURE_2D, this.texture );
+    		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, wrapS );
+    		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, wrapT );
+    		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, magFilter );
+    		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, minFilter );
+    		GL.texImage2D( GL.TEXTURE_2D, 0, format, width, height, 0, format, GL.UNSIGNED_BYTE, null );
 
-		GL.framebufferTexture2D( GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, this.texture, 0 );
+    		// setup buffers
+    		GL.bindRenderbuffer( GL.RENDERBUFFER, this.renderBuffer );
+    		GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+    		GL.framebufferTexture2D( GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, this.texture, 0 );
 
-		if( depth && !stencil ) {
+    		if( depth && !stencil ) {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_COMPONENT16, width, height );
+    			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		/* For some reason combination !depth and stencil is not working. Defaulting to RGBA4.	
+    		} else if( !depth && stencil ) {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.STENCIL_INDEX8, width, height );
+    			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		*/
+    		} else if( depth && stencil ) {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_STENCIL, width, height );
+    			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		} else {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.RGBA4, width, height );
+    		}
 
-			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_COMPONENT16, this.width, this.height );
-			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		// release
+    		GL.bindTexture( GL.TEXTURE_2D, null );
+    		GL.bindRenderbuffer( GL.RENDERBUFFER, null );
+    		GL.bindFramebuffer( GL.FRAMEBUFFER, null);
 
-		/* For some reason combination !depth and stencil is not working. Defaulting to RGBA4.	
-		} else if( !renderTexture.depthBuffer && renderTexture.stencilBuffer ) {
-
-			GL.renderbufferStorage( GL.RENDERBUFFER, GL.STENCIL_INDEX8, width, height );
-			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.STENCIL_ATTACHMENT, GL.RENDERBUFFER, renderBuffer );
-		*/
-		} else if( depth && stencil ) {
-
-			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_STENCIL, this.width, this.height );
-			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
-
-		} else {
-
-			GL.renderbufferStorage( GL.RENDERBUFFER, GL.RGBA4, this.width, this.height );
-		}
-
-		// release
-
-		GL.bindTexture( GL.TEXTURE_2D, null );
-		GL.bindRenderbuffer( GL.RENDERBUFFER, null );
-		GL.bindFramebuffer( GL.FRAMEBUFFER, null);
-
-	} catch( error ) {
-		
-		console.error( "GLOW.FBO.construct: " + error );
-		return;
+    	} catch( error ) {
+    		console.error( "GLOW.FBO.construct: " + error );
+    	}
 	}
-}
 
-/*
-* Prototypes
-*/
+    // methods
+    fbo.prototype.init = function( textureUnit ) {
+    	this.textureUnit = textureUnit;
+    }
 
-GLOW.FBO.prototype.init = function( textureUnit ) {
-	
-	this.textureUnit = textureUnit;
-}
+    fbo.prototype.bind = function() {
+    	// TODO: add cache
+    	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+    	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
+    	return this;
+    }
 
+    fbo.prototype.unbind = function() {
+    	// TODO: add cache
+    	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
+    	GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
+    	return this;
+    }
 
-GLOW.FBO.prototype.bind = function() {
-	
-	// TODO: add cache
-	
-	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
-	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
-	
-	return this;
-}
+    fbo.prototype.setupViewport = function( setup ) {
+    	this.viewport.x = setup.x !== undefined ? setup.x : 0;
+    	this.viewport.y = setup.y !== undefined ? setup.y : 0;
+    	this.viewport.width = setup.width !== undefined ? setup.width : window.innerWidth;
+    	this.viewport.height = setup.height !== undefined ? setup.height : window.innerHeight;
+    	return this;
+    }
 
+    fbo.prototype.resize = function() {
+    	// TODO
+    	return this;
+    }
 
-GLOW.FBO.prototype.unbind = function() {
-	
-	// TODO: add cache
-	
-	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
-	GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
-	
-	return this;
-}
-
-GLOW.FBO.prototype.setupViewport = function( setup ) {
-	
-	this.viewport.x = setup.x !== undefined ? setup.x : 0;
-	this.viewport.y = setup.y !== undefined ? setup.y : 0;
-	this.viewport.width = setup.width !== undefined ? setup.width : window.innerWidth;
-	this.viewport.height = setup.height !== undefined ? setup.height : window.innerHeight;
-	
-	return this;
-}
-
-GLOW.FBO.prototype.resize = function() {
-	
-	// TODO
-	
-	return this;
-}
-
-GLOW.FBO.prototype.generateMipMaps = function() {
-
-	GL.bindTexture( GL.TEXTURE_2D, this.texture );
-	GL.generateMipmap( GL.TEXTURE_2D );
-	GL.bindTexture( GL.TEXTURE_2D, null );
-	
-	return this;
-}
+    fbo.prototype.generateMipMaps = function() {
+    	GL.bindTexture( GL.TEXTURE_2D, this.texture );
+    	GL.generateMipmap( GL.TEXTURE_2D );
+    	GL.bindTexture( GL.TEXTURE_2D, null );
+    	return this;
+    }
+    
+    return fbo;
+})();
 GLOW.Texture = function( url ) {
 	
 	"use strict";
@@ -840,6 +829,7 @@ GLOW.Texture.prototype.onLoad = function() {
 */
 
 GLOW.Shader = (function() {
+    
     "use strict"; "use restrict";
 
     // private data, functions and initializations here
@@ -937,6 +927,7 @@ GLOW.Shader = (function() {
 */
 
 GLOW.Elements = (function() {
+    
     "use strict"; "use restrict";
 
     // private data, functions and initializations here
@@ -972,7 +963,6 @@ GLOW.Uniform = (function() {
     function lazyInit() {
         // lazy initialization so we know we got GL bound to a context
 
-        // TODO: support other types of data than GLOW.Matrix/Vector
         setFunctions[GL.INT] = function() { GL.uniform1i(this.location, this.value()); };
         setFunctions[GL.INT_VEC2] = function() { GL.uniform2i(this.location, this.value(0), this.value(1)); };
         setFunctions[GL.INT_VEC3] = function() { GL.uniform3i(this.location, this.value(0), this.value(1), this.value(2)); };
@@ -1015,13 +1005,11 @@ GLOW.Uniform = (function() {
 
         this.id = GLOW.uniqueId();
         this.data = data;
-        this.location = parameters.location;
-        this.locationNumber = parameters.locationNumber;
-
-        // todo should all of these really get stored?
         this.name = parameters.name;
         this.length = parameters.length;
         this.type = parameters.type;
+        this.location = parameters.location;
+        this.locationNumber = parameters.locationNumber;
 
         this.load = parameters.load ||
             (this.length !== undefined && this.length > 1) ?
@@ -1117,6 +1105,9 @@ GLOW.Attribute = (function() {
 
     return attribute;
 })();
+
+// todo better names for setData and bind.
+// todo remove this.locationNumber? seems to be the same as this.location
 /*
 * GLOW.Float
 * @author: Mikael Emtinger, gomo.se
@@ -2178,7 +2169,6 @@ GLOW.Node = function( shader ) {
 	this.parent   = undefined;
 	
 	if( shader ) {
-		
 		this.shader = shader;
 		this.draw = shader.draw;
 	}
