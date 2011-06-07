@@ -7,4 +7,4 @@ The aim of the project is to create a just-above-low-level API for easy WebGL sh
 
 ### Check out the blog ###
 
-####[I-AM-GLOW.COM](http//i-am-glow.com/) 
+####[I-AM-GLOW.COM](http://i-am-glow.com/) 
