@@ -189,15 +189,10 @@ GLOW.Compiler = (function() {
 			name    = uniform.name;
 			
 			if( data[ name ] === undefined ) {
-
 				console.warn( "GLOW.Compiler.createUniforms: missing declaration for uniform " + name );
-
 			} else if( data[ name ] instanceof GLOW.Uniform ) {
-
 				uniforms[ name ] = data[ name ];
-
 			} else {
-
 				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
 
 				if( uniforms[ name ].type === GL.SAMPLER_2D ) {
@@ -224,15 +219,10 @@ GLOW.Compiler = (function() {
 			name      = attribute.name;
 			
 			if( data[ name ] === undefined ) {
-
 				console.warn( "GLOW.Compiler.createAttributes: missing declaration for attribute " + name );
-
 			} else if( data[ name ] instanceof GLOW.Attribute ) {
-
 				attributes[ name ] = data[ name ];
-
 			} else {
-
 				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ] );
 			}
 		}
