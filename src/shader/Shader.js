@@ -21,7 +21,7 @@ GLOW.Shader = (function() {
 
         this.compiledData = parameters.use ?
             parameters.use.clone(parameters.except) :
-            GLOW.Compiler.compile(parameters.vertexShader, parameters.fragmentShader, parameters.data, parameters.elements);
+            GLOW.Compiler.compile(parameters);
 
         this.attachData();
     }

@@ -13,37 +13,38 @@ GLOW.Compiler = (function() {
 	var compiledCode = [];
 	
 	//--- compile ------------------------------------------
-	// vertexShaderCode = string, the vertex shader code
-	// fragmentShaderCode = string, the framgnet shader code
-	// uniformsAndAttributes = object, for example { transform: GLOW.Matrix4 }
-	// elements = array or UInt16Array with elements
+	// parameter object containing:
+	//  vertexShaderCode = string, the vertex shader code
+	//  fragmentShaderCode = string, the framgnet shader code
+	//  uniformsAndAttributes = object, for example { transform: GLOW.Matrix4 }
+	//  elements = array or UInt16Array with elements
 	
-	compiler.compile = function( vertexShaderCode, fragmentShaderCode, uniformAndAttributeData, elements ) {
+	compiler.compile = function( parameters ) {
 		var c, cl = compiledCode.length;
 		var code;
 		var program;
 		
 		for( c = 0; c < cl; c++ ) {
 			code = compiledCode[ c ];
-			if( vertexShaderCode   === code.vertexShaderCode &&
-				fragmentShaderCode === code.fragmentShaderCode ) { break; }
+			if( parameters.vertexShader   === code.vertexShader &&
+				parameters.fragmentShader === code.fragmentShader ) { break; }
 		}
 
 		if( c === cl ) {
-			program = compiler.linkProgram( compiler.compileVertexShader  ( vertexShaderCode   ),
-			                                compiler.compileFragmentShader( fragmentShaderCode ));
+			program = compiler.linkProgram( compiler.compileVertexShader  ( parameters.vertexShader   ),
+			                                compiler.compileFragmentShader( parameters.fragmentShader ));
 
-			compiledCode.push( { vertexShaderCode: vertexShaderCode, 
-				                 fragmentShaderCode: fragmentShaderCode,
+			compiledCode.push( { vertexShader: parameters.vertexShader, 
+				                 fragmentShader: parameters.fragmentShader,
 				                 program: program } );
 		} else {
 			program = code.program;
 		}
 		
 		return new GLOW.CompiledData( program, 
-			                          compiler.createUniforms  ( compiler.extractUniforms  ( program ), uniformAndAttributeData ),
-			                          compiler.createAttributes( compiler.extractAttributes( program ), uniformAndAttributeData ),
-			                          compiler.createElements  ( elements ));
+			                          compiler.createUniforms  ( compiler.extractUniforms  ( program ), parameters.data ),
+			                          compiler.createAttributes( compiler.extractAttributes( program ), parameters.data ),
+			                          compiler.createElements  ( parameters.elements ));
 	}
 
 
