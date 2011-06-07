@@ -18,6 +18,8 @@
 	<body>
 		<div id="container"></div>
 
+		<script type="text/javascript" src="http://mrdoob.github.com/three.js/build/Three.js"></script>
+		
 		<script type="text/javascript" src="src/GLOW.js"></script>
 		<script type="text/javascript" src="src/core/Context.js"></script>
 		<script type="text/javascript" src="src/core/Compiler.js"></script>
@@ -31,7 +33,9 @@
 		<script type="text/javascript" src="src/shader/Uniform.js"></script>
 		<script type="text/javascript" src="src/shader/Attribute.js"></script>
 
-		<script type="text/javascript" src="src/extras/math/Float.js"></script>
+		<script type="text/javascript" src="src/extras/compatibility/Three.js"></script>
+
+<!--		<script type="text/javascript" src="src/extras/math/Float.js"></script>
 		<script type="text/javascript" src="src/extras/math/Int.js"></script>
 		<script type="text/javascript" src="src/extras/math/Vector2.js"></script>
 		<script type="text/javascript" src="src/extras/math/Vector3.js"></script>
@@ -40,7 +44,7 @@
 		<script type="text/javascript" src="src/extras/math/Matrix4.js"></script>
 
 		<script type="text/javascript" src="src/extras/graph/Node.js"></script>
-		<script type="text/javascript" src="src/extras/graph/Camera.js"></script>
+		<script type="text/javascript" src="src/extras/graph/Camera.js"></script>-->
 
 		<script type="text/javascript" src="src/extras/geometry/Geometry.js"></script>
 		<script type="text/javascript" src="src/extras/geometry/Cube.js"></script>
@@ -50,20 +54,20 @@
 
 		<script type="text/javascript">
 		
+			var camera = new THREE.Camera( 50, window.innerWidth / window.innerHeight, 0.1, 10000 );
+			camera.position.z = 1500;
+			camera.update();
+			
+			var obj = new THREE.Object3D();
+		
 			var shaderInfo = {
 				
 				data: {
 
-					clouds: new GLOW.Texture( "examples/textures/clouds.jpg" ),
-					time: new GLOW.Float(),
-					glow: new GLOW.Float(),
-					offset: new GLOW.Float(),
-					transform: new GLOW.Matrix4(),
-					cameraInverse: GLOW.defaultCamera.inverse,
-					cameraProjection: GLOW.defaultCamera.projection,
-					vertices: GLOW.Geometry.Cube.vertices( 50 ),
-					uvs: GLOW.Geometry.Cube.uvs(),
-					normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices( 50 ), GLOW.Geometry.Cube.elements())
+					transform: obj.matrixWorld,
+					cameraInverse: camera.matrixWorldInverse,
+					cameraProjection: camera.projectionMatrix,
+					vertices: GLOW.Geometry.Cube.vertices( 500 )
 				},
 
 				elements: GLOW.Geometry.Cube.elements(),
@@ -73,20 +77,12 @@
 					"uniform	mat4 	transform;",
 					"uniform 	mat4 	cameraInverse;",
 					"uniform 	mat4 	cameraProjection;",
-					"uniform    float   offset;",
-					"uniform    float   time;",
 
 					"attribute 	vec3 	vertices;",
-					"attribute  vec3	normals;",
-					
-					"varying 	float	lightWeight;",
 
 					"void main(void)",
 					"{",
-						"mat4 viewMatrix = cameraInverse * transform;",
-						"vec3 transformedNormal = mat3( viewMatrix[ 0 ].xyz, viewMatrix[ 1 ].xyz, viewMatrix[ 2 ].xyz ) * normals;",
-						"lightWeight = max( 0.2, dot( transformedNormal, vec3( 0.0, 1.0, 0.0 )));",
-						"gl_Position = cameraProjection * viewMatrix * vec4( vertices * ( sin( time * 5.0 + offset ) * 0.5 + 1.0 ), 1.0 );",
+						"gl_Position = cameraProjection * cameraInverse * cameraInverse * transform * vec4( vertices, 1.0 );",
 					"}"
 						
 				].join( "\n" ),
@@ -97,21 +93,16 @@
 						"precision highp float;",
 					"#endif",		
 
-					"uniform 	sampler2D 	clouds;",
-					"uniform	float		glow;",
-					"uniform	float		time;",
-					"varying 	float		lightWeight;",
-
 					"void main( void )",
 					"{",
-						"vec3 color = vec3( sin( glow + time ), cos( glow + time ), sin( glow + time * 2.0 )) * lightWeight;",
+						"vec3 color = vec3( sin( gl_FragCoord.x ), cos( gl_FragCoord.y ), sin( gl_FragCoord.z ));",
 						"gl_FragColor = vec4( color, 1.0 );",
 					"}"
 
 				].join( "\n" )
 			}
 			
-			var postShaderInfo = {
+/*			var postShaderInfo = {
 				
 				data: {
 					
@@ -154,14 +145,11 @@
 
 				].join( "\n" )
 			}
-		
-		</script>
+*/		
 
-		<script type="text/javascript">
-							
 			var container, stats;
 			var mouseX = 0, mouseY = 0;
-			var shaders, topNode, context, t = 0;
+			var shader, shaders, topNode, context, t = 0;
 			var postShader, t = 0;
 
 			var windowHalfX = window.innerWidth / 2;
@@ -171,47 +159,16 @@
 			
 			// init cubes
 			
+			GLOW.ThreeJS.init();
+			
 			context = new GLOW.Context();
-			topNode = new GLOW.Node();
-			compiledData = GLOW.Compiler.compile( shaderInfo );
-			shaders = [];
-			
-			
-			var thisNode;
-			var prevNode = topNode;
-			
-			for( var a = 0; a < 100; a++ ) {
-				
-				thisNode = new GLOW.Node();
-				thisNode.localMatrix.setPosition( 0, 50, 0 ).setRotation( Math.random()*0.5, Math.random()*0.5, Math.random()*0.5 );
+			shader = new GLOW.Shader( shaderInfo );
 
-				prevNode.addChild( thisNode );
-				prevNode = thisNode;
-
-				instanceData = {};
-				instanceData.transform = thisNode.globalMatrix;
-				instanceData.glow      = new GLOW.Float( Math.random());
-				instanceData.offset    = new GLOW.Float( a );
-
-				shaders.push( new GLOW.Shader( { use: compiledData, except: instanceData } ));
-			}
-			
-			topNode.update();
-
-			
-			// init post shader
-			
-			postShaderInfo.data.fboTexture = FBO = new GLOW.FBO();
-			postShader = new GLOW.Shader( postShaderInfo );
-			
 			
 			// init dom and camera
 			
 			container = document.getElementById( 'container' );
 			container.appendChild( context.domElement );
-			
-			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 1500 );
-			GLOW.defaultCamera.update();
 			
 			
 			// stats
@@ -229,26 +186,14 @@
 
 			function render() {
 
-				t += 0.01;
-
-				GLOW.defaultCamera.localMatrix.setPosition( Math.sin( t ) * 3000, -mouseY * 1000, Math.cos( t ) * 3000 );
-				GLOW.defaultCamera.update();
-
-				shaders[ 0 ].time.set( t );
-				postShader.offset.set( Math.sin( t ) * 0.2, Math.cos( t ) * 0.2, Math.sin( t ), Math.cos( t ));
+				obj.rotation.x += 0.1;
+				obj.rotation.y += 0.1;
+				obj.rotation.z += 0.1;
+				obj.update();
 
 				context.cache.clear();
-				FBO.bind();
 				context.clear();
-				
-				var a, al = shaders.length;
-				for( a = 0; a < al; a++ ) {
-					
-					shaders[ a ].draw();
-				}
-
-				FBO.unbind();
-				postShader.draw();
+				shader.draw();
 
 				stats.update();
 			}
