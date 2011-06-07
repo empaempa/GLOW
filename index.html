@@ -50,16 +50,20 @@
 		
 			var shaderInfo = {
 				
-				clouds: new GLOW.Texture( "examples/textures/clouds.jpg" ),
-				time: new GLOW.Float(),
-				glow: new GLOW.Float(),
-				offset: new GLOW.Float(),
-				transform: new GLOW.Matrix4(),
-				cameraInverse: GLOW.defaultCamera.inverse,
-				cameraProjection: GLOW.defaultCamera.projection,
-				vertices: GLOW.Geometry.Cube.vertices( 50 ),
-				uvs: GLOW.Geometry.Cube.uvs(),
-				normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices( 50 ), GLOW.Geometry.Cube.elements()),
+				data: {
+
+					clouds: new GLOW.Texture( "examples/textures/clouds.jpg" ),
+					time: new GLOW.Float(),
+					glow: new GLOW.Float(),
+					offset: new GLOW.Float(),
+					transform: new GLOW.Matrix4(),
+					cameraInverse: GLOW.defaultCamera.inverse,
+					cameraProjection: GLOW.defaultCamera.projection,
+					vertices: GLOW.Geometry.Cube.vertices( 50 ),
+					uvs: GLOW.Geometry.Cube.uvs(),
+					normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices( 50 ), GLOW.Geometry.Cube.elements())
+				},
+
 				elements: GLOW.Geometry.Cube.elements(),
 	
 				vertexShader: [
@@ -107,16 +111,19 @@
 			
 			var postShaderInfo = {
 				
-				fboTexture: undefined,
-				vertices: GLOW.Geometry.Plane.vertices(),
-				uvs: GLOW.Geometry.Plane.uvs(),
+				data: {
+					
+					fboTexture: undefined,
+					vertices: GLOW.Geometry.Plane.vertices(),
+					uvs: GLOW.Geometry.Plane.uvs()
+				},
+
 				elements: GLOW.Geometry.Plane.elements(),
 				
 				vertexShader: [
 
 					"attribute 	vec3 	vertices;",
 					"attribute  vec2	uvs;",
-					
 					"varying 	vec2	uv;",
 
 					"void main(void)",
@@ -138,7 +145,7 @@
 
 					"void main( void )",
 					"{",
-						"gl_FragColor = texture2D( fboTexture, uv );",
+						"gl_FragColor = texture2D( fboTexture, vec2( uv.x + sin( gl_FragCoord.x * 0.01 ) * 0.1, uv.y + cos( gl_FragCoord.y * 0.01 ) * 0.1 ));",
 					"}"
 
 				].join( "\n" )
@@ -162,7 +169,7 @@
 			
 			context = new GLOW.Context();
 			topNode = new GLOW.Node();
-			compiledData = GLOW.Compiler.compile( shaderInfo.vertexShader, shaderInfo.fragmentShader, shaderInfo, shaderInfo.elements );
+			compiledData = GLOW.Compiler.compile( shaderInfo );
 			shaders = [];
 			
 			
@@ -190,11 +197,8 @@
 			
 			// init post shader
 			
-			postShaderInfo.fboTexture = FBO = new GLOW.FBO();
-			postShader = new GLOW.Shader( { vertexShader:   postShaderInfo.vertexShader, 
-				                            fragmentShader: postShaderInfo.fragmentShader, 
-											data:           postShaderInfo, 
-											elements:       postShaderInfo.elements } );
+			postShaderInfo.data.fboTexture = FBO = new GLOW.FBO();
+			postShader = new GLOW.Shader( postShaderInfo );
 			
 			
 			// init dom and camera
@@ -230,7 +234,7 @@
 				FBO.bind();
 				context.clear();
 
-				shaders[ 0 ].time.value = t;
+				shaders[ 0 ].time.value[ 0 ] = t;
 				
 				var a, al = shaders.length;
 				for( a = 0; a < al; a++ ) {

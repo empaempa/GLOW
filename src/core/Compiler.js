@@ -225,7 +225,7 @@ GLOW.Compiler = (function() {
 			
 			if( data[ name ] === undefined ) {
 
-				console.warning( "GLOW.Compiler.createAttributes: missing declaration for attribute " + name );
+				console.warn( "GLOW.Compiler.createAttributes: missing declaration for attribute " + name );
 
 			} else if( data[ name ] instanceof GLOW.Attribute ) {
 
