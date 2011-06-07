@@ -1,87 +1,2325 @@
 // GLOW.js r1 - http://github.com/empaempa/GLOW
-var GLOW=function(){var a={},b={},c=-1;a.currentContext={};a.registerContext=function(c){b[c.id]=c;a.enableContext(c)};a.getContextById=function(c){if(b[c])return b[c];console.error("Couldn't find context id "+c+", returning current with id "+a.currentContext.id);return a.currentContext};a.enableContext=function(b){a.currentContext=typeof b==="string"?getContextById(b):b;GL=a.GL=a.currentContext.GL};a.uniqueId=function(){return++c};return a}(),GL={};
-GLOW.Context=function(a){a===void 0&&(a={});this.id=a.id!==void 0?a.id:GLOW.uniqueId();this.alpha=a.alpha!==void 0?a.alpha:!0;this.depth=a.depth!==void 0?a.depth:!0;this.antialias=a.antialias!==void 0?a.antialias:!0;this.stencil=a.stencil!==void 0?a.stencil:!1;this.premultipliedAlpha=a.premultipliedAlpha!==void 0?a.premultipliedAlpha:!0;this.preserveDrawingBuffer=a.preserveDrawingBuffer!==void 0?a.preserveDrawingBuffer:!1;this.width=a.width!==void 0?a.width:window.innerWidth;this.height=a.height!==
-void 0?parmaeters.height:window.innerHeight;try{this.domElement=document.createElement("canvas"),this.GL=this.domElement.getContext("experimental-webgl",{alpha:this.alpha,depth:this.depth,antialias:this.antialias,stencil:this.stencil,premultipliedAlpha:this.premultipliedAlpha,preserveDrawingBuffer:this.preserveDrawingBuffer}),this.domElement.width=this.width,this.domElement.height=this.height,this.GL.viewport(0,0,this.width,this.height)}catch(b){console.error("GLOW.Context.construct: "+b)}GLOW.registerContext(this);
-this.cache=new GLOW.Cache;this.enableCulling(!1);this.enableDepthTest(!0,{func:GL.LEQUAL,write:!0,zNear:0,zFar:1});this.enableBlend(!1);this.setupClear({clearBits:GL.COLOR_BUFFER_BIT|GL.DEPTH_BUFFER_BIT});this.clear()};
-GLOW.Context.prototype.setupClear=function(a){var b=a.depth!==void 0?Math.min(1,Math.max(0,a.depth)):1;GL.clearColor(a.red!==void 0?Math.min(1,Math.max(0,a.red)):0,a.green!==void 0?Math.min(1,Math.max(0,a.green)):0,a.blue!==void 0?Math.min(1,Math.max(0,a.blue)):0,a.alpha!==void 0?Math.min(1,Math.max(0,a.alpha)):1);GL.clearDepth(b);this.clearBits=a.clearBits!==void 0?a.clearBits:this.clearBits;return this};GLOW.Context.prototype.clear=function(a){if(a===void 0)a=this.clearBits;GL.clear(a);return this};
-GLOW.Context.prototype.enableBlend=function(a,b){a?(GL.enable(GL.BLEND),b&&this.setupBlend(b)):GL.disable(GL.BLEND);return this};
-GLOW.Context.prototype.setupBlend=function(a){if(a.equationRGB)try{a.equationAlpha&&GL.blendEquationSeparate(a.equationRGB,a.equationAlpha),a.srcRGB&&GL.blendFuncSeparate(a.srcRGB,a.dstRGB,a.srcAlpha,a.dstAlpha)}catch(b){console.error("GLOW.Context.setupBlend: "+b)}else try{a.equation&&GL.blendEquation(a.equation),a.src&&GL.blendFunc(a.src,a.dst)}catch(c){console.error("GLOW.Context.setupBlend: "+c)}return this};
-GLOW.Context.prototype.enableDepthTest=function(a,b){a?(GL.enable(GL.DEPTH_TEST),b&&this.setupDepthTest(b)):GL.disable(GL.DEPTH_TEST);return this};GLOW.Context.prototype.setupDepthTest=function(a){try{a.func!==void 0&&GL.depthFunc(a.func),a.write!==void 0&&GL.depthMask(a.write),a.zNear!==void 0&&a.zFar!==void 0&&a.zNear<=a.zFar&&GL.depthRange(Math.max(0,Math.min(1,a.zNear)),Math.max(0,Math.min(1,a.zFar)))}catch(b){console.log("GLOW.Context.setupDepthTest: "+b)}return this};
-GLOW.Context.prototype.enableStencilTest=function(a,b){a?(GL.enable(GL.STENCIL_TEST),b&&this.setupStencilTest(b)):GL.disable(GL.STENCIL_TEST);return this};GLOW.Context.prototype.setupStencilTest=function(){return this};GLOW.Context.prototype.enableCulling=function(a,b){a?(GL.enable(GL.CULL_FACE),b&&this.setupCulling(b)):GL.disable(GL.CULL_FACE);return this};
-GLOW.Context.prototype.setupCulling=function(a){try{a.frontFace&&GL.frontFace(a.frontFace),a.cullFace&&GL.cullFace(a.cullFace)}catch(b){console.error("GLOW.Context.setupCulling: "+b)}return this};GLOW.Context.prototype.enableScissorTest=function(a,b){a?(GL.enable(GL.SCISSOR_TEST),b&&this.setupScissorTest(b)):GL.disable(GL.SCISSOR_TEST);return this};GLOW.Context.prototype.setupScissorTest=function(){return this};GLOW.Context.prototype.setupViewport=function(){return this};
-GLOW.Compiler=function(){var a={},b=[];a.compile=function(c,e,d,g){var h,f=b.length,i;for(h=0;h<f;h++)if(i=b[h],c===i.vertexShaderCode&&e===i.fragmentShaderCode)break;h===f?(h=a.linkProgram(a.compileVertexShader(c),a.compileFragmentShader(e)),b.push({vertexShaderCode:c,fragmentShaderCode:e,program:h})):h=i.program;return new GLOW.CompiledData(h,a.createUniforms(a.extractUniforms(h),d),a.createAttributes(a.extractAttributes(h),d),a.createElements(g))};a.compileVertexShader=function(a){var b;b=GL.createShader(GL.VERTEX_SHADER);
-b.id=GLOW.uniqueId();GL.shaderSource(b,a);GL.compileShader(b);GL.getShaderParameter(b,GL.COMPILE_STATUS)||console.error("GLOW.Compiler.compileVertexShader: "+GL.getShaderInfoLog(b));return b};a.compileFragmentShader=function(a){var b;b=GL.createShader(GL.FRAGMENT_SHADER);b.id=GLOW.uniqueId();GL.shaderSource(b,a);GL.compileShader(b);GL.getShaderParameter(b,GL.COMPILE_STATUS)||console.error("GLOW.Compiler.compileFragmentShader: "+GL.getShaderInfoLog(b));return b};a.linkProgram=function(a,b){var d;d=
-GL.createProgram();d.id=GLOW.uniqueId();GL.attachShader(d,a);GL.attachShader(d,b);GL.linkProgram(d);GL.getProgramParameter(d,GL.LINK_STATUS)||console.error("GLOW.Compiler.linkProgram: Could not initialise program");return d};a.extractUniforms=function(a){for(var b={},d,g=0;;){d=GL.getActiveUniform(a,g);if(d!==null&&d!==-1&&d!==void 0)d={name:d.name.split("[")[0],size:d.size,type:d.type,location:GL.getUniformLocation(a,d.name.split("[")[0]),locationNumber:g},b[d.name]=d;else break;g++}return b};a.extractAttributes=
-function(a){for(var b,d=0,g={};;){b=GL.getActiveAttrib(a,d);if(b!==null&&b!==-1&&b!==void 0)b={name:b.name,size:b.size,type:b.type,location:GL.getAttribLocation(a,b.name),locationNumber:d},g[b.name]=b;else break;d++}a.highestAttributeNumber=d-1;return g};a.createUniforms=function(a,b){var d,g={},h,f,i=0;for(d in a)h=a[d],f=h.name,b[f]===void 0?console.warn("GLOW.Compiler.createUniforms: missing declaration for uniform "+f):b[f]instanceof GLOW.Uniform?g[f]=b[f]:(g[f]=new GLOW.Uniform(h,b[f]),g[f].type===
-GL.SAMPLER_2D&&g[f].data.init(i++));return g};a.createAttributes=function(a,b){var d,g,h,f={};for(d in a)g=a[d],h=g.name,b[h]===void 0?console.warning("GLOW.Compiler.createAttributes: missing declaration for attribute "+h):f[h]=b[h]instanceof GLOW.Attribute?b[h]:new GLOW.Attribute(g,b[h]);return f};a.createElements=function(a){var b;a?a instanceof GLOW.Elements?b=a:(a instanceof Uint16Array||(a=new Uint16Array(a)),b=new GLOW.Elements(a)):console.error("GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting.");
-return b};return a}();
-GLOW.CompiledData=function(){function a(a,c,e,d){this.program=a;this.uniforms=c!==void 0?c:{};this.attributes=e!==void 0?e:{};this.elements=d}a.prototype.clone=function(a){var c=new GLOW.CompiledData,e;for(e in this.uniforms)c.uniforms[e]=a[e]?new GLOW.Uniform(this.uniforms[e],a[e]):this.uniforms[e];for(var d in this.attributes)c.attributes[d]=a[d]?new GLOW.Attribute(this.attributes[d],a[d]):this.attributes[d];c.elements=a.elements?new GLOW.Elements(a.elements):this.elements;c.program=this.program;
-return c};return a}();GLOW.Cache=function(){this.highestAttributeNumber=-1;this.uniformByLocation=[];this.attributeByLocation=[];this.textureByLocation=[];this.programId=this.elementId=-1};
-(function(){GLOW.Cache.prototype.programCached=function(a){if(a.id===this.programId)return!0;this.programId=a.id;return!1};GLOW.Cache.prototype.setProgramHighestAttributeNumber=function(a){var b=this.highestAttributeNumber;this.highestAttributeNumber=a.highestAttributeNumber;return a.highestAttributeNumber-b};GLOW.Cache.prototype.uniformCached=function(a){if(this.uniformByLocation[a.locationNumber]===a.id)return!0;this.uniformByLocation[a.locationNumber]=a.id;return!1};GLOW.Cache.prototype.attributeCached=
-function(a){if(this.attributeByLocation[a.locationNumber]===a.id)return!0;this.attributeByLocation[a.locationNumber]=a.id;return!1};GLOW.Cache.prototype.textureCached=function(a){if(this.textureByLocation[a.textureUnit]===a.id)return!0;this.textureByLocation[a.textureUnit]=a.id;return!1};GLOW.Cache.prototype.elementsCached=function(a){if(a.id===this.elementId)return!0;this.elementId=a.id;return!1};GLOW.Cache.prototype.clear=function(){this.highestAttributeNumber=-1;this.uniformByLocation.length=0;
-this.attributeByLocation.length=0;this.textureByLocation.length=0;this.programId=this.elementId=-1}})();
-GLOW.FBO=function(a,b,c){this.id=GLOW.uniqueId();this.width=a!==void 0?a:window.innerWidth;this.height=b!==void 0?b:window.innerHeight;var c=c!==void 0?c:{},a=c.wrapS!==void 0?c.wrapS:GL.CLAMP_TO_EDGE,b=c.wrapT!==void 0?c.wrapT:GL.CLAMP_TO_EDGE,e=c.magFilter!==void 0?c.magFilter:GL.LINEAR,d=c.minFilter!==void 0?c.minFilter:GL.LINEAR,g=c.format!==void 0?c.format:GL.RGBA,h=c.depth!==void 0?c.depth:!0,c=c.stencil!==void 0?paramaters.stencil:!1;this.frameBuffer=GL.createFramebuffer();this.renderBuffer=
-GL.createRenderbuffer();this.texture=GL.createTexture();this.textureUnit=-1;this.viewport={x:0,y:0,width:this.width,height:this.height};try{GL.bindTexture(GL.TEXTURE_2D,this.texture),GL.texParameteri(GL.TEXTURE_2D,GL.TEXTURE_WRAP_S,a),GL.texParameteri(GL.TEXTURE_2D,GL.TEXTURE_WRAP_T,b),GL.texParameteri(GL.TEXTURE_2D,GL.TEXTURE_MAG_FILTER,e),GL.texParameteri(GL.TEXTURE_2D,GL.TEXTURE_MIN_FILTER,d),GL.texImage2D(GL.TEXTURE_2D,0,g,this.width,this.height,0,g,GL.UNSIGNED_BYTE,null),GL.bindRenderbuffer(GL.RENDERBUFFER,
-this.renderBuffer),GL.bindFramebuffer(GL.FRAMEBUFFER,this.frameBuffer),GL.framebufferTexture2D(GL.FRAMEBUFFER,GL.COLOR_ATTACHMENT0,GL.TEXTURE_2D,this.texture,0),h&&!c?(GL.renderbufferStorage(GL.RENDERBUFFER,GL.DEPTH_COMPONENT16,this.width,this.height),GL.framebufferRenderbuffer(GL.FRAMEBUFFER,GL.DEPTH_ATTACHMENT,GL.RENDERBUFFER,this.renderBuffer)):h&&c?(GL.renderbufferStorage(GL.RENDERBUFFER,GL.DEPTH_STENCIL,this.width,this.height),GL.framebufferRenderbuffer(GL.FRAMEBUFFER,GL.DEPTH_STENCIL_ATTACHMENT,
-GL.RENDERBUFFER,this.renderBuffer)):GL.renderbufferStorage(GL.RENDERBUFFER,GL.RGBA4,this.width,this.height),GL.bindTexture(GL.TEXTURE_2D,null),GL.bindRenderbuffer(GL.RENDERBUFFER,null),GL.bindFramebuffer(GL.FRAMEBUFFER,null)}catch(f){console.error("GLOW.FBO.construct: "+f)}};GLOW.FBO.prototype.init=function(a){this.textureUnit=a};
-GLOW.FBO.prototype.bind=function(){GL.bindFramebuffer(GL.FRAMEBUFFER,this.frameBuffer);GL.viewport(this.viewport.x,this.viewport.y,this.viewport.width,this.viewport.height);return this};GLOW.FBO.prototype.unbind=function(){GL.bindFramebuffer(GL.FRAMEBUFFER,null);GL.viewport(0,0,GLOW.currentContext.width,GLOW.currentContext.height);return this};
-GLOW.FBO.prototype.setupViewport=function(a){this.viewport.x=a.x!==void 0?a.x:0;this.viewport.y=a.y!==void 0?a.y:0;this.viewport.width=a.width!==void 0?a.width:window.innerWidth;this.viewport.height=a.height!==void 0?a.height:window.innerHeight;return this};GLOW.FBO.prototype.resize=function(){return this};GLOW.FBO.prototype.generateMipMaps=function(){GL.bindTexture(GL.TEXTURE_2D,this.texture);GL.generateMipmap(GL.TEXTURE_2D);GL.bindTexture(GL.TEXTURE_2D,null);return this};
-GLOW.Texture=function(a){this.url=a;this.id=GLOW.uniqueId();this.textureUnit=-1;this.texture=void 0;this.image=new Image;this.image.scope=this};GLOW.Texture.prototype.init=function(a){this.textureUnit=a;this.image.onload=this.onLoad;this.image.src=this.url};
-GLOW.Texture.prototype.onLoad=function(){var a=this.scope;a.texture=GL.createTexture();GL.bindTexture(GL.TEXTURE_2D,a.texture);GL.texImage2D(GL.TEXTURE_2D,0,GL.RGBA,GL.RGBA,GL.UNSIGNED_BYTE,this);GL.texParameteri(GL.TEXTURE_2D,GL.TEXTURE_WRAP_S,GL.REPEAT);GL.texParameteri(GL.TEXTURE_2D,GL.TEXTURE_WRAP_T,GL.REPEAT);GL.texParameteri(GL.TEXTURE_2D,GL.TEXTURE_MAG_FILTER,GL.LINEAR);GL.texParameteri(GL.TEXTURE_2D,GL.TEXTURE_MIN_FILTER,GL.LINEAR_MIPMAP_LINEAR);GL.generateMipmap(GL.TEXTURE_2D)};
-GLOW.Shader=function(){function a(a){this.id=GLOW.uniqueId();this.compiledData=a.use?a.use.clone(a.except):GLOW.Compiler.compile(a.vertexShader,a.fragmentShader,a.data,a.elements);this.attachData()}a.prototype.attachData=function(){var a,c;for(a in this.compiledData.uniforms)this[a]===void 0?this[a]=this.compiledData.uniforms[a].data:console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on uniform "+a+", not attaching for easy access. Please use Shader.uniforms."+a+".data to access data.");
-for(c in this.compiledData.attributes)this[c]===void 0?this[c]=this.compiledData.attributes[c].data:console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on attribute "+c+", not attaching for easy access. Please use Shader.attributes."+c+".data to access data.")};a.prototype.draw=function(){var a=this.compiledData;if(!GLOW.currentContext.cache.programCached(a.program)){var c=GLOW.currentContext.cache.setProgramHighestAttributeNumber(a.program);if(c){var e=a.program.highestAttributeNumber,
-d=e-c+1;if(c>0)for(;d<=e;d++)GL.enableVertexAttribArray(d);else for(;d>=e;d--)GL.disableVertexAttribArray(d)}GL.useProgram(a.program)}for(var g in a.uniforms)a.uniforms[g].set();for(var h in a.attributes)a.attributes[h].bind();a.elements.draw()};a.prototype.clone=function(a){return new GLOW.Shader({use:this.compiledData,except:a})};a.prototype.dispose=function(){};return a}();
-GLOW.Elements=function(){function a(a){this.id=GLOW.uniqueId();this.elements=GL.createBuffer();this.length=a.length;GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER,this.elements);GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,a,GL.STATIC_DRAW)}a.prototype.draw=function(){GLOW.currentContext.cache.elementsCached(this)||GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER,this.elements);GL.drawElements(GL.TRIANGLES,this.length,GL.UNSIGNED_SHORT,0)};return a}();
-GLOW.Uniform=function(){function a(){e[GL.INT]=function(){GL.uniform1i(this.location,this.value())};e[GL.INT_VEC2]=function(){GL.uniform2i(this.location,this.value(0),this.value(1))};e[GL.INT_VEC3]=function(){GL.uniform3i(this.location,this.value(0),this.value(1),this.value(2))};e[GL.INT_VEC4]=function(){GL.uniform4i(this.location,this.value(0),this.value(1),this.value(2),this.value(3))};e[GL.FLOAT]=function(){GL.uniform1f(this.location,this.value())};e[GL.FLOAT_VEC2]=function(){GL.uniform2f(this.location,
-this.value(0),this.value(1))};e[GL.FLOAT_VEC3]=function(){GL.uniform3f(this.location,this.value(0),this.value(1),this.value(2))};e[GL.FLOAT_VEC4]=function(){GL.uniform4f(this.location,this.value(0),this.value(1),this.value(2),this.value(3))};e[GL.FLOAT_MAT2]=function(){GL.uniformMatrix2fv(this.location,this.transposeUniform(),this.value())};e[GL.FLOAT_MAT3]=function(){GL.uniformMatrix3fv(this.location,this.transposeUniform(),this.value())};e[GL.FLOAT_MAT4]=function(){GL.uniformMatrix4fv(this.location,
-this.transposeUniform(),this.value())};e[GL.SAMPLER_2D]=function(){this.data.texture!==void 0&&this.data.textureUnit!==-1&&!GLOW.currentContext.cache.textureCached(this.data)&&(GL.uniform1i(this.location,this.data.textureUnit),GL.activeTexture(GL.TEXTURE0+this.data.textureUnit),GL.bindTexture(GL.TEXTURE_2D,this.data.texture))};e[GL.SAMPLER_CUBE]=function(){};d[GL.INT]=function(){GL.uniform1iv(this.location,this.value())};d[GL.INT_VEC2]=function(){GL.uniform2iv(this.location,this.value())};d[GL.INT_VEC3]=
-function(){GL.uniform3iv(this.location,this.value())};d[GL.INT_VEC4]=function(){GL.uniform4iv(this.location,this.value())};d[GL.FLOAT]=function(){GL.uniform1fv(this.location,this.value())};d[GL.FLOAT_VEC2]=function(){GL.uniform2fv(this.location,this.value())};d[GL.FLOAT_VEC3]=function(){GL.uniform3fv(this.location,this.value())};d[GL.FLOAT_VEC4]=function(){GL.uniform4fv(this.location,this.value())}}function b(b,h){c||(c=!0,a());this.id=GLOW.uniqueId();this.data=h;this.location=b.location;this.locationNumber=
-b.locationNumber;this.name=b.name;this.length=b.length;this.type=b.type;this.uniformFunction=b.set?b.set:this.length!==void 0&&this.length>1?d[this.type]:e[this.type]}var c=!1,e=[],d=[];b.prototype.set=function(){GLOW.currentContext.cache.uniformCached(this)||this.uniformFunction()};b.prototype.value=function(a){return a===void 0?this.data.value:this.data.value[a]};b.prototype.transposeUniform=function(){return this.data.transposeUniform};return b}();
-GLOW.Attribute=function(){function a(a,d,g){b||(b=!0,c[GL.INT]=1,c[GL.INT_VEC2]=2,c[GL.INT_VEC3]=3,c[GL.INT_VEC4]=4,c[GL.FLOAT]=1,c[GL.FLOAT_VEC2]=2,c[GL.FLOAT_VEC3]=3,c[GL.FLOAT_VEC4]=4,c[GL.FLOAT_MAT2]=4,c[GL.FLOAT_MAT3]=9,c[GL.FLOAT_MAT4]=16);this.id=GLOW.uniqueId();this.data=d;this.location=a.location;this.locationNumber=a.locationNumber;this.offset=this.stride=0;this.size=c[a.type];this.buffer=GL.createBuffer();this.name=a.name;this.type=a.type;if(!g)if(this.data instanceof Float32Array)this.setData(this.data);
-else{for(var a=this.data.length,g=this.size,h=new Float32Array(a*g),f=0,i=0;i<a;i++)for(var k=0;k<g;k++)h[f++]=d[i].value[k];this.setData(h)}}var b=!1,c=[];a.prototype.interleave=function(a,b,c){this.stride=b;this.offset=c};a.prototype.setData=function(a){this.data=a;GL.bindBuffer(GL.ARRAY_BUFFER,this.buffer);GL.bufferData(GL.ARRAY_BUFFER,this.data,GL.STATIC_DRAW)};a.prototype.bind=function(){GLOW.currentContext.cache.attributeCached(this)||(GL.bindBuffer(GL.ARRAY_BUFFER,this.buffer),GL.vertexAttribPointer(this.location,
-this.size,GL.FLOAT,!1,this.stride,this.offset))};return a}();GLOW.Float=function(a){this.value=a!==void 0?a:0};GLOW.Int=function(a){this.value=a!==void 0?a:0};GLOW.Vector3=function(a,b,c){this.value=new Float32Array(3);this.value[0]=a!==void 0?a:0;this.value[1]=b!==void 0?b:0;this.value[2]=c!==void 0?c:0};GLOW.Vector3.prototype.set=function(a,b,c){this.value[0]=a;this.value[1]=b;this.value[2]=c;return this};
-GLOW.Vector3.prototype.copy=function(){this.set(this.value[0],this.value[1],this.value[2]);return this};GLOW.Vector3.prototype.add=function(a,b){a=a.value;b=b.value;this.value[0]=a[0]+b[0];this.value[1]=a[1]+b[1];this.value[2]=a[2]+b[2];return this};GLOW.Vector3.prototype.addSelf=function(a){a=a.value;this.value[0]+=a[0];this.value[1]+=a[1];this.value[2]+=a[2];return this};GLOW.Vector3.prototype.addScalar=function(a){this.value[0]+=a;this.value[1]+=a;this.value[2]+=a;return this};
-GLOW.Vector3.prototype.sub=function(a,b){a=a.value;b=b.value;this.value[0]=a[0]-b[0];this.value[1]=a[1]-b[1];this.value[2]=a[2]-b[2];return this};GLOW.Vector3.prototype.subSelf=function(a){a=a.value;this.value[0]-=a[0];this.value[1]-=a[1];this.value[2]-=a[2];return this};GLOW.Vector3.prototype.cross=function(a,b){a=a.value;b=b.value;this.value[0]=a[1]*b[2]-a[2]*b[1];this.value[1]=a[2]*b[0]-a[0]*b[2];this.value[2]=a[0]*b[1]-a[1]*b[0];return this};
-GLOW.Vector3.prototype.crossSelf=function(a){var a=a.value,b=a[0],c=a[1],a=a[2],e=this.value[0],d=this.value[1],g=this.value[2];this.value[0]=c*g-a*d;this.value[1]=a*e-b*g;this.value[2]=b*d-c*e;return this};GLOW.Vector3.prototype.multiply=function(a,b){a=a.value;b=b.value;this.value[0]=a[0]*b[0];this.value[1]=a[1]*b[1];this.value[2]=a[2]*b[2];return this};GLOW.Vector3.prototype.multiplySelf=function(a){a=a.value;this.value[0]*=a[0];this.value[1]*=a[1];this.value[2]*=a[2];return this};
-GLOW.Vector3.prototype.multiplyScalar=function(a){this.value[0]*=a;this.value[1]*=a;this.value[2]*=a;return this};GLOW.Vector3.prototype.divideSelf=function(a){a=a.value;this.value[0]/=a[0];this.value[1]/=a[1];this.value[2]/=a[2];return this};GLOW.Vector3.prototype.divideScalar=function(a){this.value[0]/=a;this.value[1]/=a;this.value[2]/=a;return this};GLOW.Vector3.prototype.negate=function(){this.value[0]=-this.value[0];this.value[1]=-this.value[1];this.value[2]=-this.value[2];return this};
-GLOW.Vector3.prototype.dot=function(a){a=a.value;return this.value[0]*a[0]+this.value[1]*a[1]+this.value[2]*a[2]};GLOW.Vector3.prototype.distanceTo=function(a){return Math.sqrt(this.distanceToSquared(a))};GLOW.Vector3.prototype.distanceToSquared=function(a){var a=a.value,b=this.value[0]-a[0],c=this.value[1]-a[1],a=this.value[2]-a[2];return b*b+c*c+a*a};GLOW.Vector3.prototype.length=function(){return Math.sqrt(this.lengthSq())};
-GLOW.Vector3.prototype.lengthSq=function(){return this.value[0]*this.value[0]+this.value[1]*this.value[1]+this.value[2]*this.value[2]};GLOW.Vector3.prototype.lengthManhattan=function(){return this.value[0]+this.value[1]+this.value[2]};GLOW.Vector3.prototype.normalize=function(){var a=Math.sqrt(this.value[0]*this.value[0]+this.value[1]*this.value[1]+this.value[2]*this.value[2]);a>0?this.multiplyScalar(1/a):this.set(0,0,0);return this};
-GLOW.Vector3.prototype.setPositionFromMatrix=function(a){a=a.value;this.value[0]=a[12];this.value[1]=a[13];this.value[2]=a[14]};GLOW.Vector3.prototype.setLength=function(a){return this.normalize().multiplyScalar(a)};GLOW.Vector3.prototype.isZero=function(){return Math.abs(this.value[0])<1.0E-4&&Math.abs(this.value[1])<1.0E-4&&Math.abs(this.value[2])<1.0E-4};GLOW.Vector3.prototype.clone=function(){return GLOW.Vector3(this.value[0],this.value[1],this.value[2])};
-GLOW.Matrix3=function(){this.value=new Float32Array(9);this.transposeUniform=!1};GLOW.Matrix3.prototype.set=function(a,b,c,e,d,g,h,f,i){this.value[0]=a;this.value[4]=b;this.value[8]=c;this.value[1]=e;this.value[5]=d;this.value[9]=g;this.value[2]=h;this.value[6]=f;this.value[10]=i;return this};GLOW.Matrix3.prototype.identity=function(){this.set(1,0,0,0,1,0,0,0,1);return this};
-GLOW.Matrix4=function(){this.value=new Float32Array(16);this.transposeUniform=!1;this.rotation=new GLOW.Vector3;this.position=new GLOW.Vector3;this.columnX=new GLOW.Vector3;this.columnY=new GLOW.Vector3;this.columnZ=new GLOW.Vector3;this.identity()};
-GLOW.Matrix4.prototype.set=function(a,b,c,e,d,g,h,f,i,k,l,j,n,q,o,p){this.value[0]=a;this.value[4]=b;this.value[8]=c;this.value[12]=e;this.value[1]=d;this.value[5]=g;this.value[9]=h;this.value[13]=f;this.value[2]=i;this.value[6]=k;this.value[10]=l;this.value[14]=j;this.value[3]=n;this.value[7]=q;this.value[11]=o;this.value[15]=p;return this};GLOW.Matrix4.prototype.identity=function(){this.set(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);return this};
-GLOW.Matrix4.prototype.copy=function(a){a=a.value;this.set(a[0],a[4],a[8],a[12],a[1],a[5],a[9],a[13],a[2],a[6],a[10],a[14],a[3],a[7],a[11],a[15]);return this};
-GLOW.Matrix4.prototype.lookAt=function(a,b){var c=GLOW.Matrix4.tempVector3A,e=GLOW.Matrix4.tempVector3B,d=GLOW.Matrix4.tempVector3C,g=this.getPosition();g.value[0]=this.value[12];g.value[1]=this.value[13];g.value[2]=this.value[14];d.sub(g,a).normalize();d.length()===0&&(d.value[3]=1);c.cross(b,d).normalize();c.length()===0&&(d.value[0]+=1.0E-4,c.cross(b,d).normalize());e.cross(d,c).normalize();c=c.value;e=e.value;d=d.value;this.value[0]=c[0];this.value[4]=e[0];this.value[8]=d[0];this.value[1]=c[1];
-this.value[5]=e[1];this.value[9]=d[1];this.value[2]=c[2];this.value[6]=e[2];this.value[10]=d[2];return this};
-GLOW.Matrix4.prototype.multiplyVector3=function(a){var b=a.value[0],c=a.value[1],e=a.value[2],d=1/(this.value[3]*b+this.value[7]*c+this.value[11]*e+this.value[15]);a.value[0]=(this.value[0]*b+this.value[4]*c+this.value[8]*e+this.value[12])*d;a.value[1]=(this.value[1]*b+this.value[5]*c+this.value[9]*e+this.value[13])*d;a.value[2]=(this.value[2]*b+this.value[6]*c+this.value[10]*e+this.value[14])*d;return a};
-GLOW.Matrix4.prototype.multiplyVector4=function(a){var b=a.value[0],c=a.value[1],e=a.value[2],d=a.value[3];a.value[0]=this.value[0]*b+this.value[4]*c+this.value[8]*e+this.value[12]*d;a.value[1]=this.value[1]*b+this.value[5]*c+this.value[9]*e+this.value[13]*d;a.value[2]=this.value[2]*b+this.value[6]*c+this.value[10]*e+this.value[14]*d;a.value[3]=this.value[3]*b+this.value[7]*c+this.value[11]*e+this.value[15]*d;return a};
-GLOW.Matrix4.prototype.rotateAxis=function(a){var b=a.value[0],c=a.value[1],e=a.value[2];a.value[0]=b*this.value[0]+c*this.value[4]+e*this.value[8];a.value[1]=b*this.value[1]+c*this.value[5]+e*this.value[9];a.value[2]=b*this.value[2]+c*this.value[6]+e*this.value[10];a.normalize();return a};
-GLOW.Matrix4.prototype.crossVector=function(a){var b=GLOW.Vector4(),c=a.value[0],e=a.value[1],d=a.value[2],a=a.value[3];b.value[0]=this.value[0]*c+this.value[4]*e+this.value[8]*d+this.value[12]*a;b.value[1]=this.value[1]*c+this.value[5]*e+this.value[9]*d+this.value[13]*a;b.value[2]=this.value[2]*c+this.value[6]*e+this.value[10]*d+this.value[14]*a;b.value[3]=a?this.value[3]*c+this.value[7]*e+this.value[11]*d+this.value[15]*a:1;return b};
-GLOW.Matrix4.prototype.multiply=function(a,b){var a=a.value,b=b.value,c=a[0],e=a[4],d=a[8],g=a[12],h=a[1],f=a[5],i=a[9],k=a[13],l=a[2],j=a[6],n=a[10],q=a[14],o=a[3],p=a[7],r=a[11],t=a[15],s=b[0],u=b[4],v=b[8],w=b[12],x=b[1],y=b[5],z=b[9],A=b[13],B=b[2],C=b[6],D=b[10],E=b[14];this.value[0]=c*s+e*x+d*B;this.value[4]=c*u+e*y+d*C;this.value[8]=c*v+e*z+d*D;this.value[12]=c*w+e*A+d*E+g;this.value[1]=h*s+f*x+i*B;this.value[5]=h*u+f*y+i*C;this.value[9]=h*v+f*z+i*D;this.value[13]=h*w+f*A+i*E+k;this.value[2]=
-l*s+j*x+n*B;this.value[6]=l*u+j*y+n*C;this.value[10]=l*v+j*z+n*D;this.value[14]=l*w+j*A+n*E+q;this.value[3]=o*s+p*x+r*B;this.value[7]=o*u+p*y+r*C;this.value[11]=o*v+p*z+r*D;this.value[15]=o*w+p*A+r*E+t;return this};GLOW.Matrix4.prototype.multiplySelf=function(a){this.multiply(m,a);return this};
-GLOW.Matrix4.prototype.multiplyScalar=function(a){this.value[0]*=a;this.value[4]*=a;this.value[8]*=a;this.value[12]*=a;this.value[1]*=a;this.value[5]*=a;this.value[9]*=a;this.value[13]*=a;this.value[2]*=a;this.value[6]*=a;this.value[10]*=a;this.value[14]*=a;this.value[3]*=a;this.value[7]*=a;this.value[11]*=a;this.value[15]*=a;return this};
-GLOW.Matrix4.prototype.determinant=function(){var a=this.value[0],b=this.value[4],c=this.value[8],e=this.value[12],d=this.value[1],g=this.value[5],h=this.value[9],f=this.value[13],i=this.value[2],k=this.value[6],l=this.value[10],j=this.value[14],n=this.value[3],q=this.value[7],o=this.value[11],p=this.value[15];return e*h*k*n-c*f*k*n-e*g*l*n+b*f*l*n+c*g*j*n-b*h*j*n-e*h*i*q+c*f*i*q+e*d*l*q-a*f*l*q-c*d*j*q+a*h*j*q+e*g*i*o-b*f*i*o-e*d*k*o+a*f*k*o+b*d*j*o-a*g*j*o-c*g*i*p+b*h*i*p+c*d*k*p-a*h*k*p-b*d*l*
-p+a*g*l*p};GLOW.Matrix4.prototype.transpose=function(){var a;a=this.value[1];this.value[1]=this.value[4];this.value[4]=a;a=this.value[2];this.value[2]=this.value[8];this.value[8]=a;a=this.value[6];this.value[6]=this.value[9];this.value[9]=a;a=this.value[3];this.value[3]=this.value[12];this.value[12]=a;a=this.value[7];this.value[7]=this.value[13];this.value[13]=a;a=this.value[11];this.value[11]=this.value[14];this.value[11]=a;return this};
-GLOW.Matrix4.prototype.clone=function(){var a=new GLOW.Matrix4;a.value=new Float32Array(m);return a};GLOW.Matrix4.prototype.setPosition=function(a,b,c){this.value[12]=a;this.value[13]=b;this.value[14]=c;return this};GLOW.Matrix4.prototype.addPosition=function(a,b,c){this.value[12]+=a;this.value[13]+=b;this.value[14]+=c};
-GLOW.Matrix4.prototype.setRotation=function(a,b,c){this.rotation.set(a,b,c);var e=Math.cos(a),a=Math.sin(a),d=Math.cos(b),b=Math.sin(b),g=Math.cos(c),c=Math.sin(c),h=e*b,f=a*b;this.value[0]=d*g;this.value[4]=-d*c;this.value[8]=b;this.value[1]=f*g+e*c;this.value[5]=-f*c+e*g;this.value[9]=-a*d;this.value[2]=-h*g+a*c;this.value[6]=h*c+a*g;this.value[10]=e*d;return this};
-GLOW.Matrix4.prototype.addRotation=function(a,b,c){this.rotation.value[0]+=a;this.rotation.value[1]+=b;this.rotation.value[2]+=c;this.setRotation(this.rotation.value[0],this.rotation.value[1],this.rotation.value[2])};GLOW.Matrix4.prototype.getPosition=function(){this.position.set(this.value[12],this.value[13],this.value[14]);return this.position};GLOW.Matrix4.prototype.getColumnX=function(){this.columnX.set(this.value[0],this.value[1],this.value[2]);return this.columnX};
-GLOW.Matrix4.prototype.getColumnY=function(){this.columnY.set(this.value[4],this.value[5],this.value[6]);return this.columnY};GLOW.Matrix4.prototype.getColumnZ=function(){this.columnZ.set(this.value[8],this.value[9],this.value[10]);return this.columnZ};
-GLOW.Matrix4.prototype.scale=function(a,b,c){var e;b!==void 0&&c!==void 0?e=a:(e=a.value[0],b=a.value[1],c=a.value[2]);this.value[0]*=e;this.value[4]*=b;this.value[8]*=c;this.value[1]*=e;this.value[5]*=b;this.value[9]*=c;this.value[2]*=e;this.value[6]*=b;this.value[10]*=c;this.value[3]*=e;this.value[7]*=b;this.value[11]*=c;return this};
-GLOW.Matrix4.makeInverse=function(a,b){b===void 0&&(b=new GLOW.Matrix4);var c=a.value,e=b.value,d=c[0],g=c[4],h=c[8],f=c[12],i=c[1],k=c[5],l=c[9],j=c[13],n=c[2],q=c[6],o=c[10],p=c[14],r=c[3],t=c[7],s=c[11],c=c[15];e[0]=l*p*t-j*o*t+j*q*s-k*p*s-l*q*c+k*o*c;e[1]=j*o*r-l*p*r-j*n*s+i*p*s+l*n*c-i*o*c;e[2]=k*p*r-j*q*r+j*n*t-i*p*t-k*n*c+i*q*c;e[3]=l*q*r-k*o*r-l*n*t+i*o*t+k*n*s-i*q*s;e[4]=f*o*t-h*p*t-f*q*s+g*p*s+h*q*c-g*o*c;e[5]=h*p*r-f*o*r+f*n*s-d*p*s-h*n*c+d*o*c;e[6]=f*q*r-g*p*r-f*n*t+d*p*t+g*n*c-d*q*c;
-e[7]=g*o*r-h*q*r+h*n*t-d*o*t-g*n*s+d*q*s;e[8]=h*j*t-f*l*t+f*k*s-g*j*s-h*k*c+g*l*c;e[9]=f*l*r-h*j*r-f*i*s+d*j*s+h*i*c-d*l*c;e[10]=h*j*r-f*k*r+f*i*t-d*j*t-g*i*c+d*k*c;e[11]=h*k*r-g*l*r-h*i*t+d*l*t+g*i*s-d*k*s;e[12]=f*l*q-h*j*q-f*k*o+g*j*o+h*k*p-g*l*p;e[13]=h*j*n-f*l*n+f*i*o-d*j*o-h*i*p+d*l*p;e[14]=f*k*n-g*j*n-f*i*q+d*j*q+g*i*p-d*k*p;e[15]=g*l*n-h*k*n+h*i*q-d*l*q-g*i*o+d*k*o;b.multiplyScalar(1/a.determinant());return b};
-GLOW.Matrix4.makeFrustum=function(a,b,c,e,d,g){var h,f;h=new GLOW.Matrix4;f=h.value;f[0]=2*d/(b-a);f[4]=0;f[8]=(b+a)/(b-a);f[12]=0;f[1]=0;f[5]=2*d/(e-c);f[9]=(e+c)/(e-c);f[13]=0;f[2]=0;f[6]=0;f[10]=-(g+d)/(g-d);f[14]=-2*g*d/(g-d);f[3]=0;f[7]=0;f[11]=-1;f[15]=0;return h};GLOW.Matrix4.makeProjection=function(a,b,c,e){var d,a=c*Math.tan(a*Math.PI/360);d=-a;return GLOW.Matrix4.makeFrustum(d*b,a*b,d,a,c,e)};
-GLOW.Matrix4.makeOrtho=function(a,b,c,e,d,g){var h,f,i,k,l;h=GLOW.Matrix4();i=b-a;k=c-e;l=g-d;f=h.value;f[0]=2/i;f[4]=0;f[8]=0;f[12]=-((b+a)/i);f[1]=0;f[5]=2/k;f[9]=0;f[13]=-((c+e)/k);f[2]=0;f[6]=0;f[10]=-2/l;f[14]=-((g+d)/l);f[3]=0;f[7]=0;f[11]=0;f[15]=1;return h};GLOW.Matrix4.tempVector3A=new GLOW.Vector3;GLOW.Matrix4.tempVector3B=new GLOW.Vector3;GLOW.Matrix4.tempVector3C=new GLOW.Vector3;GLOW.Matrix4.tempVector3D=new GLOW.Vector3;
-GLOW.Geometry={randomVector3Array:function(a,b){var b=b!==void 0?b:1,c,e=[],d=b*2;for(c=0;c<a;c++)e.push(GLOW.Vector3(Math.random()*d-b,Math.random()*d-b,Math.random()*d-b));return e},elements:function(a){var b=0,c,e=new Uint16Array(a*3);for(c=0;c<a;c++)e[b]=b++,e[b]=b++,e[b]=b++;return e},faceNormals:function(a,b){var c=new Float32Array(a.length),e,d=b.length,g,h,f,i=new GLOW.Vector3,k=new GLOW.Vector3,l=new GLOW.Vector3,j=new GLOW.Vector3;for(e=0;e<d;)g=b[e++]*3,h=b[e++]*3,f=b[e++]*3,i.set(a[g+
-0],a[g+1],a[g+2]),k.set(a[h+0],a[h+1],a[h+2]),l.set(a[f+0],a[f+1],a[f+2]),k.subSelf(i),l.subSelf(i),j.cross(l,k).normalize(),c[g+0]=j.value[0],c[g+1]=j.value[1],c[g+2]=j.value[2],c[h+0]=j.value[0],c[h+1]=j.value[1],c[h+2]=j.value[2],c[f+0]=j.value[0],c[f+1]=j.value[1],c[f+2]=j.value[2];return c}};
-GLOW.Geometry.Cube={vertices:function(a){var b=new Float32Array(72),c=0,a=a!==void 0?a*0.5:5;b[c++]=+a;b[c++]=+a;b[c++]=+a;b[c++]=+a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=+a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=+a;
-b[c++]=-a;b[c++]=+a;b[c++]=+a;b[c++]=+a;b[c++]=+a;b[c++]=-a;b[c++]=+a;b[c++]=+a;b[c++]=+a;b[c++]=+a;b[c++]=-a;b[c++]=+a;b[c++]=+a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=+a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=+a;b[c++]=-a;b[c++]=-a;b[c++]=+a;return b},elements:function(){var a=new Uint16Array(36),b=0;a[b++]=0;a[b++]=1;a[b++]=2;a[b++]=0;a[b++]=2;a[b++]=3;a[b++]=4;a[b++]=5;a[b++]=6;a[b++]=4;a[b++]=6;a[b++]=7;a[b++]=8;a[b++]=9;a[b++]=
-10;a[b++]=8;a[b++]=10;a[b++]=11;a[b++]=12;a[b++]=13;a[b++]=14;a[b++]=12;a[b++]=14;a[b++]=15;a[b++]=16;a[b++]=17;a[b++]=18;a[b++]=16;a[b++]=18;a[b++]=19;a[b++]=20;a[b++]=21;a[b++]=22;a[b++]=20;a[b++]=22;a[b++]=23;return a},uvs:function(){var a=new Float32Array(48),b=0;a[b++]=0;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=0;
-a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=1;a[b++]=0;a[b++]=1;return a}};
-GLOW.Geometry.Plane={vertices:function(a){var b=new Float32Array(12),c=0,a=a!==void 0?a*0.5:1;b[c++]=+a;b[c++]=-a;b[c++]=0;b[c++]=+a;b[c++]=+a;b[c++]=0;b[c++]=-a;b[c++]=+a;b[c++]=0;b[c++]=-a;b[c++]=-a;b[c++]=0;return b},elements:function(){var a=new Uint16Array(6),b=0;a[b++]=0;a[b++]=1;a[b++]=2;a[b++]=0;a[b++]=2;a[b++]=3;return a},uvs:function(){var a=new Float32Array(8),b=0;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=1;a[b++]=0;a[b++]=1;a[b++]=0;a[b++]=0;return a}};
-GLOW.Node=function(a){this.localMatrix=new GLOW.Matrix4;this.globalMatrix=new GLOW.Matrix4;this.viewMatrix=new GLOW.Matrix4;this.useXYZStyleTransform=!1;this.position={x:0,y:0,z:0};this.rotation={x:0,y:0,z:0};this.scale={x:1,y:1,z:1};this.children=[];this.parent=void 0;if(a)this.shader=a,this.draw=a.draw};
-GLOW.Node.prototype.update=function(a,b){this.useXYZStyleTransform&&(this.localMatrix.setPosition(this.position.x,this.position.y,this.position.z),this.localMatrix.setRotation(this.rotation.x,this.rotation.y,this.rotation.z),this.localMatrix.scale(this.scale.x,this.scale.y,this.scale.z));a?this.globalMatrix.multiply(a,this.localMatrix):this.globalMatrix.copy(this.localMatrix);b&&this.viewMatrix.multiply(b,this.globalMatrix);var c,e=this.children.length;for(c=0;c<e;c++)this.children[c].update(this.globalMatrix,
-b);return this};GLOW.Node.prototype.addChild=function(a){if(this.children.indexOf(a)===-1)this.children.push(a),a.parent&&a.parent.removeChild(a),a.parent=this;return this};GLOW.Node.prototype.removeChild=function(a){var b=this.children.indexOf(a);if(b!==-1)this.children.splice(1,b),a.parent=void 0;return this};
-GLOW.Camera=function(a){GLOW.Node.call(this);var a=a!==void 0?a:{},b=a.fov!==void 0?a.fov:40,c=a.aspect!==void 0?a.aspect:window.innerWidth/window.innerHeight,e=a.near!==void 0?a.near:0.1,d=a.far!==void 0?a.far:1E4;this.useTarget=a.useTarget!==void 0?a.useTarget:!0;this.projection=GLOW.Matrix4.makeProjection(b,c,e,d);this.inverse=new GLOW.Matrix4;this.target=new GLOW.Vector3(0,0,-100);this.up=new GLOW.Vector3(0,1,0);this.update()};GLOW.Camera.prototype=new GLOW.Node;
-GLOW.Camera.prototype.constructor=GLOW.Camera;GLOW.Camera.prototype.supr=GLOW.Node.prototype;
-GLOW.Camera.prototype.update=function(a,b){this.useXYZStyleTransform?(this.localMatrix.setPosition(this.position.x,this.position.y,this.position.z),this.useTarget?this.localMatrix.lookAt(this.target,this.up):this.localMatrix.setRotation(this.rotation.x,this.rotation.y,this.rotation.z),this.localMatrix.scale(this.scale.x,this.scale.y,this.scale.z)):this.useTarget&&this.localMatrix.lookAt(this.target,this.up);a?this.globalMatrix.multiply(a,this.localMatrix):this.globalMatrix.copy(this.localMatrix);
-GLOW.Matrix4.makeInverse(this.globalMatrix,this.inverse);var c,e=this.children.length;for(c=0;c<e;c++)this.children[c].update(this.globalMatrix,b)};GLOW.defaultCamera=new GLOW.Camera;
+/*
+* GLOW - Just-Above-Low-Level WebGL API
+*/
+
+var GLOW = (function() {
+    "use strict"; "use restrict";
+
+    var glow = {};
+    var contexts = {};
+    var uniqueIdCounter = -1;
+
+    glow.currentContext = {};
+
+    //--- register context ---
+    glow.registerContext = function( context ) {
+        contexts[ context.id ] = context;
+        glow.enableContext( context );
+    };
+
+    //--- get context by id ---
+    glow.getContextById = function( id ) {
+        if( contexts[ id ] ) {
+            return contexts[ id ];
+        }
+        console.error( "Couldn't find context id " + id + ", returning current with id " + glow.currentContext.id );
+        return glow.currentContext;
+    };
+
+    //--- enable context ---
+    glow.enableContext = function( contextOrId ) {
+        if( typeof( contextOrId ) === 'string' ) {
+            glow.currentContext = getContextById(contextOrId);
+        } else {
+            glow.currentContext = contextOrId;
+        }
+        GL = glow.GL = glow.currentContext.GL;
+    };
+
+    //--- unique id ---
+    glow.uniqueId = function() {
+        return ++uniqueIdCounter;
+    };
+
+    //--- return public ---
+    return glow;
+}());
+
+/*
+* Current GL - set to latest registered or enabled GL context 
+*/
+var GL = {};
+/*
+* GLOW Context
+*/
+
+GLOW.Context = function( parameters ) {
+	
+	"use strict";
+	
+	if( parameters === undefined ) parameters = {};
+	
+	this.id                     = parameters.id                    !== undefined ? parameters.id                    : GLOW.uniqueId();
+	this.alpha                  = parameters.alpha                 !== undefined ? parameters.alpha                 : true;
+	this.depth                  = parameters.depth                 !== undefined ? parameters.depth                 : true;
+	this.antialias              = parameters.antialias             !== undefined ? parameters.antialias             : true;
+	this.stencil                = parameters.stencil               !== undefined ? parameters.stencil               : false;
+	this.premultipliedAlpha     = parameters.premultipliedAlpha    !== undefined ? parameters.premultipliedAlpha    : true;
+	this.preserveDrawingBuffer  = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false;
+	this.width                  = parameters.width                 !== undefined ? parameters.width                 : window.innerWidth;
+	this.height                 = parameters.height                !== undefined ? parmaeters.height                : window.innerHeight;
+	
+	// create canvas and webgl context and register
+	
+	try {
+		this.domElement = document.createElement( 'canvas' );
+		this.GL         = this.domElement.getContext( 'experimental-webgl', { alpha:                 this.alpha, 
+                                                                              depth:                 this.depth, 
+                                                                              antialias:             this.antialias,
+                                                                              stencil:               this.stencil,
+                                                                              premultipliedAlpha:    this.premultipliedAlpha,
+                                                                              preserveDrawingBuffer: this.preserveDrawingBuffer } );
+
+		this.domElement.width  = this.width;
+		this.domElement.height = this.height;
+		this.GL.viewport( 0, 0, this.width, this.height );	// TODO: move into setupViewport
+	} catch( error ) {
+		console.error( "GLOW.Context.construct: " + error );
+	}
+
+	GLOW.registerContext( this );
+
+	this.cache = new GLOW.Cache();
+
+	this.enableCulling( false );
+	this.enableDepthTest( true, { func: GL.LEQUAL, write: true, zNear: 0, zFar: 1 } );
+	this.enableBlend( false );
+	this.setupClear( { clearBits: GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT } );
+	this.clear();
+}
+
+/*
+* Prototypes
+*/
+
+GLOW.Context.prototype.setupClear = function( setup ) {
+	
+	var r = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : 0; 
+	var g = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : 0; 
+	var b = setup.blue  !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : 0; 
+	var a = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : 1;
+	var d = setup.depth !== undefined ? Math.min( 1, Math.max( 0, setup.depth )) : 1;
+	 
+	GL.clearColor( r, g, b, a );
+	GL.clearDepth( d );
+	
+	this.clearBits = setup.clearBits !== undefined ? setup.clearBits : this.clearBits;
+
+	return this;
+}
+
+GLOW.Context.prototype.clear = function( bits ) {
+	
+	if( bits === undefined ) { bits = this.clearBits };
+	GL.clear( bits );
+
+	return this;
+}
+
+GLOW.Context.prototype.enableBlend = function( flag, setup ) {
+	
+	if( flag ) {
+
+		GL.enable( GL.BLEND );
+		if( setup ) this.setupBlend( setup );
+		
+	} else GL.disable( GL.BLEND );
+	
+	return this;
+}
+
+GLOW.Context.prototype.setupBlend = function( setup ) {
+	
+	if( setup.equationRGB ) {
+
+		try {
+
+			if( setup.equationAlpha ) GL.blendEquationSeparate( setup.equationRGB, setup.equationAlpha );
+			if( setup.srcRGB        ) GL.blendFuncSeparate( setup.srcRGB, setup.dstRGB, setup.srcAlpha, setup.dstAlpha );
+
+		} catch( error ) { console.error( "GLOW.Context.setupBlend: " + error ); }
+		
+	} else {
+		
+		try {
+		
+			if( setup.equation ) GL.blendEquation( setup.equation );
+			if( setup.src      ) GL.blendFunc( setup.src, setup.dst );
+		
+		} catch( error ) { console.error( "GLOW.Context.setupBlend: " + error ); }
+	}
+	
+	return this;
+}
+
+GLOW.Context.prototype.enableDepthTest = function( flag, setup ) {
+	
+	if( flag ) {
+		
+		GL.enable( GL.DEPTH_TEST );
+		if( setup ) this.setupDepthTest( setup );
+	
+	} else GL.disable( GL.DEPTH_TEST );
+	
+	return this;
+}
+
+GLOW.Context.prototype.setupDepthTest = function( setup ) {
+	
+	try {
+		
+		if( setup.func  !== undefined ) GL.depthFunc( setup.func );
+		if( setup.write !== undefined ) GL.depthMask( setup.write );
+
+		if( setup.zNear !== undefined && setup.zFar !== undefined && setup.zNear <= setup.zFar ) {
+			GL.depthRange( Math.max( 0, Math.min( 1, setup.zNear )), Math.max( 0, Math.min( 1, setup.zFar )));
+		}
+
+	} catch( error ) { console.log( "GLOW.Context.setupDepthTest: " + error ); }
+	
+	return this;
+}
+
+
+GLOW.Context.prototype.enableStencilTest = function( flag, setup ) {
+	
+	if( flag ) {
+		
+		GL.enable( GL.STENCIL_TEST );
+		if( setup ) this.setupStencilTest( setup );
+	
+	} else GL.disable( GL.STENCIL_TEST );
+	
+	return this;
+}
+
+GLOW.Context.prototype.setupStencilTest = function( setup ) {
+	
+	// TODO
+	
+	return this;
+}
+
+GLOW.Context.prototype.enableCulling = function( flag, setup ) {
+	
+	if( flag ) {
+
+		GL.enable( GL.CULL_FACE );
+		if( setup ) this.setupCulling( setup );
+
+	} else GL.disable( GL.CULL_FACE );
+	
+	return this;
+}
+
+GLOW.Context.prototype.setupCulling = function( setup ) {
+	
+	try {
+
+		if( setup.frontFace ) GL.frontFace( setup.frontFace );
+		if( setup.cullFace  ) GL.cullFace ( setup.cullFace  );
+
+	} catch( error ) {
+
+		console.error( "GLOW.Context.setupCulling: " + error );
+	}
+	
+	return this;
+}
+
+GLOW.Context.prototype.enableScissorTest = function( flag, setup ) {
+	
+	if( flag ) {
+
+		GL.enable( GL.SCISSOR_TEST );
+		if( setup ) this.setupScissorTest( setup );
+
+	} else {
+		
+		GL.disable( GL.SCISSOR_TEST );
+	}
+	
+	return this;
+}
+
+GLOW.Context.prototype.setupScissorTest = function( setup ) {
+	
+	// TODO
+	
+	return this;
+}
+
+GLOW.Context.prototype.setupViewport = function( setup ) {
+	
+	// TODO
+	
+	return this;
+}
+/*
+* GLOW.Compiler
+* @author: Mikael Emtinger, gomo.se
+* Compiles vertex- and fragementshader, uniforms, attributes and elements into a GLOW.CompiledData
+*/
+
+GLOW.Compiler = (function() {
+	
+	"use strict"; 
+	"use restrict";
+	
+	var compiler = {};
+	var compiledCode = [];
+	
+	//--- compile ------------------------------------------
+	// vertexShaderCode = string, the vertex shader code
+	// fragmentShaderCode = string, the framgnet shader code
+	// uniformsAndAttributes = object, for example { transform: GLOW.Matrix4 }
+	// elements = array or UInt16Array with elements
+	
+	compiler.compile = function( vertexShaderCode, fragmentShaderCode, uniformAndAttributeData, elements ) {
+		var c, cl = compiledCode.length;
+		var code;
+		var program;
+		
+		for( c = 0; c < cl; c++ ) {
+			code = compiledCode[ c ];
+			if( vertexShaderCode   === code.vertexShaderCode &&
+				fragmentShaderCode === code.fragmentShaderCode ) { break; }
+		}
+
+		if( c === cl ) {
+			program = compiler.linkProgram( compiler.compileVertexShader  ( vertexShaderCode   ),
+			                                compiler.compileFragmentShader( fragmentShaderCode ));
+
+			compiledCode.push( { vertexShaderCode: vertexShaderCode, 
+				                 fragmentShaderCode: fragmentShaderCode,
+				                 program: program } );
+		} else {
+			program = code.program;
+		}
+		
+		return new GLOW.CompiledData( program, 
+			                          compiler.createUniforms  ( compiler.extractUniforms  ( program ), uniformAndAttributeData ),
+			                          compiler.createAttributes( compiler.extractAttributes( program ), uniformAndAttributeData ),
+			                          compiler.createElements  ( elements ));
+	}
+
+
+	//--- compile vertex shader ---
+
+	compiler.compileVertexShader = function( vertexShaderCode ) {
+
+		var vertexShader;
+		vertexShader    = GL.createShader( GL.VERTEX_SHADER );
+		vertexShader.id = GLOW.uniqueId();
+		
+		GL.shaderSource ( vertexShader, vertexShaderCode );
+		GL.compileShader( vertexShader );
+
+	    if( !GL.getShaderParameter( vertexShader, GL.COMPILE_STATUS )) {
+			console.error( "GLOW.Compiler.compileVertexShader: " + GL.getShaderInfoLog( vertexShader ));
+		}
+		
+		return vertexShader;
+	}
+
+
+	//--- compile fragment shader code ---
+
+	compiler.compileFragmentShader = function( fragmentShaderCode ) {
+
+		var fragmentShader;
+		fragmentShader    = GL.createShader( GL.FRAGMENT_SHADER );
+		fragmentShader.id = GLOW.uniqueId();
+		
+		GL.shaderSource ( fragmentShader, fragmentShaderCode );
+		GL.compileShader( fragmentShader );
+
+	    if( !GL.getShaderParameter( fragmentShader, GL.COMPILE_STATUS )) {
+			console.error( "GLOW.Compiler.compileFragmentShader: " + GL.getShaderInfoLog( fragmentShader ));
+		}
+		
+		return fragmentShader;
+	}
+
+
+	//--- link program ---
+
+	compiler.linkProgram = function( vertexShader, fragmentShader ) {
+
+		var program;
+	    program    = GL.createProgram();
+		program.id = GLOW.uniqueId();
+
+	    GL.attachShader( program, vertexShader );
+	    GL.attachShader( program, fragmentShader );
+	    GL.linkProgram ( program );
+
+	    if( !GL.getProgramParameter( program, GL.LINK_STATUS )) {
+			console.error( "GLOW.Compiler.linkProgram: Could not initialise program" );
+	    }
+	
+		return program;
+	}
+	
+	
+	//--- extract uniforms ---
+
+	compiler.extractUniforms = function( program ) {
+
+		var uniforms = {};
+		var uniform;
+		var locationNumber = 0;
+		var result;
+
+		while( true ) {
+
+			result = GL.getActiveUniform( program, locationNumber );
+
+			if( result !== null && result !== -1 && result !== undefined ) {
+
+                uniform = {
+                    name: result.name.split( "[" )[ 0 ],
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getUniformLocation( program, result.name.split( "[" )[ 0 ] ),
+                    locationNumber: locationNumber
+                };
+                
+				uniforms[ uniform.name ] = uniform;
+			
+			} else break;
+
+			locationNumber++;
+		}
+
+		return uniforms;
+	}
+
+
+	//--- extract attributes ---
+	
+	compiler.extractAttributes = function( program ) {
+
+		var attribute, locationNumber = 0;
+		var attributes = {};
+        var result;
+
+		while( true ) {
+
+			result = GL.getActiveAttrib( program, locationNumber );
+
+			if( result !== null && result !== -1 && result !== undefined ) {
+
+                attribute = {
+                    name: result.name,
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getAttribLocation( program, result.name ),
+                    locationNumber: locationNumber
+                }
+                
+				attributes[ attribute.name ] = attribute;
+
+			} else break;
+
+			locationNumber++;
+		}
+
+		program.highestAttributeNumber = locationNumber - 1;
+		return attributes;
+	}
+	
+
+	//--- create uniforms ---
+
+	compiler.createUniforms = function( uniformInformation, data ) {
+
+		var u;
+		var uniforms = {};
+		var uniform, name;
+		var textureUnit = 0;
+
+		for( u in uniformInformation ) {
+			
+			uniform = uniformInformation[ u ];
+			name    = uniform.name;
+			
+			if( data[ name ] === undefined ) {
+
+				console.warn( "GLOW.Compiler.createUniforms: missing declaration for uniform " + name );
+
+			} else if( data[ name ] instanceof GLOW.Uniform ) {
+
+				uniforms[ name ] = data[ name ];
+
+			} else {
+
+				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
+
+				if( uniforms[ name ].type === GL.SAMPLER_2D ) {
+					uniforms[ name ].data.init( textureUnit++ );
+				}
+			}
+		}
+		
+		return uniforms;
+	}
+
+
+	//--- create attributes ---
+
+	compiler.createAttributes = function( attributeInformation, data ) {
+
+		var a;
+		var attribute, name;
+		var attributes = {};
+
+		for( a in attributeInformation ) {
+
+			attribute = attributeInformation[ a ];
+			name      = attribute.name;
+			
+			if( data[ name ] === undefined ) {
+
+				console.warning( "GLOW.Compiler.createAttributes: missing declaration for attribute " + name );
+
+			} else if( data[ name ] instanceof GLOW.Attribute ) {
+
+				attributes[ name ] = data[ name ];
+
+			} else {
+
+				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ] );
+			}
+		}
+
+		return attributes;
+	}
+	
+	
+	//--- create elements ---
+	
+	compiler.createElements = function( data ) {
+
+		var elements;
+
+		if( !data ) {
+			console.error( "GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting." );
+		} else if( data instanceof GLOW.Elements ) {
+			elements = data;
+		} else {
+			if( !( data instanceof Uint16Array )) {
+				data = new Uint16Array( data );
+			}
+
+			elements = new GLOW.Elements( data );
+		}
+
+		return elements;
+	}
+	
+	return compiler;
+	
+})();/*
+* Shader Compiled Data
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.CompiledData = (function() {
+    
+    "use strict"; "use restrict";
+    
+    // private data, functions and initializations here
+
+    // constructor
+    
+    function compiledData( program, uniforms, attributes, elements ) {
+	    this.program = program;
+	    this.uniforms = uniforms !== undefined ? uniforms : {};
+	    this.attributes = attributes !== undefined ? attributes : {};
+	    this.elements = elements;
+    }
+
+
+    compiledData.prototype.clone = function( except ) {
+    	var clone = new GLOW.CompiledData();
+
+    	var u;
+    	for( u in this.uniforms ) {
+    		if( except[ u ] ) {
+    			clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
+    		} else {
+    			clone.uniforms[ u ] = this.uniforms[ u ];
+    		}
+    	}
+
+    	var a;
+    	for( a in this.attributes ) {
+    		if( except[ a ] ) {
+    			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
+    		} else {
+    			clone.attributes[ a ] = this.attributes[ a ];
+    		}
+    	}
+
+    	if( except.elements ) {
+    		clone.elements = new GLOW.Elements( except.elements );
+    	} else {
+    		clone.elements = this.elements;
+    	}
+
+    	clone.program = this.program;
+    	return clone;
+    };
+    
+    return compiledData;
+})();
+
+/*
+* Cache
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Cache = (function() {
+    
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+
+    // constructor
+    function cache() {
+        this.highestAttributeNumber = -1;
+        this.uniformByLocation = [];
+        this.attributeByLocation = [];
+        this.textureByLocation = [];
+        this.elementId = -1;
+        this.programId = -1;
+    }
+
+    // methods
+    cache.prototype.programCached = function( program ) {
+        if( program.id === this.programId ) return true;
+        this.programId = program.id;
+        return false;
+    };
+
+    cache.prototype.setProgramHighestAttributeNumber = function( program ) {
+        var saveHighestAttributeNumber = this.highestAttributeNumber;
+        this.highestAttributeNumber = program.highestAttributeNumber;
+        return program.highestAttributeNumber - saveHighestAttributeNumber;
+    };
+
+    cache.prototype.uniformCached = function( uniform ) {
+        if( this.uniformByLocation[ uniform.locationNumber ] === uniform.id ) return true;
+        this.uniformByLocation[ uniform.locationNumber ] = uniform.id
+        return false;
+    };
+
+    cache.prototype.attributeCached = function( attribute ) {
+        if( this.attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
+        this.attributeByLocation[ attribute.locationNumber ] = attribute.id
+        return false;
+    };
+
+    cache.prototype.textureCached = function( texture ) {
+        if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
+        this.textureByLocation[ texture.textureUnit ] = texture.id
+        return false;
+    };
+
+    cache.prototype.elementsCached = function( elements ) {
+        if( elements.id === this.elementId ) return true;
+        this.elementId = elements.id;
+        return false;
+    };
+
+    cache.prototype.clear = function() {
+        this.highestAttributeNumber = -1;
+        this.uniformByLocation.length = 0;
+        this.attributeByLocation.length = 0;
+        this.textureByLocation.length = 0;
+        this.elementId = -1;
+        this.programId = -1;
+    };
+    
+    return cache;
+})();
+GLOW.FBO = (function() {
+    
+    "use strict"; "use restrict";
+
+    // privates
+	var wrapS;
+	var wrapT;
+	var magFilter;
+	var minFilter;
+	var format;
+	var depth;
+	var stencil;
+	var width;
+	var height;
+	var textureUnit;
+
+	// constructor
+	function fbo( parameters ) {
+
+    	this.id     = GLOW.uniqueId();
+
+    	parameters = parameters !== undefined ? parameters : {};
+
+    	width     = parameters.width     !== undefined ? parameters.width     : window.innerWidth;
+    	height    = parameters.height    !== undefined ? parameters.height    : window.innerHeight;
+    	wrapS     = parameters.wrapS     !== undefined ? parameters.wrapS     : GL.CLAMP_TO_EDGE;
+    	wrapT     = parameters.wrapT     !== undefined ? parameters.wrapT     : GL.CLAMP_TO_EDGE;
+    	magFilter = parameters.magFilter !== undefined ? parameters.magFilter : GL.LINEAR;
+    	minFilter = parameters.minFilter !== undefined ? parameters.minFilter : GL.LINEAR;
+    	format    = parameters.format    !== undefined ? parameters.format    : GL.RGBA;
+    	depth     = parameters.depth     !== undefined ? parameters.depth     : true;
+    	stencil   = parameters.stencil   !== undefined ? paramaters.stencil   : false;
+
+    	this.textureUnit  = -1;
+    	this.frameBuffer  = GL.createFramebuffer();
+    	this.renderBuffer = GL.createRenderbuffer();
+    	this.texture      = GL.createTexture();
+    	this.viewport     = { x: 0, y: 0, width: width, height: height };
+
+    	try {
+    		// setup texture
+    		GL.bindTexture( GL.TEXTURE_2D, this.texture );
+    		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, wrapS );
+    		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, wrapT );
+    		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, magFilter );
+    		GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, minFilter );
+    		GL.texImage2D( GL.TEXTURE_2D, 0, format, width, height, 0, format, GL.UNSIGNED_BYTE, null );
+
+    		// setup buffers
+    		GL.bindRenderbuffer( GL.RENDERBUFFER, this.renderBuffer );
+    		GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+    		GL.framebufferTexture2D( GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, this.texture, 0 );
+
+    		if( depth && !stencil ) {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_COMPONENT16, width, height );
+    			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		/* For some reason combination !depth and stencil is not working. Defaulting to RGBA4.	
+    		} else if( !depth && stencil ) {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.STENCIL_INDEX8, width, height );
+    			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		*/
+    		} else if( depth && stencil ) {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_STENCIL, width, height );
+    			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		} else {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.RGBA4, width, height );
+    		}
+
+    		// release
+    		GL.bindTexture( GL.TEXTURE_2D, null );
+    		GL.bindRenderbuffer( GL.RENDERBUFFER, null );
+    		GL.bindFramebuffer( GL.FRAMEBUFFER, null);
+
+    	} catch( error ) {
+    		console.error( "GLOW.FBO.construct: " + error );
+    	}
+	}
+
+    // methods
+    fbo.prototype.init = function( textureUnit ) {
+    	this.textureUnit = textureUnit;
+    }
+
+    fbo.prototype.bind = function() {
+    	// TODO: add cache
+    	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+    	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
+    	return this;
+    }
+
+    fbo.prototype.unbind = function() {
+    	// TODO: add cache
+    	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
+    	GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
+    	return this;
+    }
+
+    fbo.prototype.setupViewport = function( setup ) {
+    	this.viewport.x = setup.x !== undefined ? setup.x : 0;
+    	this.viewport.y = setup.y !== undefined ? setup.y : 0;
+    	this.viewport.width = setup.width !== undefined ? setup.width : window.innerWidth;
+    	this.viewport.height = setup.height !== undefined ? setup.height : window.innerHeight;
+    	return this;
+    }
+
+    fbo.prototype.resize = function() {
+    	// TODO
+    	return this;
+    }
+
+    fbo.prototype.generateMipMaps = function() {
+    	GL.bindTexture( GL.TEXTURE_2D, this.texture );
+    	GL.generateMipmap( GL.TEXTURE_2D );
+    	GL.bindTexture( GL.TEXTURE_2D, null );
+    	return this;
+    }
+    
+    return fbo;
+})();
+GLOW.Texture = function( url ) {
+	
+	"use strict";
+	
+	// TODO: add wrapping, min- mag filter options
+	
+	this.url = url;
+	this.id = GLOW.uniqueId();
+	this.textureUnit = -1;
+	this.texture = undefined;
+	this.image = new Image();
+	this.image.scope = this;
+}
+
+/* 
+* Prototype
+*/ 
+
+GLOW.Texture.prototype.init = function( textureUnit ) {
+	
+	this.textureUnit = textureUnit;
+	this.image.onload = this.onLoad;
+	this.image.src = this.url;
+	
+}
+
+GLOW.Texture.prototype.onLoad = function() {
+
+	var scope = this.scope;
+	
+	scope.texture = GL.createTexture();
+	
+	GL.bindTexture( GL.TEXTURE_2D, scope.texture );
+	GL.texImage2D( GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, this );
+
+	GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.REPEAT );
+	GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.REPEAT );
+
+	GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR );
+	GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_LINEAR );
+
+	GL.generateMipmap( GL.TEXTURE_2D );
+}
+/*
+* Shader.js
+* Parameters:
+* use: GLOW.ShaderCompiledData
+* except: object, holding data that should be overwritten in GLOW.ShaderCompiledData
+* vertexShader: string, vertex shader code
+* fragmentShader: string, fragment shader code
+* data: attributes and uniforms
+* elements: elements (array or UInt16Array)
+*/
+
+GLOW.Shader = (function() {
+    
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+
+    // constructor
+    function shader(parameters) {
+        this.id = GLOW.uniqueId();
+
+        this.compiledData = parameters.use ?
+            parameters.use.clone(parameters.except) :
+            GLOW.Compiler.compile(parameters.vertexShader, parameters.fragmentShader, parameters.data, parameters.elements);
+
+        this.attachData();
+    }
+
+    // methods
+    shader.prototype.attachData = function() {
+        var u, a;
+
+        for (u in this.compiledData.uniforms) {
+            if (this[u] === undefined) {
+                this[u] = this.compiledData.uniforms[u].data;
+            }
+            else {
+                console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data.");
+            }
+        }
+
+        for (a in this.compiledData.attributes) {
+            if (this[a] === undefined) {
+                this[a] = this.compiledData.attributes[a].data;
+            }
+            else {
+                console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data.");
+            }
+        }
+    };
+
+    shader.prototype.draw = function() {
+        var compiledData = this.compiledData;
+        var cache = GLOW.currentContext.cache;
+
+        if (!cache.programCached(compiledData.program)) {
+            var diff = cache.setProgramHighestAttributeNumber(compiledData.program);
+            if (diff) {
+                // enable / disable attribute streams
+                var highestAttrib = compiledData.program.highestAttributeNumber;
+                var current = highestAttrib - diff + 1;
+
+                if (diff > 0) {
+                    for (; current <= highestAttrib; current++) {
+                        GL.enableVertexAttribArray(current);
+                    }
+                }
+                else {
+                    for (; current >= highestAttrib; current--) {
+                        GL.disableVertexAttribArray(current); 
+                    }
+                }
+            }
+            GL.useProgram(compiledData.program);
+        }
+
+        for (var u in compiledData.uniforms) {
+            if (!cache.uniformCached(compiledData.uniforms[u])) {
+                compiledData.uniforms[u].load();
+            }
+        }
+        
+        for (var a in compiledData.attributes) {
+            if (!cache.attributeCached(compiledData.attributes[a])) {
+                compiledData.attributes[a].bind();
+            }
+        }
+        
+        compiledData.elements.draw();
+    };
+
+    shader.prototype.clone = function(except) {
+        return new GLOW.Shader({ use: this.compiledData, except: except });
+    };
+
+    shader.prototype.dispose = function() {
+        // TODO
+    };
+
+    return shader;
+})();
+
+
+
+/*
+* GLOW.Elements
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Elements = (function() {
+    
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+
+    // constructor
+    function elements(data) {
+        this.id = GLOW.uniqueId();
+        this.elements = GL.createBuffer();
+        this.length = data.length;
+
+        GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements);
+        GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, data, GL.STATIC_DRAW);
+    }
+
+    // methods
+    elements.prototype.draw = function() {
+        if (!GLOW.currentContext.cache.elementsCached(this)) {
+            GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements);
+        }
+        GL.drawElements(GL.TRIANGLES, this.length, GL.UNSIGNED_SHORT, 0);
+    };
+
+    return elements;
+})();
+GLOW.Uniform = (function() {
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+    var once = false;
+    var setFunctions = [];
+    var setvFunctions = [];
+
+    function lazyInit() {
+        // lazy initialization so we know we got GL bound to a context
+
+        setFunctions[GL.INT] = function() { GL.uniform1i(this.location, this.value()); };
+        setFunctions[GL.INT_VEC2] = function() { GL.uniform2i(this.location, this.value(0), this.value(1)); };
+        setFunctions[GL.INT_VEC3] = function() { GL.uniform3i(this.location, this.value(0), this.value(1), this.value(2)); };
+        setFunctions[GL.INT_VEC4] = function() { GL.uniform4i(this.location, this.value(0), this.value(1), this.value(2), this.value(3)); };
+        setFunctions[GL.FLOAT] = function() { GL.uniform1f(this.location, this.value()); };
+        setFunctions[GL.FLOAT_VEC2] = function() { GL.uniform2f(this.location, this.value(0), this.value(1)); };
+        setFunctions[GL.FLOAT_VEC3] = function() { GL.uniform3f(this.location, this.value(0), this.value(1), this.value(2)); };
+        setFunctions[GL.FLOAT_VEC4] = function() { GL.uniform4f(this.location, this.value(0), this.value(1), this.value(2), this.value(3)); };
+
+        setFunctions[GL.FLOAT_MAT2] = function() { GL.uniformMatrix2fv(this.location, false, this.value()); };
+        setFunctions[GL.FLOAT_MAT3] = function() { GL.uniformMatrix3fv(this.location, false, this.value()); };
+        setFunctions[GL.FLOAT_MAT4] = function() { GL.uniformMatrix4fv(this.location, false, this.value()); };
+        setFunctions[GL.SAMPLER_2D] = function() {
+            if (this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached(this.data)) {
+                GL.uniform1i(this.location, this.data.textureUnit);
+                GL.activeTexture(GL.TEXTURE0 + this.data.textureUnit);
+                GL.bindTexture(GL.TEXTURE_2D, this.data.texture);
+            }
+        };
+        setFunctions[GL.SAMPLER_CUBE] = function() {
+            /* TODO */
+        };
+
+        setvFunctions[GL.INT] = function() { GL.uniform1iv(this.location, this.value()); };
+        setvFunctions[GL.INT_VEC2] = function() { GL.uniform2iv(this.location, this.value()); };
+        setvFunctions[GL.INT_VEC3] = function() { GL.uniform3iv(this.location, this.value()); };
+        setvFunctions[GL.INT_VEC4] = function() { GL.uniform4iv(this.location, this.value()); };
+        setvFunctions[GL.FLOAT] = function() { GL.uniform1fv(this.location, this.value()); };
+        setvFunctions[GL.FLOAT_VEC2] = function() { GL.uniform2fv(this.location, this.value()); };
+        setvFunctions[GL.FLOAT_VEC3] = function() { GL.uniform3fv(this.location, this.value()); };
+        setvFunctions[GL.FLOAT_VEC4] = function() { GL.uniform4fv(this.location, this.value()); };
+    }
+
+    // constructor
+    function uniform(parameters, data) {
+        if (!once) {
+            once = true;
+            lazyInit();
+        }
+
+        this.id = GLOW.uniqueId();
+        this.data = data;
+        this.name = parameters.name;
+        this.length = parameters.length;
+        this.type = parameters.type;
+        this.location = parameters.location;
+        this.locationNumber = parameters.locationNumber;
+
+        this.load = parameters.load ||
+            (this.length !== undefined && this.length > 1) ?
+            setvFunctions[this.type] : setFunctions[this.type];
+    }
+
+    // methods
+
+    // default data converters
+    uniform.prototype.value = function(element) {
+        return element === undefined ? this.data.value : this.data.value[element];
+    };
+
+    return uniform;
+})();
+GLOW.Attribute = (function() {
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+    var once = false;
+    var sizes = [];
+    function lazyInit() {
+        // lazy initialization so we know we got GL bound to a context
+        sizes[GL.INT] = 1;
+        sizes[GL.INT_VEC2] = 2;
+        sizes[GL.INT_VEC3] = 3;
+        sizes[GL.INT_VEC4] = 4;
+        sizes[GL.FLOAT] = 1;
+        sizes[GL.FLOAT_VEC2] = 2;
+        sizes[GL.FLOAT_VEC3] = 3;
+        sizes[GL.FLOAT_VEC4] = 4;
+        sizes[GL.FLOAT_MAT2] = 4;
+        sizes[GL.FLOAT_MAT3] = 9;
+        sizes[GL.FLOAT_MAT4] = 16;
+    }
+
+    // constructor
+    function attribute(parameters, data, interleave) {
+        if (!once) {
+            once = true;
+            lazyInit();
+        }
+
+        this.id = GLOW.uniqueId();
+        this.data = data;
+        this.location = parameters.location;
+        this.locationNumber = parameters.locationNumber;
+        this.stride = 0;
+        this.offset = 0;
+        this.size = sizes[parameters.type];
+        this.buffer = GL.createBuffer();
+
+        // todo should all of these really get stored?
+        this.name = parameters.name;
+        this.type = parameters.type;
+
+        if (!interleave) {
+            if (this.data instanceof Float32Array) {
+                this.setData(this.data);
+            }
+            else {
+                var al = this.data.length;
+                var sl = this.size;
+                var flat = new Float32Array(al * sl);
+                var i = 0;
+                for (var a = 0; a < al; a++) {
+                    for(var s = 0; s < sl; s++) {
+                        flat[i++] = data[a].value[s];
+                    }
+                }
+                this.setData(flat);
+            }
+        }
+    }
+
+    // methods
+    attribute.prototype.interleave = function(float32array, stride, offset) {
+        this.stride = stride;
+        this.offset = offset;
+        // TODO
+    };
+
+    attribute.prototype.setData = function(data) {
+        this.data = data;
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
+        GL.bufferData(GL.ARRAY_BUFFER, this.data, GL.STATIC_DRAW);
+    };
+
+    attribute.prototype.bind = function() {
+        GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
+        GL.vertexAttribPointer(this.location, this.size, GL.FLOAT, false, this.stride, this.offset);
+    };
+
+    return attribute;
+})();
+
+// todo better names for setData and bind.
+// todo remove this.locationNumber? seems to be the same as this.location
+/*
+* GLOW.Float
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Float = function( value ) {
+	
+	"use strict";
+	this.value = value !== undefined ? value : 0;
+}
+/*
+* GLOW.Int
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Int = function( value ) {
+
+	"use strict";
+	this.value = value !== undefined ? value : 0;
+}
+/**
+ * GLOW.Vector3 Based upon THREE.Vector3 by
+ * @author mr.doob / http://mrdoob.com/
+ * @author kile / http://kile.stravaganza.org/
+ * @author philogb / http://blog.thejit.org/
+ * @author mikael emtinger / http://gomo.se/
+ */
+
+GLOW.Vector3 = function( x, y, z ) {
+
+	"use strict";
+
+	this.value = new Float32Array( 3 );
+	this.value[ 0 ] = x !== undefined ? x : 0;
+	this.value[ 1 ] = y !== undefined ? y : 0;
+	this.value[ 2 ] = z !== undefined ? z : 0;
+};
+
+/*
+* Prototypes
+*/
+
+GLOW.Vector3.prototype.set = function( x, y, z ) {
+
+	this.value[ 0 ] = x;
+	this.value[ 1 ] = y;
+	this.value[ 2 ] = z;
+
+	return this;
+}
+
+GLOW.Vector3.prototype.copy = function ( v ) {
+
+	this.set( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+
+	return this;
+}
+
+GLOW.Vector3.prototype.add = function ( a, b ) {
+
+	a = a.value;
+	b = b.value;
+
+	this.value[ 0 ] = a[ 0 ] + b[ 0 ];
+	this.value[ 1 ] = a[ 1 ] + b[ 1 ];
+	this.value[ 2 ] = a[ 2 ] + b[ 2 ];
+
+	return this;
+}
+
+GLOW.Vector3.prototype.addSelf = function ( a ) {
+
+	a = a.value;
+
+	this.value[ 0 ] = this.value[ 0 ] + a[ 0 ];
+	this.value[ 1 ] = this.value[ 1 ] + a[ 1 ];
+	this.value[ 2 ] = this.value[ 2 ] + a[ 2 ];
+
+	return this;
+}
+
+GLOW.Vector3.prototype.addScalar = function ( s ) {
+
+	this.value[ 0 ] += s;
+	this.value[ 1 ] += s;
+	this.value[ 2 ] += s;
+
+	return this;
+}
+
+
+GLOW.Vector3.prototype.sub = function ( a, b ) {
+
+	a = a.value;
+	b = b.value;
+
+	this.value[ 0 ] = a[ 0 ] - b[ 0 ];
+	this.value[ 1 ] = a[ 1 ] - b[ 1 ];
+	this.value[ 2 ] = a[ 2 ] - b[ 2 ];
+	
+	return this;
+}
+
+GLOW.Vector3.prototype.subSelf = function ( a ) {
+
+	a = a.value;
+
+	this.value[ 0 ] -= a[ 0 ];
+	this.value[ 1 ] -= a[ 1 ];
+	this.value[ 2 ] -= a[ 2 ];
+	
+	return this;
+}
+
+GLOW.Vector3.prototype.cross = function ( a, b ) {
+
+	a = a.value;
+	b = b.value;
+
+	this.value[ 0 ] = a[ 1 ] * b[ 2 ] - a[ 2 ] * b[ 1 ];
+	this.value[ 1 ] = a[ 2 ] * b[ 0 ] - a[ 0 ] * b[ 2 ];
+	this.value[ 2 ] = a[ 0 ] * b[ 1 ] - a[ 1 ] * b[ 0 ];
+
+	return this;
+}
+
+GLOW.Vector3.prototype.crossSelf = function ( a ) {
+
+	a = a.value;
+
+	var ax = a[ 0 ], ay = a[ 1 ], az = a[ 2 ];
+	var vx = this.value[ 0 ], vy = this.value[ 1 ], vz = this.value[ 2 ];
+
+	this.value[ 0 ] = ay * vz - az * vy;
+	this.value[ 1 ] = az * vx - ax * vz;
+	this.value[ 2 ] = ax * vy - ay * vx;
+
+	return this;
+
+}
+
+GLOW.Vector3.prototype.multiply = function( a, b ) {
+
+	a = a.value;
+	b = b.value;
+	
+	this.value[ 0 ] = a[ 0 ] * b[ 0 ];
+	this.value[ 1 ] = a[ 1 ] * b[ 1 ];
+	this.value[ 2 ] = a[ 2 ] * b[ 2 ];
+
+	return this;
+}
+
+GLOW.Vector3.prototype.multiplySelf = function( a ) {
+
+	a = a.value;
+	
+	this.value[ 0 ] *= a[ 0 ];
+	this.value[ 1 ] *= a[ 1 ];
+	this.value[ 2 ] *= a[ 2 ];
+
+	return this;
+}
+
+GLOW.Vector3.prototype.multiplyScalar = function( s ) {
+
+	this.value[ 0 ] *= s;
+	this.value[ 1 ] *= s;
+	this.value[ 2 ] *= s;
+
+	return this;
+}
+
+GLOW.Vector3.prototype.divideSelf = function( a ) {
+
+	a = a.value;
+
+	this.value[ 0 ] /= a[ 0 ];
+	this.value[ 1 ] /= a[ 1 ];
+	this.value[ 2 ] /= a[ 2 ];
+
+	return this;
+}
+
+GLOW.Vector3.prototype.divideScalar = function( s ) {
+
+	this.value[ 0 ] /= s;
+	this.value[ 1 ] /= s;
+	this.value[ 2 ] /= s;
+
+	return this;
+}
+
+GLOW.Vector3.prototype.negate = function() {
+
+	this.value[ 0 ] = -this.value[ 0 ];
+	this.value[ 1 ] = -this.value[ 1 ];
+	this.value[ 2 ] = -this.value[ 2 ];
+
+	return this;
+}
+
+GLOW.Vector3.prototype.dot = function( a ) {
+
+	a = a.value;
+
+	return this.value[ 0 ] * a[ 0 ] + this.value[ 1 ] * a[ 1 ] + this.value[ 2 ] * a[ 2 ];
+}
+
+GLOW.Vector3.prototype.distanceTo = function ( a ) {
+
+	return Math.sqrt( this.distanceToSquared( a ) );
+}
+
+GLOW.Vector3.prototype.distanceToSquared = function( a ) {
+	
+	a = a.value;
+
+	var dx = this.value[ 0 ] - a[ 0 ], dy = this.value[ 1 ] - a[ 1 ], dz = this.value[ 2 ] - a[ 2 ];
+	return dx * dx + dy * dy + dz * dz;
+}
+
+GLOW.Vector3.prototype.length = function() {
+
+	return Math.sqrt( this.lengthSq() );
+}
+
+GLOW.Vector3.prototype.lengthSq = function() {
+
+	return this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ];
+}
+
+GLOW.Vector3.prototype.lengthManhattan = function() {
+
+	return this.value[ 0 ] + this.value[ 1 ] + this.value[ 2 ];
+}
+
+GLOW.Vector3.prototype.normalize = function() {
+
+	var l = Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
+
+	l > 0 ? this.multiplyScalar( 1 / l ) : this.set( 0, 0, 0 );
+
+	return this;
+}
+
+GLOW.Vector3.prototype.setPositionFromMatrix = function( m ) {
+
+	m = m.value;
+
+	this.value[ 0 ] = m[ 12 ];
+	this.value[ 1 ] = m[ 13 ];
+	this.value[ 2 ] = m[ 14 ];
+}
+
+GLOW.Vector3.prototype.setLength = function( l ) {
+
+	return this.normalize().multiplyScalar( l );
+}
+
+GLOW.Vector3.prototype.isZero = function() {
+
+	var almostZero = 0.0001;
+	return ( Math.abs( this.value[ 0 ] ) < almostZero ) && ( Math.abs( this.value[ 1 ] ) < almostZero ) && ( Math.abs( this.value[ 2 ] ) < almostZero );
+}
+
+GLOW.Vector3.prototype.clone = function() {
+
+	return GLOW.Vector3( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+}
+/*
+* GLOW.Matrix3
+* Based upon THREE.Matrix3 by @mr.doob
+*/
+
+GLOW.Matrix3 = function () {
+
+	"use strict";
+
+	this.value = new Float32Array( 9 );
+};
+
+/*
+* Prototype
+*/
+
+GLOW.Matrix3.prototype.set = function( m11, m12, m13, m21, m22, m23, m31, m32, m33 ) {
+
+	this.value[ 0 ] = m11; this.value[ 4 ] = m12; this.value[ 8 ] = m13;
+	this.value[ 1 ] = m21; this.value[ 5 ] = m22; this.value[ 9 ] = m23;
+	this.value[ 2 ] = m31; this.value[ 6 ] = m32; this.value[ 10 ] = m33;
+
+	return this;
+}
+
+GLOW.Matrix3.prototype.identity = function () {
+
+	this.set( 1, 0, 0, 0, 1, 0, 0, 0, 1	);
+	return this;
+}
+/**
+ * GLOW.Matrix4. Based upon THREE.Matrix4 by:
+ * @author mr.doob / http://mrdoob.com/
+ * @author supereggbert / http://www.paulbrunt.co.uk/
+ * @author philogb / http://blog.thejit.org/
+ * @author jordi_ros / http://plattsoft.com
+ * @author D1plo1d / http://github.com/D1plo1d
+ * @author alteredq / http://alteredqualia.com/
+ * @author mikael emtinger / http://gomo.se/
+ */
+
+GLOW.Matrix4 = function() {
+
+	"use strict";
+
+	this.value = new Float32Array( 16 );
+
+	this.rotation = new GLOW.Vector3();
+	this.position = new GLOW.Vector3();
+	this.columnX  = new GLOW.Vector3();
+	this.columnY  = new GLOW.Vector3();
+	this.columnZ  = new GLOW.Vector3();
+	
+	this.identity();
+}
+
+/*
+* Prototype
+*/
+
+GLOW.Matrix4.prototype.set = function( m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 ) {
+
+	this.value[ 0 ] = m11; this.value[ 4 ] = m12; this.value[ 8 ] = m13; this.value[ 12 ] = m14;
+	this.value[ 1 ] = m21; this.value[ 5 ] = m22; this.value[ 9 ] = m23; this.value[ 13 ] = m24;
+	this.value[ 2 ] = m31; this.value[ 6 ] = m32; this.value[ 10 ] = m33; this.value[ 14 ] = m34;
+	this.value[ 3 ] = m41; this.value[ 7 ] = m42; this.value[ 11 ] = m43; this.value[ 15 ] = m44;
+
+	return this;
+}
+
+GLOW.Matrix4.prototype.identity = function () {
+
+	this.set( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 );
+	return this;
+}
+
+GLOW.Matrix4.prototype.copy = function( a ) {
+
+	a = a.value;
+
+	this.set(
+		a[ 0 ], a[ 4 ], a[ 8  ], a[ 12 ],
+		a[ 1 ], a[ 5 ], a[ 9  ], a[ 13 ],
+		a[ 2 ], a[ 6 ], a[ 10 ], a[ 14 ],
+		a[ 3 ], a[ 7 ], a[ 11 ], a[ 15 ]
+	);
+
+	return this;
+}
+
+GLOW.Matrix4.prototype.lookAt = function( focus, up ) {
+
+	var x = GLOW.Matrix4.tempVector3A, 
+	    y = GLOW.Matrix4.tempVector3B, 
+	    z = GLOW.Matrix4.tempVector3C;
+	var eye = this.getPosition();	
+	
+	eye.value[ 0 ] = this.value[ 12 ];
+	eye.value[ 1 ] = this.value[ 13 ];
+	eye.value[ 2 ] = this.value[ 14 ];
+
+	z.sub( eye, focus ).normalize();
+
+	if( z.length() === 0 ) {
+
+		z.value[ 3 ] = 1;
+	}
+
+	x.cross( up, z ).normalize();
+
+	if( x.length() === 0 ) {
+
+		z.value[ 0 ] += 0.0001;
+		x.cross( up, z ).normalize();
+	}
+
+	y.cross( z, x ).normalize();
+
+	x = x.value;
+	y = y.value;
+	z = z.value;
+
+	this.value[ 0 ] = x[ 0 ]; this.value[ 4 ] = y[ 0 ]; this.value[  8 ] = z[ 0 ];
+	this.value[ 1 ] = x[ 1 ]; this.value[ 5 ] = y[ 1 ]; this.value[  9 ] = z[ 1 ];
+	this.value[ 2 ] = x[ 2 ]; this.value[ 6 ] = y[ 2 ]; this.value[ 10 ] = z[ 2 ];
+
+	return this;
+}
+
+GLOW.Matrix4.prototype.multiplyVector3 = function ( v ) {
+
+	var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ],
+	d = 1 / ( this.value[ 3 ] * vx + this.value[ 7 ] * vy + this.value[ 11 ] * vz + this.value[ 15 ] );
+
+	v.value[ 0 ] = ( this.value[ 0 ] * vx + this.value[ 4 ] * vy + this.value[ 8 ] * vz + this.value[ 12 ] ) * d;
+	v.value[ 1 ] = ( this.value[ 1 ] * vx + this.value[ 5 ] * vy + this.value[ 9 ] * vz + this.value[ 13 ] ) * d;
+	v.value[ 2 ] = ( this.value[ 2 ] * vx + this.value[ 6 ] * vy + this.value[ 10 ] * vz + this.value[ 14 ] ) * d;
+
+	return v;
+}
+
+GLOW.Matrix4.prototype.multiplyVector4 = function ( v ) {
+
+	var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ], vw = v.value[ 3 ];
+
+	v.value[ 0 ] = this.value[ 0 ] * vx + this.value[ 4 ] * vy + this.value[ 8 ] * vz + this.value[ 12 ] * vw;
+	v.value[ 1 ] = this.value[ 1 ] * vx + this.value[ 5 ] * vy + this.value[ 9 ] * vz + this.value[ 13 ] * vw;
+	v.value[ 2 ] = this.value[ 2 ] * vx + this.value[ 6 ] * vy + this.value[ 10 ] * vz + this.value[ 14 ] * vw;
+	v.value[ 3 ] = this.value[ 3 ] * vx + this.value[ 7 ] * vy + this.value[ 11 ] * vz + this.value[ 15 ] * vw;
+
+	return v;
+}
+
+GLOW.Matrix4.prototype.rotateAxis = function ( v ) {
+
+	var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ];
+
+	v.value[ 0 ] = vx * this.value[ 0 ] + vy * this.value[ 4 ] + vz * this.value[ 8 ];
+	v.value[ 1 ] = vx * this.value[ 1 ] + vy * this.value[ 5 ] + vz * this.value[ 9 ];
+	v.value[ 2 ] = vx * this.value[ 2 ] + vy * this.value[ 6 ] + vz * this.value[ 10 ];
+
+	v.normalize();
+
+	return v;
+}
+
+GLOW.Matrix4.prototype.crossVector = function ( a ) {
+
+	var v = GLOW.Vector4();
+	var ax = a.value[ 0 ], ay = a.value[ 1 ], az = a.value[ 2 ], aw = a.value[ 3 ];
+
+	v.value[ 0 ] = this.value[ 0 ] * ax + this.value[ 4 ] * ay + this.value[ 8 ] * az + this.value[ 12 ] * aw;
+	v.value[ 1 ] = this.value[ 1 ] * ax + this.value[ 5 ] * ay + this.value[ 9 ] * az + this.value[ 13 ] * aw;
+	v.value[ 2 ] = this.value[ 2 ] * ax + this.value[ 6 ] * ay + this.value[ 10 ] * az + this.value[ 14 ] * aw;
+	v.value[ 3 ] = ( aw ) ? this.value[ 3 ] * ax + this.value[ 7 ] * ay + this.value[ 11 ] * az + this.value[ 15 ] * aw : 1;
+
+	return v;
+}
+
+GLOW.Matrix4.prototype.multiply = function ( a, b ) {
+
+	a = a.value;
+	b = b.value;
+
+	var a11 = a[ 0 ], a12 = a[ 4 ], a13 = a[ 8 ], a14 = a[ 12 ],
+	    a21 = a[ 1 ], a22 = a[ 5 ], a23 = a[ 9 ], a24 = a[ 13 ],
+	    a31 = a[ 2 ], a32 = a[ 6 ], a33 = a[ 10 ], a34 = a[ 14 ],
+	    a41 = a[ 3 ], a42 = a[ 7 ], a43 = a[ 11 ], a44 = a[ 15 ],
+
+	b11 = b[ 0 ], b12 = b[ 4 ], b13 = b[ 8 ], b14 = b[ 12 ],
+	b21 = b[ 1 ], b22 = b[ 5 ], b23 = b[ 9 ], b24 = b[ 13 ],
+	b31 = b[ 2 ], b32 = b[ 6 ], b33 = b[ 10 ], b34 = b[ 14 ],
+	b41 = b[ 3 ], b42 = b[ 7 ], b43 = b[ 11 ], b44 = b[ 15 ];
+
+	this.value[ 0 ] = a11 * b11 + a12 * b21 + a13 * b31;
+	this.value[ 4 ] = a11 * b12 + a12 * b22 + a13 * b32;
+	this.value[ 8 ] = a11 * b13 + a12 * b23 + a13 * b33;
+	this.value[ 12 ] = a11 * b14 + a12 * b24 + a13 * b34 + a14;
+
+	this.value[ 1 ] = a21 * b11 + a22 * b21 + a23 * b31;
+	this.value[ 5 ] = a21 * b12 + a22 * b22 + a23 * b32;
+	this.value[ 9 ] = a21 * b13 + a22 * b23 + a23 * b33;
+	this.value[ 13 ] = a21 * b14 + a22 * b24 + a23 * b34 + a24;
+
+	this.value[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
+	this.value[ 6 ] = a31 * b12 + a32 * b22 + a33 * b32;
+	this.value[ 10 ] = a31 * b13 + a32 * b23 + a33 * b33;
+	this.value[ 14 ] = a31 * b14 + a32 * b24 + a33 * b34 + a34;
+
+	this.value[ 3 ] = a41 * b11 + a42 * b21 + a43 * b31;
+	this.value[ 7 ] = a41 * b12 + a42 * b22 + a43 * b32;
+	this.value[ 11 ] = a41 * b13 + a42 * b23 + a43 * b33;
+	this.value[ 15 ] = a41 * b14 + a42 * b24 + a43 * b34 + a44;
+
+	return this;
+}
+
+GLOW.Matrix4.prototype.multiplySelf = function ( a ) {
+
+	this.multiply( m, a );
+	return this;
+}
+
+GLOW.Matrix4.prototype.multiplyScalar = function ( s ) {
+
+	this.value[ 0 ] *= s; this.value[ 4 ] *= s; this.value[ 8 ] *= s; this.value[ 12 ] *= s;
+	this.value[ 1 ] *= s; this.value[ 5 ] *= s; this.value[ 9 ] *= s; this.value[ 13 ] *= s;
+	this.value[ 2 ] *= s; this.value[ 6 ] *= s; this.value[ 10 ] *= s; this.value[ 14 ] *= s;
+	this.value[ 3 ] *= s; this.value[ 7 ] *= s; this.value[ 11 ] *= s; this.value[ 15 ] *= s;
+
+	return this;
+}
+
+GLOW.Matrix4.prototype.determinant = function () {
+
+	var n11 = this.value[ 0 ], n12 = this.value[ 4 ], n13 = this.value[ 8 ], n14 = this.value[ 12 ],
+	n21 = this.value[ 1 ], n22 = this.value[ 5 ], n23 = this.value[ 9 ], n24 = this.value[ 13 ],
+	n31 = this.value[ 2 ], n32 = this.value[ 6 ], n33 = this.value[ 10 ], n34 = this.value[ 14 ],
+	n41 = this.value[ 3 ], n42 = this.value[ 7 ], n43 = this.value[ 11 ], n44 = this.value[ 15 ];
+
+	//TODO: make this more efficient
+	//( based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm )
+	return (
+		n14 * n23 * n32 * n41-
+		n13 * n24 * n32 * n41-
+		n14 * n22 * n33 * n41+
+		n12 * n24 * n33 * n41+
+
+		n13 * n22 * n34 * n41-
+		n12 * n23 * n34 * n41-
+		n14 * n23 * n31 * n42+
+		n13 * n24 * n31 * n42+
+
+		n14 * n21 * n33 * n42-
+		n11 * n24 * n33 * n42-
+		n13 * n21 * n34 * n42+
+		n11 * n23 * n34 * n42+
+
+		n14 * n22 * n31 * n43-
+		n12 * n24 * n31 * n43-
+		n14 * n21 * n32 * n43+
+		n11 * n24 * n32 * n43+
+
+		n12 * n21 * n34 * n43-
+		n11 * n22 * n34 * n43-
+		n13 * n22 * n31 * n44+
+		n12 * n23 * n31 * n44+
+
+		n13 * n21 * n32 * n44-
+		n11 * n23 * n32 * n44-
+		n12 * n21 * n33 * n44+
+		n11 * n22 * n33 * n44
+	);
+}
+
+GLOW.Matrix4.prototype.transpose = function () {
+
+	var tmp;
+
+	tmp = this.value[ 1 ]; this.value[ 1 ] = this.value[ 4 ]; this.value[ 4 ] = tmp;
+	tmp = this.value[ 2 ]; this.value[ 2 ] = this.value[ 8 ]; this.value[ 8 ] = tmp;
+	tmp = this.value[ 6 ]; this.value[ 6 ] = this.value[ 9 ]; this.value[ 9 ] = tmp;
+
+	tmp = this.value[ 3 ]; this.value[ 3 ] = this.value[ 12 ]; this.value[ 12 ] = tmp;
+	tmp = this.value[ 7 ]; this.value[ 7 ] = this.value[ 13 ]; this.value[ 13 ] = tmp;
+	tmp = this.value[ 11 ]; this.value[ 11 ] = this.value[ 14 ]; this.value[ 11 ] = tmp;
+
+	return this;
+}
+
+GLOW.Matrix4.prototype.clone = function () {
+
+	var clone = new GLOW.Matrix4();
+	clone.value = new Float32Array( m );
+
+	return clone;
+}
+
+
+GLOW.Matrix4.prototype.setPosition = function( x, y, z ) {
+
+	this.value[ 12 ] = x;
+	this.value[ 13 ] = y;
+	this.value[ 14 ] = z;
+
+	return this;
+}
+
+GLOW.Matrix4.prototype.addPosition = function( x, y, z ) {
+	
+	this.value[ 12 ] += x;
+	this.value[ 13 ] += y;
+	this.value[ 14 ] += z;
+}
+
+GLOW.Matrix4.prototype.setRotation = function( x, y, z ) {
+
+	this.rotation.set( x, y, z );
+
+	var a = Math.cos( x ), b = Math.sin( x ),
+	    c = Math.cos( y ), d = Math.sin( y ),
+	    e = Math.cos( z ), f = Math.sin( z ),
+	    ad = a * d, bd = b * d;
+
+	this.value[ 0 ] = c * e;
+	this.value[ 4 ] = - c * f;
+	this.value[ 8 ] = d;
+
+	this.value[ 1 ] = bd * e + a * f;
+	this.value[ 5 ] = - bd * f + a * e;
+	this.value[ 9 ] = - b * c;
+
+	this.value[ 2 ] = - ad * e + b * f;
+	this.value[ 6 ] = ad * f + b * e;
+	this.value[ 10 ] = a * c;
+
+	return this;
+}
+
+GLOW.Matrix4.prototype.addRotation = function( x, y, z ) {
+	
+	this.rotation.value[ 0 ] += x;
+	this.rotation.value[ 1 ] += y;
+	this.rotation.value[ 2 ] += z;
+	
+	this.setRotation( this.rotation.value[ 0 ], this.rotation.value[ 1 ], this.rotation.value[ 2 ] );
+}
+
+GLOW.Matrix4.prototype.getPosition = function() {
+	
+	this.position.set( this.value[ 12 ], this.value[ 13 ], this.value[ 14 ] );
+	return this.position;
+}
+
+GLOW.Matrix4.prototype.getColumnX = function() {
+	
+	this.columnX.set( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+	return this.columnX;
+}
+
+GLOW.Matrix4.prototype.getColumnY = function() {
+	
+	this.columnY.set( this.value[ 4 ], this.value[ 5 ], this.value[ 6 ] );
+	return this.columnY;
+}
+
+GLOW.Matrix4.prototype.getColumnZ = function() {
+	
+	this.columnZ.set( this.value[ 8 ], this.value[ 9 ], this.value[ 10 ] );
+	return this.columnZ;
+}
+
+
+GLOW.Matrix4.prototype.scale = function( v, y, z ) {
+
+	var x;
+
+	if( y !== undefined && z !== undefined ) {
+		
+		x = v;
+		
+	} else {
+		
+		x = v.value[ 0 ];
+		y = v.value[ 1 ];
+		z = v.value[ 2 ];
+	}
+
+
+	this.value[ 0 ] *= x; this.value[ 4 ] *= y; this.value[ 8 ] *= z;
+	this.value[ 1 ] *= x; this.value[ 5 ] *= y; this.value[ 9 ] *= z;
+	this.value[ 2 ] *= x; this.value[ 6 ] *= y; this.value[ 10 ] *= z;
+	this.value[ 3 ] *= x; this.value[ 7 ] *= y; this.value[ 11 ] *= z;
+
+	return this;
+}
+
+
+
+
+/*
+* Helpers
+*/
+
+GLOW.Matrix4.makeInverse = function ( m1, m2 ) {
+
+	// based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+
+	if( m2 === undefined ) m2 = new GLOW.Matrix4();
+
+	var m1v = m1.value;
+	var m2v = m2.value;
+
+	var n11 = m1v[ 0 ], n12 = m1v[ 4 ], n13 = m1v[ 8  ], n14 = m1v[ 12 ],
+	    n21 = m1v[ 1 ], n22 = m1v[ 5 ], n23 = m1v[ 9  ], n24 = m1v[ 13 ],
+	    n31 = m1v[ 2 ], n32 = m1v[ 6 ], n33 = m1v[ 10 ], n34 = m1v[ 14 ],
+	    n41 = m1v[ 3 ], n42 = m1v[ 7 ], n43 = m1v[ 11 ], n44 = m1v[ 15 ];
+
+	m2v[ 0  ] = n23*n34*n42 - n24*n33*n42 + n24*n32*n43 - n22*n34*n43 - n23*n32*n44 + n22*n33*n44;
+	m2v[ 1  ] = n24*n33*n41 - n23*n34*n41 - n24*n31*n43 + n21*n34*n43 + n23*n31*n44 - n21*n33*n44;
+	m2v[ 2  ] = n22*n34*n41 - n24*n32*n41 + n24*n31*n42 - n21*n34*n42 - n22*n31*n44 + n21*n32*n44;
+	m2v[ 3  ] = n23*n32*n41 - n22*n33*n41 - n23*n31*n42 + n21*n33*n42 + n22*n31*n43 - n21*n32*n43;
+	m2v[ 4  ] = n14*n33*n42 - n13*n34*n42 - n14*n32*n43 + n12*n34*n43 + n13*n32*n44 - n12*n33*n44;
+	m2v[ 5  ] = n13*n34*n41 - n14*n33*n41 + n14*n31*n43 - n11*n34*n43 - n13*n31*n44 + n11*n33*n44;
+	m2v[ 6  ] = n14*n32*n41 - n12*n34*n41 - n14*n31*n42 + n11*n34*n42 + n12*n31*n44 - n11*n32*n44;
+	m2v[ 7  ] = n12*n33*n41 - n13*n32*n41 + n13*n31*n42 - n11*n33*n42 - n12*n31*n43 + n11*n32*n43;
+	m2v[ 8  ] = n13*n24*n42 - n14*n23*n42 + n14*n22*n43 - n12*n24*n43 - n13*n22*n44 + n12*n23*n44;
+	m2v[ 9  ] = n14*n23*n41 - n13*n24*n41 - n14*n21*n43 + n11*n24*n43 + n13*n21*n44 - n11*n23*n44;
+	m2v[ 10 ] = n13*n24*n41 - n14*n22*n41 + n14*n21*n42 - n11*n24*n42 - n12*n21*n44 + n11*n22*n44;
+	m2v[ 11 ] = n13*n22*n41 - n12*n23*n41 - n13*n21*n42 + n11*n23*n42 + n12*n21*n43 - n11*n22*n43;
+	m2v[ 12 ] = n14*n23*n32 - n13*n24*n32 - n14*n22*n33 + n12*n24*n33 + n13*n22*n34 - n12*n23*n34;
+	m2v[ 13 ] = n13*n24*n31 - n14*n23*n31 + n14*n21*n33 - n11*n24*n33 - n13*n21*n34 + n11*n23*n34;
+	m2v[ 14 ] = n14*n22*n31 - n12*n24*n31 - n14*n21*n32 + n11*n24*n32 + n12*n21*n34 - n11*n22*n34;
+	m2v[ 15 ] = n12*n23*n31 - n13*n22*n31 + n13*n21*n32 - n11*n23*n32 - n12*n21*n33 + n11*n22*n33;
+	
+	m2.multiplyScalar( 1 / m1.determinant());
+
+	return m2;
+
+};
+
+/*THREE.Matrix4.makeInvert3x3 = function ( m1 ) {
+
+	// input:  THREE.Matrix4, output: THREE.Matrix3
+	// ( based on http://code.google.com/p/webgl-mjs/ )
+
+	var m33 = m1.m33, m33m = m33.m,
+	a11 =   m1.n33 * m1.n22 - m1.n32 * m1.n23,
+	a21 = - m1.n33 * m1.n21 + m1.n31 * m1.n23,
+	a31 =   m1.n32 * m1.n21 - m1.n31 * m1.n22,
+	a12 = - m1.n33 * m1.n12 + m1.n32 * m1.n13,
+	a22 =   m1.n33 * m1.n11 - m1.n31 * m1.n13,
+	a32 = - m1.n32 * m1.n11 + m1.n31 * m1.n12,
+	a13 =   m1.n23 * m1.n12 - m1.n22 * m1.n13,
+	a23 = - m1.n23 * m1.n11 + m1.n21 * m1.n13,
+	a33 =   m1.n22 * m1.n11 - m1.n21 * m1.n12,
+
+	det = m1.n11 * a11 + m1.n21 * a12 + m1.n31 * a13,
+
+	idet;
+
+	// no inverse
+	if (det == 0) {
+		throw "matrix not invertible";
+	}
+	
+	idet = 1.0 / det;
+
+	m33this.value[ 0 ] = idet * a11; m33this.value[ 1 ] = idet * a21; m33this.value[ 2 ] = idet * a31;
+	m33this.value[ 3 ] = idet * a12; m33this.value[ 4 ] = idet * a22; m33this.value[ 5 ] = idet * a32;
+	m33this.value[ 6 ] = idet * a13; m33this.value[ 7 ] = idet * a23; m33this.value[ 8 ] = idet * a33;
+
+	return m33;
+
+}
+*/
+
+GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
+
+	var m, mv, x, y, a, b, c, d;
+
+	m = new GLOW.Matrix4();
+	x = 2 * near / ( right - left );
+	y = 2 * near / ( top - bottom );
+	a = ( right + left ) / ( right - left );
+	b = ( top + bottom ) / ( top - bottom );
+	c = - ( far + near ) / ( far - near );
+	d = - 2 * far * near / ( far - near );
+
+	mv = m.value;
+	mv[ 0 ] = x;  mv[ 4 ] = 0;  mv[ 8  ] = a;   mv[ 12 ] = 0;
+	mv[ 1 ] = 0;  mv[ 5 ] = y;  mv[ 9  ] = b;   mv[ 13 ] = 0;
+	mv[ 2 ] = 0;  mv[ 6 ] = 0;  mv[ 10 ] = c;   mv[ 14 ] = d;
+	mv[ 3 ] = 0;  mv[ 7 ] = 0;  mv[ 11 ] = - 1; mv[ 15 ] = 0;
+
+	return m;
+
+};
+
+GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
+
+	var ymax, ymin, xmin, xmax;
+
+	ymax = near * Math.tan( fov * Math.PI / 360 );
+	ymin = - ymax;
+	xmin = ymin * aspect;
+	xmax = ymax * aspect;
+
+	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far );
+
+};
+
+GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far ) {
+
+	var m, mv, x, y, z, w, h, p;
+
+	m = GLOW.Matrix4();
+	w = right - left;
+	h = top - bottom;
+	p = far - near;
+	x = ( right + left ) / w;
+	y = ( top + bottom ) / h;
+	z = ( far + near ) / p;
+
+	mv = m.value;
+
+	mv[ 0 ] = 2 / w; mv[ 4 ] = 0;     mv[ 8  ] = 0;      mv[ 12 ] = -x;
+	mv[ 1 ] = 0;     mv[ 5 ] = 2 / h; mv[ 9  ] = 0;      mv[ 13 ] = -y;
+	mv[ 2 ] = 0;     mv[ 6 ] = 0;     mv[ 10 ] = -2 / p; mv[ 14 ] = -z;
+	mv[ 3 ] = 0;     mv[ 7 ] = 0;     mv[ 11 ] = 0;      mv[ 15 ] = 1;
+
+	return m;
+
+};
+
+
+GLOW.Matrix4.tempVector3A = new GLOW.Vector3();
+GLOW.Matrix4.tempVector3B = new GLOW.Vector3();
+GLOW.Matrix4.tempVector3C = new GLOW.Vector3();
+GLOW.Matrix4.tempVector3D = new GLOW.Vector3();
+GLOW.Geometry = {
+	
+	randomVector3Array: function( amount, factor ) {
+		
+		factor = factor !== undefined ? factor : 1;
+		
+		var a, array = [];
+		var doubleFactor = factor * 2;
+		
+		for( a = 0; a < amount; a++ ) {
+			
+			array.push( GLOW.Vector3( Math.random() * doubleFactor - factor, 
+									  Math.random() * doubleFactor - factor, 
+									  Math.random() * doubleFactor - factor ));
+		}
+
+		return array;
+	},
+	
+	elements: function( amount ) {
+		
+		var i = 0, a, array = new Uint16Array( amount * 3 );
+		
+		for( a = 0; a < amount; a++ ) {
+			
+			array[ i ] = i++;
+			array[ i ] = i++;
+			array[ i ] = i++;
+		}
+		
+		return array;
+	},
+	
+	faceNormals: function( vertices, elements ) {
+	
+		var normals = new Float32Array( vertices.length );
+		var e, el = elements.length;
+		var a, b, c;
+		var av = new GLOW.Vector3();
+		var bv = new GLOW.Vector3();
+		var cv = new GLOW.Vector3();
+		var nv = new GLOW.Vector3();
+	
+		for( e = 0; e < el; ) {
+			
+			a = elements[ e++ ] * 3;
+			b = elements[ e++ ] * 3;
+			c = elements[ e++ ] * 3;
+			
+			av.set( vertices[ a + 0 ], vertices[ a + 1 ], vertices[ a + 2 ] );
+			bv.set( vertices[ b + 0 ], vertices[ b + 1 ], vertices[ b + 2 ] );
+			cv.set( vertices[ c + 0 ], vertices[ c + 1 ], vertices[ c + 2 ] );
+			
+			bv.subSelf( av );
+			cv.subSelf( av );
+			
+			nv.cross( cv, bv ).normalize();
+			
+			normals[ a + 0 ] = nv.value[ 0 ]; normals[ a + 1 ] = nv.value[ 1 ]; normals[ a + 2 ] = nv.value[ 2 ];
+			normals[ b + 0 ] = nv.value[ 0 ]; normals[ b + 1 ] = nv.value[ 1 ]; normals[ b + 2 ] = nv.value[ 2 ];
+			normals[ c + 0 ] = nv.value[ 0 ]; normals[ c + 1 ] = nv.value[ 1 ]; normals[ c + 2 ] = nv.value[ 2 ];
+		}
+
+		return normals;
+	}
+}
+
+GLOW.Geometry.Cube = {
+	
+	vertices: function( size ) {
+
+		var a = new Float32Array( 6 * 4 * 3 );
+		var i = 0;
+
+		size = size !== undefined ? size * 0.5 : 5;
+
+		// front
+
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
+
+		// back
+
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
+
+		// left
+
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
+
+		// right
+
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+
+		// up
+
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = -size; 
+
+		// down
+
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+
+		return a;
+	},
+
+	elements: function() {
+
+		var a = new Uint16Array( 6 * 2 * 3 );
+		var i = 0;
+
+		a[ i++ ] = 0; a[ i++ ] = 1; a[ i++ ] = 2;
+		a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 3;
+
+		a[ i++ ] = 4; a[ i++ ] = 5; a[ i++ ] = 6;
+		a[ i++ ] = 4; a[ i++ ] = 6; a[ i++ ] = 7;
+
+		a[ i++ ] = 8; a[ i++ ] = 9; a[ i++ ] = 10;
+		a[ i++ ] = 8; a[ i++ ] = 10; a[ i++ ] = 11;
+
+		a[ i++ ] = 12; a[ i++ ] = 13; a[ i++ ] = 14;
+		a[ i++ ] = 12; a[ i++ ] = 14; a[ i++ ] = 15;
+
+		a[ i++ ] = 16; a[ i++ ] = 17; a[ i++ ] = 18;
+		a[ i++ ] = 16; a[ i++ ] = 18; a[ i++ ] = 19;
+
+		a[ i++ ] = 20; a[ i++ ] = 21; a[ i++ ] = 22;
+		a[ i++ ] = 20; a[ i++ ] = 22; a[ i++ ] = 23;
+
+		return a;
+	},
+	
+	uvs: function() {
+		
+		var a = new Float32Array( 6 * 4 * 2 );
+		var i = 0;
+		
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 1;
+
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 1;
+
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 1;
+
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 1;
+
+		return a;
+	}
+}
+
+
+GLOW.Geometry.Plane = {
+	
+	vertices: function( size ) {
+
+		var a = new Float32Array( 4 * 3 );
+		var i = 0;
+
+		size = size !== undefined ? size * 0.5 : 1.0;
+
+		// front
+
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = 0; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = 0; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = 0; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = 0; 
+
+		return a;
+	},
+
+	elements: function() {
+
+		var a = new Uint16Array( 2 * 3 );
+		var i = 0;
+
+		a[ i++ ] = 0; a[ i++ ] = 1; a[ i++ ] = 2;
+		a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 3;
+
+		return a;
+	},
+	
+	uvs: function() {
+		
+		var a = new Float32Array( 4 * 2 );
+		var i = 0;
+		
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		
+		return a;
+	}
+}/*
+* GLOW.Node
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Node = function( shader ) {
+	
+	"use strict";
+	
+	this.localMatrix  = new GLOW.Matrix4();
+	this.globalMatrix = new GLOW.Matrix4();
+	this.viewMatrix   = new GLOW.Matrix4();
+	
+	this.useXYZStyleTransform = false;
+	this.position = { x: 0, y: 0, z: 0 };
+	this.rotation = { x: 0, y: 0, z: 0 };
+	this.scale    = { x: 1, y: 1, z: 1 };
+
+	this.children = [];
+	this.parent   = undefined;
+	
+	if( shader ) {
+		this.shader = shader;
+		this.draw = shader.draw;
+	}
+}
+
+/* 
+* Prototype
+*/ 
+
+GLOW.Node.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix ) {
+	
+	if( this.useXYZStyleTransform ) {
+		
+		this.localMatrix.setPosition( this.position.x, this.position.y, this.position.z );
+		this.localMatrix.setRotation( this.rotation.x, this.rotation.y, this.rotation.z );
+		this.localMatrix.scale( this.scale.x, this.scale.y, this.scale.z );
+	}
+	
+	if( parentGlobalMatrix ) {
+
+		this.globalMatrix.multiply( parentGlobalMatrix, this.localMatrix );
+
+	} else {
+
+		this.globalMatrix.copy( this.localMatrix );
+	}
+	
+	
+	if( cameraInverseMatrix ) {
+		
+		this.viewMatrix.multiply( cameraInverseMatrix, this.globalMatrix );
+	}
+	
+
+	var c, cl = this.children.length;
+
+	for( c = 0; c < cl; c++ ) {
+		
+		this.children[ c ].update( this.globalMatrix, cameraInverseMatrix );
+	}
+	
+	return this;
+}
+
+GLOW.Node.prototype.addChild = function( child ) {
+	
+	if( this.children.indexOf( child ) === -1 ) {
+		
+		this.children.push( child );
+		
+		if( child.parent ) {
+			
+			child.parent.removeChild( child );
+		}
+		
+		child.parent = this;
+	}
+	
+	return this;
+}
+
+
+GLOW.Node.prototype.removeChild = function( child ) {
+	
+	var index = this.children.indexOf( child );
+	
+	if( index !== -1 ) {
+		
+		this.children.splice( 1, index );
+		child.parent = undefined;
+	}
+	
+	return this;
+}
+
+/*
+* GLOW.Camera
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Camera = function( parameters ) {
+
+	"use strict";
+	GLOW.Node.call( this );
+
+	parameters = parameters !== undefined ? parameters : {};
+
+	var fov    = parameters.fov    !== undefined ? parameters.fov    : 40;
+	var aspect = parameters.aspect !== undefined ? parameters.aspect : window.innerWidth / window.innerHeight;
+	var near   = parameters.near   !== undefined ? parameters.near   : 0.1;
+	var far    = parameters.far    !== undefined ? parameters.far    : 10000;
+
+	this.useTarget  = parameters.useTarget !== undefined ? parameters.useTarget : true;
+	this.projection = GLOW.Matrix4.makeProjection( fov, aspect, near, far );
+	this.inverse    = new GLOW.Matrix4();
+	this.target     = new GLOW.Vector3( 0, 0, -100 );
+	this.up         = new GLOW.Vector3( 0, 1, 0 );
+	
+	this.update();
+}
+
+/*
+* Prototype
+*/
+
+GLOW.Camera.prototype = new GLOW.Node();
+GLOW.Camera.prototype.constructor = GLOW.Camera;
+GLOW.Camera.prototype.supr = GLOW.Node.prototype;
+
+GLOW.Camera.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix ) {
+
+	if( this.useXYZStyleTransform ) {
+		
+		this.localMatrix.setPosition( this.position.x, this.position.y, this.position.z );
+
+		if( this.useTarget ) {
+			this.localMatrix.lookAt( this.target, this.up );
+		} else {
+			this.localMatrix.setRotation( this.rotation.x, this.rotation.y, this.rotation.z );
+		}
+		
+		this.localMatrix.scale( this.scale.x, this.scale.y, this.scale.z );
+	
+	} else if( this.useTarget ) {
+
+		this.localMatrix.lookAt( this.target, this.up );
+
+	}
+	
+	
+	if( parentGlobalMatrix ) {
+		this.globalMatrix.multiply( parentGlobalMatrix, this.localMatrix );
+	} else {
+		this.globalMatrix.copy( this.localMatrix );
+	}
+	
+	GLOW.Matrix4.makeInverse( this.globalMatrix, this.inverse );
+
+
+	var c, cl = this.children.length;
+
+	for( c = 0; c < cl; c++ ) {
+		this.children[ c ].update( this.globalMatrix, cameraInverseMatrix );
+	}
+}
+
+
+
+/*
+* Create default camera
+*/
+
+GLOW.defaultCamera = new GLOW.Camera();
+

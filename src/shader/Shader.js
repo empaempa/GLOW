@@ -51,9 +51,10 @@ GLOW.Shader = (function() {
 
     shader.prototype.draw = function() {
         var compiledData = this.compiledData;
+        var cache = GLOW.currentContext.cache;
 
-        if (!GLOW.currentContext.cache.programCached(compiledData.program)) {
-            var diff = GLOW.currentContext.cache.setProgramHighestAttributeNumber(compiledData.program);
+        if (!cache.programCached(compiledData.program)) {
+            var diff = cache.setProgramHighestAttributeNumber(compiledData.program);
             if (diff) {
                 // enable / disable attribute streams
                 var highestAttrib = compiledData.program.highestAttributeNumber;
@@ -72,13 +73,17 @@ GLOW.Shader = (function() {
             }
             GL.useProgram(compiledData.program);
         }
-        
+
         for (var u in compiledData.uniforms) {
-            compiledData.uniforms[u].set();
+            if (!cache.uniformCached(compiledData.uniforms[u])) {
+                compiledData.uniforms[u].load();
+            }
         }
         
         for (var a in compiledData.attributes) {
-            compiledData.attributes[a].bind();
+            if (!cache.attributeCached(compiledData.attributes[a])) {
+                compiledData.attributes[a].bind();
+            }
         }
         
         compiledData.elements.draw();
