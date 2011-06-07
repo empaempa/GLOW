@@ -1,145 +1,99 @@
 /**
+ * GLOW.Vector2 Based upon THREE.Vector2 by
  * @author mr.doob / http://mrdoob.com/
  * @author philogb / http://blog.thejit.org/
  */
 
-THREE.Vector2 = function ( x, y ) {
+GLOW.Vector2 = (function() {
 
-	this.set(
+    "use strict"; "use restrict";
 
-		x || 0,
-		y || 0
+    // constructor
+    function vector2( x, y ) {
+        this.value = new Float32Array( 2 );
+        this.value[ 0 ] = x !== undefined ? x : 0;
+        this.value[ 1 ] = y !== undefined ? y : 0;
+    }
 
-	);
 
-};
-
-THREE.Vector2.prototype = {
-
-	set : function ( x, y ) {
-
-		this.x = x;
-		this.y = y;
-
+    // methods
+	vector2.prototype.set = function ( x, y ) {
+		this.value[ 0 ] = x;
+		this.value[ 1 ] = y;
 		return this;
+	};
 
+	vector2.prototype.copy = function ( v ) {
+		this.value[ 0 ] = v.value[ 0 ];
+		this.value[ 1 ] = v.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.addSelf = function ( v ) {
+	    this.value[ 0 ] += v.value[ 0 ];
+	    this.value[ 1 ] += v.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.add = function ( v1, v2 ) {
+	    this.value[ 0 ] = v1.value[ 0 ] + v2.value[ 0 ];
+	    this.value[ 1 ] = v1.value[ 1 ] + v2.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.subSelf = function ( v ) {
+		this.value[ 0 ] -= v.x,
+		this.value[ 1 ] -= v.y
+		return this;
+	};
+
+	vector2.prototype.sub = function ( v1, v2 ) {
+	    this.value[ 0 ] = v1.value[ 0 ] - v2.value[ 0 ];
+	    this.value[ 1 ] = v1.value[ 1 ] - v2.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.multiplySelf = function ( v ) {
+	    this.value[ 0 ] *= v.value[ 0 ];
+	    this.value[ 1 ] *= v.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.multiply = function ( v1, v2 ) {
+	    this.value[ 0 ] = v1.value[ 0 ] * v2.value[ 0 ];
+	    this.value[ 1 ] = v1.value[ 1 ] * v2.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.multiplyScalar = function ( s ) {
+		this.value[ 0 ] *= s;
+		this.value[ 1 ] *= s;
+		return this;
 	},
 
-	copy : function ( v ) {
-
-		this.set(
-
-			v.x,
-			v.y
-
-		);
-
+	vector2.prototype.negate = function() {
+		this.value[ 0 ] = -this.value[ 0 ];
+		this.value[ 1 ] = -this.value[ 1 ];
 		return this;
-
 	},
 
-	addSelf : function ( v ) {
-
-		this.set(
-
-			this.x + v.x,
-			this.y + v.y
-
-		);
-
-		return this;
-
-	},
-
-	add : function ( v1, v2 ) {
-
-		this.set(
-
-			v1.x + v2.x,
-			v1.y + v2.y
-
-		);
-
-		return this;
-
-	},
-
-	subSelf : function ( v ) {
-
-		this.set(
-
-			this.x - v.x,
-			this.y - v.y
-
-		);
-
-		return this;
-
-	},
-
-	sub : function ( v1, v2 ) {
-
-		this.set(
-
-			v1.x - v2.x,
-			v1.y - v2.y
-
-		);
-
-		return this;
-
-	},
-
-	multiplyScalar : function ( s ) {
-
-		this.set(
-
-			this.x * s,
-			this.y * s
-
-		);
-
-		return this;
-
-	},
-
-	negate : function() {
-
-		this.set(
-
-			- this.x,
-			- this.y
-
-		);
-
-		return this;
-
-	},
-
-	unit : function () {
-
+	vector2.prototype.normalize = function () {
 		this.multiplyScalar( 1 / this.length() );
-
 		return this;
+	};
 
-	},
-
-	length : function () {
-
+	vector2.prototype.length = function () {
 		return Math.sqrt( this.lengthSq() );
+	};
 
-	},
+	vector2.prototype.lengthSq = function () {
+		return this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ];
+	};
 
-	lengthSq : function () {
+	vector2.prototype.clone = function () {
+		return new GLOW.Vector2( this.value[ 0 ], this.value[ 1 ] );
+	};
 
-		return this.x * this.x + this.y * this.y;
+    return vector2;
+})();
 
-	},
-
-	clone : function () {
-
-		return new THREE.Vector2( this.x, this.y );
-
-	}
-
-};

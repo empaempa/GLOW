@@ -28,7 +28,9 @@ COMMON_FILES = [
 EXTRAS_FILES = [
 'extras/math/Float.js',
 'extras/math/Int.js',
+'extras/math/Vector2.js',
 'extras/math/Vector3.js',
+'extras/math/Vector4.js',
 'extras/math/Matrix3.js',
 'extras/math/Matrix4.js',
 'extras/geometry/Geometry.js',
