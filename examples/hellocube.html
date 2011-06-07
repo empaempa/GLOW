@@ -15,10 +15,10 @@
 			// GLOW.Shader takes an object with the following properties:
 			// vertexShader: the vertex shader code
 			// fragmentShader: the fragment shader code
-			// data: the uniform and attribute data
+			// data: the uniform, attribute and texture data
 			// elements: the element data 
 		
-			var cubeInfo = {
+			var cubeShaderInfo = {
 				
 				// create vertex shader (note: cameraInverse * transform is usually done in JS)
 
@@ -71,7 +71,7 @@
 					transform: new GLOW.Matrix4(),
 					cameraInverse: GLOW.defaultCamera.inverse,
 					cameraProjection: GLOW.defaultCamera.projection,
-					texture: new GLOW.Texture( "textures/clouds.jpg" ),
+					texture: new GLOW.Texture( "textures/crate.jpg" ),
 
 
 					// create attribute data
@@ -94,14 +94,14 @@
 			context.setupClear( { red: 1, green: 1, blue: 1 } );
 
 
-			// Then you can create a Shader using the info object created above 
-
-			var cube = new GLOW.Shader( cubeInfo );
-			
-
 			// Attach the context's DOM element
 			
 			document.getElementById( "container" ).appendChild( context.domElement );
+
+
+			// Then we create a Shader using the info object created above 
+
+			var cube = new GLOW.Shader( cubeShaderInfo );
 			
 			
 			// Update the default camera position
@@ -116,15 +116,17 @@
 
 			function render() {
 
-				// clear the context cache and graphics
+				// clear the context's cache and graphics
 				
 				context.cache.clear();
 				context.clear();
+
 
 				// update rotation on cube
 				
 				cube.transform.addRotation( 0.01, 0.01, 0.01 );
 				
+
 				// draw cube
 				
 				cube.draw();
