@@ -9,6 +9,19 @@
 		<script type="text/javascript" src="../build/GLOW.js"></script>
 		<script type="text/javascript">
 		
+			// To get GLOW going, you need to create a GLOW.Context
+			// We also set the background color to white
+		
+			var context = new GLOW.Context();
+			context.setupClear( { red: 1, green: 1, blue: 1 } );
+
+
+			// Attach the context's DOM element
+		
+			var container = document.getElementById( "container" );
+			container.appendChild( context.domElement );
+
+
 			// for sake of simplicity, create an object that
 			// keep all information about our cube.
 			
@@ -86,18 +99,6 @@
 				elements: GLOW.Geometry.Cube.elements(),
 			}
 			
-
-			// To get GLOW going, you need to create a GLOW.Context
-			// We also set the background color to white
-			
-			var context = new GLOW.Context();
-			context.setupClear( { red: 1, green: 1, blue: 1 } );
-
-
-			// Attach the context's DOM element
-			
-			document.getElementById( "container" ).appendChild( context.domElement );
-
 
 			// Then we create a Shader using the info object created above 
 
