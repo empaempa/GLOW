@@ -6,5 +6,7 @@
 GLOW.Float = function( value ) {
 	
 	"use strict";
-	this.value = value !== undefined ? value : 0;
+	
+	this.value = new Float32Array( 1 );
+	this.value[ 0 ] = value !== undefined ? value : 0;
 }
