@@ -24,7 +24,7 @@ GLOW.CompiledData = (function() {
 
     	var u;
     	for( u in this.uniforms ) {
-    		if( except[ u ] ) {
+    		if( except && except[ u ] ) {
     			clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
     		} else {
     			clone.uniforms[ u ] = this.uniforms[ u ];
@@ -33,14 +33,14 @@ GLOW.CompiledData = (function() {
 
     	var a;
     	for( a in this.attributes ) {
-    		if( except[ a ] ) {
+    		if( except && except[ a ] ) {
     			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
     		} else {
     			clone.attributes[ a ] = this.attributes[ a ];
     		}
     	}
 
-    	if( except.elements ) {
+    	if( except && except.elements ) {
     		clone.elements = new GLOW.Elements( except.elements );
     	} else {
     		clone.elements = this.elements;
