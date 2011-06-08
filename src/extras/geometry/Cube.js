@@ -9,24 +9,24 @@ GLOW.Geometry.Cube = {
 
 		// front
 
-		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
-		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
-		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
 		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
 
 		// back
 
-		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
-		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
-		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = -size; 
 		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
 
 		// left
 
-		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
-		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
-		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
 		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
 
 		// right
 
@@ -37,10 +37,10 @@ GLOW.Geometry.Cube = {
 
 		// up
 
-		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
-		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
-		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
 		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
 
 		// down
 
@@ -83,30 +83,30 @@ GLOW.Geometry.Cube = {
 		var a = new Float32Array( 6 * 4 * 2 );
 		var i = 0;
 		
-		a[ i++ ] = 0; a[ i++ ] = 0;
-		a[ i++ ] = 1; a[ i++ ] = 0;
-		a[ i++ ] = 1; a[ i++ ] = 1;
 		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 0; a[ i++ ] = 0;
 		
 		a[ i++ ] = 0; a[ i++ ] = 1;
 		a[ i++ ] = 1; a[ i++ ] = 1;
 		a[ i++ ] = 1; a[ i++ ] = 0;
 		a[ i++ ] = 0; a[ i++ ] = 0;
 
-		a[ i++ ] = 0; a[ i++ ] = 0;
-		a[ i++ ] = 1; a[ i++ ] = 0;
-		a[ i++ ] = 1; a[ i++ ] = 1;
 		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 0; a[ i++ ] = 0;
 
 		a[ i++ ] = 0; a[ i++ ] = 1;
 		a[ i++ ] = 1; a[ i++ ] = 1;
 		a[ i++ ] = 1; a[ i++ ] = 0;
 		a[ i++ ] = 0; a[ i++ ] = 0;
 		
-		a[ i++ ] = 0; a[ i++ ] = 0;
-		a[ i++ ] = 1; a[ i++ ] = 0;
-		a[ i++ ] = 1; a[ i++ ] = 1;
 		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 0; a[ i++ ] = 0;
 
 		a[ i++ ] = 0; a[ i++ ] = 1;
 		a[ i++ ] = 1; a[ i++ ] = 1;

@@ -15,7 +15,6 @@
 			var context = new GLOW.Context();
 			context.setupClear( { red: 1, green: 1, blue: 1 } );
 
-
 			// Attach the context's DOM element
 		
 			var container = document.getElementById( "container" );
@@ -125,7 +124,7 @@
 
 				// update rotation on cube
 				
-				cube.transform.addRotation( 0.01, 0.01, 0.01 );
+				cube.transform.addRotation( 0.01, 0.005, 0.0025 );
 				
 
 				// draw cube

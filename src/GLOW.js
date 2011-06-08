@@ -11,13 +11,11 @@ var GLOW = (function() {
 
     glow.currentContext = {};
 
-    //--- register context ---
     glow.registerContext = function( context ) {
         contexts[ context.id ] = context;
         glow.enableContext( context );
     };
 
-    //--- get context by id ---
     glow.getContextById = function( id ) {
         if( contexts[ id ] ) {
             return contexts[ id ];
@@ -26,7 +24,6 @@ var GLOW = (function() {
         return glow.currentContext;
     };
 
-    //--- enable context ---
     glow.enableContext = function( contextOrId ) {
         if( typeof( contextOrId ) === 'string' ) {
             glow.currentContext = getContextById(contextOrId);
@@ -36,12 +33,10 @@ var GLOW = (function() {
         GL = glow.GL = glow.currentContext.GL;
     };
 
-    //--- unique id ---
     glow.uniqueId = function() {
         return ++uniqueIdCounter;
     };
 
-    //--- return public ---
     return glow;
 }());
 

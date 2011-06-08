@@ -38,8 +38,7 @@ GLOW.Shader = (function() {
         for (u in this.compiledData.uniforms) {
             if (this[u] === undefined) {
                 this[u] = this.compiledData.uniforms[u].data;
-            }
-            else {
+            } else {
                 console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data.");
             }
         }
@@ -47,8 +46,7 @@ GLOW.Shader = (function() {
         for (a in this.compiledData.attributes) {
             if (this[a] === undefined) {
                 this[a] = this.compiledData.attributes[a].data;
-            }
-            else {
+            } else {
                 console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data.");
             }
         }
