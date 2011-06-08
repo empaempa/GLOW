@@ -1,3 +1,4 @@
+// GLOWThreeCompatibility.js r1 - http://github.com/empaempa/GLOW
 GLOW.ThreeJS = (function() {
     
     "use strict"; "use restrict";

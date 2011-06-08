@@ -40,6 +40,10 @@ EXTRAS_FILES = [
 'extras/graph/Camera.js'
 ]
 
+THREE_COMPATABILITY_FILES = [
+'extras/compatibility/Three.js'
+]
+
 
 def merge(files):
 
@@ -136,6 +140,7 @@ def parse_args():
 		parser.add_argument('--common', help='Build GLOW', action='store_const', const=True)
 		parser.add_argument('--core', help='Build GLOW Core', action='store_const', const=True)
 		parser.add_argument('--extras', help='Build GLOW Extras', action='store_const', const=True)
+		parser.add_argument('--threecompatibility', help='Build GLOW THREE Compatibility', action='store_const', const=True)
 		parser.add_argument('--debug', help='Generate debug versions', action='store_const', const=True, default=False)
 		parser.add_argument('--unminified', help='Generate unminified versions', action='store_const', const=True, default=False)
 		parser.add_argument('--all', help='Build all GLOW versions', action='store_true')
@@ -147,6 +152,7 @@ def parse_args():
 		parser.add_option('--common', dest='common', help='Build GLOW', action='store_const', const=True)
 		parser.add_option('--core', dest='core', help='Build GLOW Core', action='store_const', const=True)
 		parser.add_option('--extras', dest='extras', help='Build GLOW Extras', action='store_const', const=True)
+		parser.add_option('--threecompatibility', dest='threecompatibility', help='Build GLOW THREE Compatibility', action='store_const', const=True)
 		parser.add_option('--debug', dest='debug', help='Generate debug versions', action='store_const', const=True, default=False)
 		parser.add_option('--unminified', help='Generate unminified versions', action='store_const', const=True, default=False)
 		parser.add_option('--all', dest='all', help='Build all GLOW versions', action='store_true')
@@ -170,7 +176,8 @@ def main(argv=None):
 	config = [
 	['GLOW', 'includes', COMMON_FILES + EXTRAS_FILES, args.common],
 	['GLOWCore', 'includes', COMMON_FILES, args.core],
-	['GLOWExtras', 'includes_extras', EXTRAS_FILES, args.extras]
+	['GLOWExtras', 'includes_extras', EXTRAS_FILES, args.extras],
+	['GLOWThreeCompatibility', 'includes_extras', THREE_COMPATABILITY_FILES, args.threecompatibility]
 	]
 
 	for fname_lib, fname_inc, files, enabled in config:

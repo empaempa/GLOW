@@ -1,0 +1,158 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>GLOW - Hello ThreeJS</title>
+		<meta charset="utf-8">
+		<style type="text/css">
+			body {
+				background:#000;
+				color:#fff;
+				padding:0;
+				margin:0;
+				overflow:hidden;
+				font-family:georgia;
+				text-align:center;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container"></div>
+
+		<!-- load Three, GLOW Core and Three Compatibility -->
+
+		<script type="text/javascript" src="http://mrdoob.github.com/three.js/build/Three.js"></script>
+		<script type="text/javascript" src="../build/custom/GLOWCore.js"></script>
+		<script type="text/javascript" src="../build/custom/GLOWThreeCompatibility.js"></script>
+		<script type="text/javascript">
+		
+			// create a camera
+		
+			var camera = new THREE.Camera( 80, window.innerWidth / window.innerHeight, 0.1, 10000 );
+			camera.position.z = 1500;
+			camera.update();
+
+
+			// create the shader material information 
+			
+			var material = {
+				
+				// create the uniform and attribute data
+				// note that transform, vertices and normals are strings that
+				// are used to match THREE geometry and data with GLOW data
+				// please see code for more match strings
+
+				data: {
+					transform: "matrixWorld",
+					cameraInverse: camera.matrixWorldInverse,
+					cameraProjection: camera.projectionMatrix,
+					vertices: "vertices",
+					colors: "colors"
+				},
+
+
+				// the element property is actually not neccesary but we add it for clarity
+
+				elements: "setByCode",
+
+				
+				// define the vertex shader
+				// note that the cameraInverse * transform (viewMatrix) usually is done in JS
+	
+				vertexShader: [
+
+					"uniform	mat4 	transform;",
+					"uniform 	mat4 	cameraInverse;",
+					"uniform 	mat4 	cameraProjection;",
+
+					"attribute 	vec3 	vertices;",
+					"attribute	vec3	colors;",
+					"varying	vec3	color;",
+
+					"void main(void)",
+					"{",
+						"color = colors;",
+						"gl_Position = cameraProjection * cameraInverse * cameraInverse * transform * vec4( vertices, 1.0 );",
+					"}"
+						
+				].join( "\n" ),
+				
+				
+				// defined the fragment shader
+
+				fragmentShader: [ 	
+
+					"#ifdef GL_ES",
+						"precision highp float;",
+					"#endif",		
+
+					"varying	vec3	color;",
+					
+					"void main( void )",
+					"{",
+						"gl_FragColor = vec4( color, 1.0 );",
+					"}"
+
+				].join( "\n" )
+			}
+
+
+			// load some geometry and call init when done
+
+			var mesh, context, t = 0;
+			var loader = new THREE.JSONLoader();
+			loader.load( { model: "models/cubecolors.js", callback: init } );
+			
+			function init( geometry ) {
+
+				// tell GLOW to use ThreeJS data
+
+				GLOW.ThreeJS.init();
+
+				
+				// create context and attach DOM element
+
+				context = new GLOW.Context();
+				document.getElementById( 'container' ).appendChild( context.domElement );
+
+				
+				// create a GLOW.ThreeJS.Mesh using the geometry and material object created above
+				// the GLOW.ThreeJS.Mesh is more or less the same as a THREE.Mesh but
+				// have a .shader property which is the GLOW.Shader. There's a shortcut method
+				// to draw: GLOW.ThreeJS.Mesh.draw()
+
+				mesh = new GLOW.ThreeJS.Mesh( geometry, material );
+				mesh.scale.set( 500, 500, 500 );
+
+
+				// start render (using setInterval as WebGLInspector have problems with requestAnimationFrame)
+
+				setInterval( render, 1000 / 30 );
+			}
+			
+
+			function render() {
+
+				// move mesh
+				
+				t += 0.1;
+				mesh.position.x = Math.sin( t ) * 500;
+				mesh.position.y = Math.cos( t ) * 500;
+				mesh.rotation.x += 0.01;
+				mesh.rotation.y += 0.01;
+				mesh.rotation.z += 0.01;
+				mesh.update();
+
+				// clear cache and graphics
+
+				context.cache.clear();
+				context.clear();
+				
+				
+				// draw mesh
+				
+				mesh.draw();
+			}
+
+		</script>
+	</body>
+</html>
