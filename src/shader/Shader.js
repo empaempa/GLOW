@@ -30,6 +30,11 @@ GLOW.Shader = (function() {
     shader.prototype.attachData = function() {
         var u, a;
 
+        this.uniforms = this.compiledData.uniforms;
+        this.attributes = this.compiledData.attributes;
+        this.elements = this.compiledData.elements;
+        this.program = this.compiledData.program;
+
         for (u in this.compiledData.uniforms) {
             if (this[u] === undefined) {
                 this[u] = this.compiledData.uniforms[u].data;
