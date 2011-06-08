@@ -25,6 +25,11 @@
 		<script type="text/javascript" src="../build/custom/GLOWThreeCompatibility.js"></script>
 		<script type="text/javascript">
 		
+			// tell GLOW to use ThreeJS data
+			
+			GLOW.ThreeJS.init();
+			
+			
 			// create a camera
 		
 			var camera = new THREE.Camera( 80, window.innerWidth / window.innerHeight, 0.1, 10000 );
@@ -34,7 +39,7 @@
 
 			// create the shader material information 
 			
-			var material = {
+			var shaderMaterial = {
 				
 				// create the uniform and attribute data
 				// note that transform, vertices and normals are strings that
@@ -98,17 +103,12 @@
 
 			// load some geometry and call init when done
 
-			var mesh, context, t = 0;
+			var mesh, mesh2, context, t = 0;
 			var loader = new THREE.JSONLoader();
 			loader.load( { model: "models/cubecolors.js", callback: init } );
 			
 			function init( geometry ) {
 
-				// tell GLOW to use ThreeJS data
-
-				GLOW.ThreeJS.init();
-
-				
 				// create context and attach DOM element
 
 				context = new GLOW.Context();
@@ -120,8 +120,15 @@
 				// have a .shader property which is the GLOW.Shader. There's a shortcut method
 				// to draw: GLOW.ThreeJS.Mesh.draw()
 
-				mesh = new GLOW.ThreeJS.Mesh( geometry, material );
+				mesh = new GLOW.ThreeJS.Mesh( geometry, shaderMaterial );
 				mesh.scale.set( 500, 500, 500 );
+
+				
+				// make a clone. As usual, you pass in what data to except from the clone
+
+				mesh2 = mesh.clone( { transform: "matrixWorld" } );
+				mesh2.position.set( 2.5, 0, 0 );
+				mesh.addChild( mesh2 );
 
 
 				// start render (using setInterval as WebGLInspector have problems with requestAnimationFrame)
@@ -132,7 +139,7 @@
 
 			function render() {
 
-				// move mesh
+				// move meshes
 				
 				t += 0.1;
 				mesh.position.x = Math.sin( t ) * 500;
@@ -140,7 +147,12 @@
 				mesh.rotation.x += 0.01;
 				mesh.rotation.y += 0.01;
 				mesh.rotation.z += 0.01;
+				mesh2.rotation.x += 0.01;
+				mesh2.rotation.y += 0.01;
+				mesh2.rotation.z += 0.01;
+
 				mesh.update();
+
 
 				// clear cache and graphics
 
@@ -151,6 +163,7 @@
 				// draw mesh
 				
 				mesh.draw();
+				mesh2.draw();
 			}
 
 		</script>

@@ -73,6 +73,9 @@ GLOW.ThreeJS = (function() {
 
         // parse geometry
         parseGeometry: function( geometry ) {
+            
+            if( geometry.GLOW ) return geometry.GLOW;
+            
             var elements = [];
             var vertices = [];
             var normals = [];
@@ -146,12 +149,14 @@ GLOW.ThreeJS = (function() {
                 }
             }
 
-            return {
+            geometry.GLOW = {
                 elements: new Float32Array( elements ),
                 vertices: new Float32Array( vertices ),
                 colors: new Float32Array( colors ),
                 normals: new Float32Array( normals )
             };
+            
+            return geometry.GLOW;
         }
     }
 })();
@@ -167,43 +172,76 @@ GLOW.ThreeJS.Mesh = (function() {
         
             THREE.Object3D.call( this );
             
-            // parse geometry and match data
-            var result = GLOW.ThreeJS.parseGeometry( geometry );
-            parameters.elements = result.elements;
-            for( var d in parameters.data ) {
-                if( parameters.data[ d ] === "vertices" && result.vertices ) {
-                    parameters.data[ d ] = result.vertices;
-                } else if( parameters.data[ d ] === "colors" && result.colors ) {
-                    parameters.data[ d ] = result.colors;
-                } else if( parameters.data[ d ] === "normals" && result.normals ) {
-                    parameters.data[ d ] = result.normals;
-                } else if( parameters.data[ d ] === "matrix" ) {
-                    parameters.data[ d ] = this.matrix;
-                } else if( parameters.data[ d ] === "matrixWorld" ) {
-                    parameters.data[ d ] = this.matrixWorld;
-                } else if( parameters.data[ d ] === "matrixRotationWorld" ) {
-                    parameters.data[ d ] = this.matrixRotationWorld;
-                } else if( parameters.data[ d ] === "position" ) {
-                    parameters.data[ d ] = this.position;
-                } else if( parameters.data[ d ] === "rotation" ) {
-                    parameters.data[ d ] = this.rotation;
-                } else if( parameters.data[ d ] === "scale" ) {
-                    parameters.data[ d ] = this.scale;
-                }
-            } 
+            // parse geometry
+            this.geometry = geometry;
+            GLOW.ThreeJS.parseGeometry( this.geometry );
             
-            // create shader
-            this.shader = new GLOW.Shader( parameters );
+            if( parameters ) {
+                parameters.elements = this.geometry.GLOW.elements;
+                for( var d in parameters.data ) {
+                    if( parameters.data[ d ] === "vertices" ) {
+                        parameters.data[ d ] = this.geometry.GLOW.vertices;
+                    } else if( parameters.data[ d ] === "colors" ) {
+                        parameters.data[ d ] = this.geometry.GLOW.colors;
+                    } else if( parameters.data[ d ] === "normals" ) {
+                        parameters.data[ d ] = this.geometry.GLOW.normals;
+                    } else if( parameters.data[ d ] === "matrix" ) {
+                        parameters.data[ d ] = this.matrix;
+                    } else if( parameters.data[ d ] === "matrixWorld" ) {
+                        parameters.data[ d ] = this.matrixWorld;
+                    } else if( parameters.data[ d ] === "matrixRotationWorld" ) {
+                        parameters.data[ d ] = this.matrixRotationWorld;
+                    } else if( parameters.data[ d ] === "position" ) {
+                        parameters.data[ d ] = this.position;
+                    } else if( parameters.data[ d ] === "rotation" ) {
+                        parameters.data[ d ] = this.rotation;
+                    } else if( parameters.data[ d ] === "scale" ) {
+                        parameters.data[ d ] = this.scale;
+                    }
+                }
+
+                this.shader = new GLOW.Shader( parameters );
+            }
         }
 
-        // methods
+        // inherit
         mesh.prototype = new THREE.Object3D();
         mesh.prototype.constructor = mesh;
 
+        // methods
         mesh.prototype.draw = function() {
             this.shader.draw();
-        }
-    
+        };
+
+        mesh.prototype.clone = function( except ) {
+
+            // create material-less mesh
+            var clone = new GLOW.ThreeJS.Mesh( this.geometry );
+
+            // match exceptions
+            for( var e in except ) {
+                if( except[ e ] === "matrix" ) {
+                    except[ e ] = clone.matrix;
+                } else if( except[ e ] === "matrixWorld" ) {
+                    except[ e ] = clone.matrixWorld;
+                } else if( except[ e ] === "matrixRotationWorld" ) {
+                    except[ e ] = clone.matrixRotationWorld;
+                } else if( except[ e ] === "position" ) {
+                    except[ e ] = clone.position;
+                } else if( except[ e ] === "rotation" ) {
+                    except[ e ] = clone.rotation;
+                } else if( except[ e ] === "scale" ) {
+                    except[ e ] = clone.scale;
+                }
+            }
+
+            // create shader
+            clone.shader = this.shader.clone( except );
+            
+            // create and return
+            return clone;
+        };
+
         return mesh;
     } 
     
