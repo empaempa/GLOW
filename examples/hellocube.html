@@ -45,10 +45,12 @@
 					"attribute  vec2    uvs;",
 					
 					"varying    vec2    uv;",
+					"varying    float   light;",
 
 					"void main(void)",
 					"{",
 						"uv = uvs;",
+						"light = dot( normalize( mat3( transform[0].xyz, transform[1].xyz, transform[2].xyz ) * normals ), vec3( 0.0, 0.0, -1.0 ));",
 						"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices, 1.0 );",
 					"}"
 						
@@ -64,11 +66,12 @@
 					"#endif",		
 
 					"uniform 	sampler2D 	texture;",
+					"varying    float  	 	light;",
 					"varying 	vec2		uv;",
 
 					"void main( void )",
 					"{",
-						"gl_FragColor = texture2D( texture, uv );",
+						"gl_FragColor = texture2D( texture, uv ) * light;",
 					"}"
 
 				].join( "\n" ),
@@ -90,6 +93,7 @@
 
 					vertices: GLOW.Geometry.Cube.vertices( 500 ),
 					uvs: GLOW.Geometry.Cube.uvs(),
+					normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices(), GLOW.Geometry.Cube.elements())
 				},
 				
 
