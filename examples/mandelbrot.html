@@ -24,37 +24,22 @@
 		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">Mandelbrot</span></div>
 		<div id="container"></div>
 
-		<script type="text/javascript" src="src/GLOW.js"></script>
-		<script type="text/javascript" src="src/core/Context.js"></script>
-		<script type="text/javascript" src="src/core/Compiler.js"></script>
-		<script type="text/javascript" src="src/core/CompiledData.js"></script>
-		<script type="text/javascript" src="src/core/FBO.js"></script>
-		<script type="text/javascript" src="src/core/Texture.js"></script>
-		<script type="text/javascript" src="src/core/Cache.js"></script>
-		
-		<script type="text/javascript" src="src/shader/Shader.js"></script>
-		<script type="text/javascript" src="src/shader/Elements.js"></script>
-		<script type="text/javascript" src="src/shader/Uniform.js"></script>
-		<script type="text/javascript" src="src/shader/Attribute.js"></script>
-
-		<script type="text/javascript" src="src/extras/math/Float.js"></script>
-		<script type="text/javascript" src="src/extras/math/Int.js"></script>
-		<script type="text/javascript" src="src/extras/math/Vector2.js"></script>
-		<script type="text/javascript" src="src/extras/math/Vector3.js"></script>
-		<script type="text/javascript" src="src/extras/math/Matrix3.js"></script>
-		<script type="text/javascript" src="src/extras/math/Matrix4.js"></script>
-
-		<script type="text/javascript" src="src/extras/graph/Node.js"></script>
-		<script type="text/javascript" src="src/extras/graph/Camera.js"></script>
-
-		<script type="text/javascript" src="src/extras/geometry/Geometry.js"></script>
-		<script type="text/javascript" src="src/extras/geometry/Cube.js"></script>
-		<script type="text/javascript" src="src/extras/geometry/Plane.js"></script>
-
+		<script type="text/javascript" src="../build/GLOW.js"></script>
 		<script type="text/javascript">
 
 			var fractalShader = {
 				
+				data: {
+
+					vertices: GLOW.Geometry.Plane.vertices(),
+					uvs: GLOW.Geometry.Plane.uvs(),
+					zoom: new GLOW.Vector2( 3.0, 3.0 * window.innerHeight / window.innerWidth ),
+					center: new GLOW.Vector2( -2, -1 ),
+					innerColor: new GLOW.Vector3( 0, 0.05, 0.2 ),
+					outerColor1: new GLOW.Vector3( 0.7, 0.7, 1.0 ),
+					outerColor2: new GLOW.Vector3( 0.1, 0.2, 0.6 ),
+					
+				},
 
 				elements: GLOW.Geometry.Plane.elements(),
 				
@@ -71,19 +56,6 @@
 					"}"
 						
 				].join( "\n" ),
-
-				data: {
-
-					vertices: GLOW.Geometry.Plane.vertices(),
-					uvs: GLOW.Geometry.Plane.uvs(),
-					zoom: new GLOW.Vector2( 3.0, 3.0 * window.innerHeight / window.innerWidth ),
-					center: new GLOW.Vector2( -2, -1 ),
-					innerColor: new GLOW.Vector3( 0, 0.05, 0.2 ),
-					outerColor1: new GLOW.Vector3( 0.7, 0.7, 1.0 ),
-					outerColor2: new GLOW.Vector3( 0.1, 0.2, 0.6 ),
-					
-				},
-
 
 				fragmentShader: [ 	
 
@@ -157,7 +129,7 @@
 			var zoomIn    = new GLOW.Vector2( 0.2, 0.2 * window.innerHeight / window.innerWidth );
 
 			
-			// render
+			// render (uses setInterval as WebGLInspector seem to have problem with requestAnimationFrame)
 
 			setInterval( render, 1000 / 30 );
 			document.addEventListener( "mousemove", onDocumentMouseMove, true );
@@ -172,9 +144,6 @@
 				fractal.draw();
 			}
 
-
-			//--- on mouse move ---
-			
 			function onDocumentMouseMove( event ) {
 				mouseX = event.clientX / window.innerWidth; 
 			}
