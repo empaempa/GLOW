@@ -6,14 +6,22 @@
 		<style type="text/css">
 			body {
 				background:#ffffff;
-				color:#000;
+				color:#ffffff;
 				padding:0;
 				margin:0;
 				overflow:hidden;
 			}
+
+			#glow { position: absolute; top: 10px; left: 10px; z-index:1000; }
+			#glow span.title {margin:0 0 0 0px;border-bottom:8px solid #ffffff;font:bold 12pt/16pt Arial, Helvetica;letter-spacing:1px;line-height:1.50}
+			#glow span.title a {text-decoration:none;color:#ffffff}
+			#glow span.title a:visited {text-decoration:none;color:#ffffff;}
+			#glow span.sub {margin:0 0 0 1px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
+
 		</style>
 	</head>
 	<body>
+		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">Oldschool</span></div>
 		<div id="container"></div>
 
 		<script type="text/javascript" src="../build/GLOW.js"></script>

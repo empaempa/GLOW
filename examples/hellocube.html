@@ -11,9 +11,17 @@
 				margin:0;
 				overflow:hidden;
 			}
+
+			#glow { position: absolute; top: 10px; left: 10px; z-index:1000; }
+			#glow span.title {margin:0 0 0 2px;border-bottom:8px solid #000;font:bold 12pt/16pt Arial, Helvetica;letter-spacing:1px;line-height:1.50}
+			#glow span.title a {text-decoration:none;color:#000}
+			#glow span.title a:visited {text-decoration:none;color:#000;}
+			#glow span.sub {margin:0 0 0 3px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
+
 		</style>
 	</head>
 	<body>
+		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">Hello Cube</span></div>
 		<div id="container"></div>
 		<script type="text/javascript" src="../build/GLOW.js"></script>
 		<script type="text/javascript">
