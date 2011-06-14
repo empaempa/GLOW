@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>GLOW - Hello ThreeJS</title>
+		<meta charset="utf-8">
+		<style type="text/css">
+			body {
+				background:#000000;
+				color:#ffffff;
+				padding:0;
+				margin:0;
+				overflow:hidden;
+			}
+
+			#glow { position: absolute; top: 10px; left: 10px; z-index:1000; }
+			#glow span.title {margin:0 0 0 7px;border-bottom:8px solid #ffffff;font:bold 12pt/16pt Arial, Helvetica;letter-spacing:1px;line-height:1.50;}
+			#glow span.title a {text-decoration:none;color:#ffffff}
+			#glow span.title a:visited {text-decoration:none;color:#ffffff;}
+			#glow span.sub {margin:0 0 0 0px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
+
+		</style>
+	</head>
+	<body>
+		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">Hello Three.js</span></div>
+		<div id="container"></div>
+
+		<!-- load Three, GLOW Core and Three Compatibility -->
+
+		<script type="text/javascript" src="http://mrdoob.github.com/three.js/build/Three.js"></script>
+		<script type="text/javascript" src="../build/GLOW.js"></script>
+		<script type="text/javascript">
+
+			// load some Three geometry and call init when done
+
+			var mesh, scene, camera, light, threeRenderer;
+			var context, FBO, postEffect, t = 0;
+			
+			var loader = new THREE.JSONLoader();
+			loader.load( { model: "models/cubecolors.js", callback: init } );
+			
+			function init( geometry ) {
+
+				// create Three renderer, scene, camera, light and mesh
+				
+				threeRenderer = new THREE.WebGLRenderer();
+				threeRenderer.setSize( window.innerWidth, window.innerHeight );
+
+				document.getElementById( 'container' ).appendChild( threeRenderer.domElement );
+
+				camera = new THREE.Camera( 50, window.innerWidth / window.innerHeight );
+				scene = new THREE.Scene();
+				light = new THREE.DirectionalLight( 0xffffff );
+				mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial());
+				
+				mesh.scale.set( 100, 100, 100 );
+				light.position.set( 1, 0, 1 );
+				camera.position.set( 0, 0, 500 );
+
+				scene.addChild( light );
+				scene.addChild( mesh );
+				
+
+				// create GLOW context using Three's context
+
+				context = new GLOW.Context( { context:threeRenderer.getContext() } );
+				
+				
+				// create Frame Buffer Object 
+				
+				FBO = new GLOW.FBO();
+
+
+				// setup the post effect shader object
+				// note that we're using the FBO as a texture
+
+				var postEffectShader = {
+
+					// create vertex shader
+
+					vertexShader: [
+
+						"attribute 	vec3 	vertices;",
+						"attribute  vec2	uvs;",
+						"varying 	vec2	uv;",
+
+						"void main(void)",
+						"{",
+							"uv = uvs;",
+							"gl_Position = vec4( vertices.x, vertices.y, 1.0, 1.0 );",
+						"}"
+
+					].join( "\n" ),
+
+					// create fragment shader
+
+					fragmentShader: [ 	
+
+						"#ifdef GL_ES",
+							"precision highp float;",
+						"#endif",		
+
+						"uniform 	sampler2D 	fboTexture;",
+						"uniform	float		time;",
+						"varying 	vec2		uv;",
+
+						"void main( void )",
+						"{",
+							"gl_FragColor = texture2D( fboTexture, vec2( uv.x + sin( gl_FragCoord.x * 0.01 + time ) * 0.1, uv.y + cos( gl_FragCoord.y * 0.01 + time ) * 0.1 ));",
+						"}"
+
+					].join( "\n" ),
+
+					// create uniforms and attributes
+					// note that we use the FBO as texture
+
+					data: {
+
+						fboTexture: FBO,
+						time: new GLOW.Float(),
+						vertices: GLOW.Geometry.Plane.vertices(),
+						uvs: GLOW.Geometry.Plane.uvs()
+					},
+
+					// create elements
+
+					elements: GLOW.Geometry.Plane.elements()
+				};
+
+
+				// then create a shader using the object created above
+
+				postEffect = new GLOW.Shader( postEffectShader );
+
+
+				// start render (using setInterval as WebGLInspector have problems with requestAnimationFrame)
+
+				setInterval( render, 1000 / 30 );
+			}
+			
+
+			function render() {
+
+				// rotate mesh
+				
+				t += 0.1;
+				mesh.rotation.x += 0.01;
+				mesh.rotation.y += 0.01;
+				mesh.rotation.z += 0.01;
+
+				// increase time in post effect shader
+
+				postEffect.time.add( 0.01 );
+				
+				// bind FBO so we draw to it and clear the graphics and cache
+				
+				FBO.bind();
+				context.cache.clear();
+				context.clear();
+
+				// call three renderer as usual
+
+				threeRenderer.render( scene, camera );
+				
+				// this is a bit hackish, but we have to use the global GL
+				// to retrieve what program Three WebGLRenderer is using
+				// at the moment and save it. This is because WebGLRenderer
+				// caches the current program internally and there's no way
+				// to reset the cache. 
+				
+				var savedThreeProgram = GL.getParameter( GL.CURRENT_PROGRAM );
+
+				// unbind FBO (so we draw to the screen) and
+				// draw the post effect
+				
+				FBO.unbind();
+				postEffect.draw();
+				
+				// we're done now so we can restore the program 
+				// that three's WebGLRenderer was using
+				
+				GL.useProgram( savedThreeProgram );
+			}
+
+		</script>
+	</body>
+</html>
