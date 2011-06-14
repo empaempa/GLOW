@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
 	<head>
-		<title>GLOW - Hello ThreeJS</title>
+		<title>GLOW - Post on ThreeJS</title>
 		<meta charset="utf-8">
 		<style type="text/css">
 			body {
@@ -13,7 +13,7 @@
 			}
 
 			#glow { position: absolute; top: 10px; left: 10px; z-index:1000; }
-			#glow span.title {margin:0 0 0 7px;border-bottom:8px solid #ffffff;font:bold 12pt/16pt Arial, Helvetica;letter-spacing:1px;line-height:1.50;}
+			#glow span.title {margin:0 0 0 10px;border-bottom:8px solid #ffffff;font:bold 12pt/16pt Arial, Helvetica;letter-spacing:1px;line-height:1.50;}
 			#glow span.title a {text-decoration:none;color:#ffffff}
 			#glow span.title a:visited {text-decoration:none;color:#ffffff;}
 			#glow span.sub {margin:0 0 0 0px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
@@ -21,7 +21,7 @@
 		</style>
 	</head>
 	<body>
-		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">Hello Three.js</span></div>
+		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">Post on Three.js</span></div>
 		<div id="container"></div>
 
 		<!-- load Three, GLOW Core and Three Compatibility -->
@@ -105,7 +105,8 @@
 
 						"void main( void )",
 						"{",
-							"gl_FragColor = texture2D( fboTexture, vec2( uv.x + sin( gl_FragCoord.x * 0.01 + time ) * 0.1, uv.y + cos( gl_FragCoord.y * 0.01 + time ) * 0.1 ));",
+							"gl_FragColor = texture2D( fboTexture, vec2( uv.x + sin( gl_FragCoord.x * 0.001 + time ) * 0.1, uv.y + cos( gl_FragCoord.y * 0.01 + time ) * 0.1 ));",
+							"gl_FragColor *= gl_FragColor;",
 						"}"
 
 					].join( "\n" ),
