@@ -17,12 +17,15 @@ GLOW.Cache = (function() {
         this.textureByLocation = [];
         this.elementId = -1;
         this.programId = -1;
+        this.active = true;
     }
 
     // methods
     cache.prototype.programCached = function( program ) {
-        if( program.id === this.programId ) return true;
-        this.programId = program.id;
+        if( this.active ) {
+            if( program.id === this.programId ) return true;
+            this.programId = program.id;
+        }
         return false;
     };
 
@@ -33,26 +36,34 @@ GLOW.Cache = (function() {
     };
 
     cache.prototype.uniformCached = function( uniform ) {
-        if( this.uniformByLocation[ uniform.locationNumber ] === uniform.id ) return true;
-        this.uniformByLocation[ uniform.locationNumber ] = uniform.id
+        if( this.active ) {
+            if( this.uniformByLocation[ uniform.locationNumber ] === uniform.id ) return true;
+            this.uniformByLocation[ uniform.locationNumber ] = uniform.id
+        }
         return false;
     };
 
     cache.prototype.attributeCached = function( attribute ) {
-        if( this.attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
-        this.attributeByLocation[ attribute.locationNumber ] = attribute.id
+        if( this.active ) {
+            if( this.attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
+            this.attributeByLocation[ attribute.locationNumber ] = attribute.id
+        }
         return false;
     };
 
     cache.prototype.textureCached = function( texture ) {
-        if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
-        this.textureByLocation[ texture.textureUnit ] = texture.id
+        if( this.active ) {
+            if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
+            this.textureByLocation[ texture.textureUnit ] = texture.id
+        }
         return false;
     };
 
     cache.prototype.elementsCached = function( elements ) {
-        if( elements.id === this.elementId ) return true;
-        this.elementId = elements.id;
+        if( this.active ) {
+            if( elements.id === this.elementId ) return true;
+            this.elementId = elements.id;
+        }
         return false;
     };
 
