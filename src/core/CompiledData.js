@@ -46,7 +46,12 @@ GLOW.CompiledData = (function() {
     		clone.elements = this.elements;
     	}
 
-    	clone.program = this.program;
+        if( except && except.program ) {
+        	clone.program = except.program;
+        } else {
+        	clone.program = this.program;
+        }
+
     	return clone;
     };
     
