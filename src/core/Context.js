@@ -122,7 +122,27 @@ GLOW.Context = (function() {
     };
 
     Context.prototype.setupStencilTest = function( setup ) {
-    	// TODO
+    	try {
+            if( setup.func && setup.funcFace ) {
+                GL.stencilFuncSeparate( setup.funcFace, setup.func, setup.funcRef, setup.funcMask );
+            } else if( setup.func ) {
+                GL.stencilFunc( setup.func, setup.funcRef, setup.funcMask );
+            }
+            
+            if( setup.mask && setup.maskFace ) {
+                GL.stencilMaskSeparate( setup.maskFace, setup.mask );
+            } else if( setup.mask ) {
+                GL.stencilMask( setup.mask );
+            }
+
+            if( setup.opFail && setup.opFace ) {
+                GL.stencilOpSeparate( setup.opFace, setup.opFail, setup.opZfail, setup.opZpass );
+            } else if( setup.opFail ) {
+                GL.stencilOp( setup.opFail, setup.opZfail, setup.opZpass );
+            }
+    	} catch( error ) {
+    	    console.error( "GLOW.Context.setupStencilTest: " + error );
+    	}
     	return this;
     };
 
@@ -144,17 +164,22 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.enableScissorTest = function( flag, setup ) {
+    Context.prototype.enableScissor = function( flag, setup ) {
     	if( flag ) {
     		GL.enable( GL.SCISSOR_TEST );
-    		if( setup ) this.setupScissorTest( setup );
+    		if( setup ) this.setupScissor( setup );
     	} else {
     		GL.disable( GL.SCISSOR_TEST );
     	}
     	return this;
     };
 
-    Context.prototype.setupScissorTest = function( setup ) {
+    Context.prototype.setupScissor = function( setup ) {
+        try {
+            GL.scissor( setup.x, setup.y, setup.width, setup.height );
+        } catch( error ) {
+            console.error( "GLOW.Context.setupScissorTest: " + error );
+        } 
     	return this;
     };
 
