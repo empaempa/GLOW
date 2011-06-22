@@ -1,9 +1,9 @@
 GLOW
 ====
 
-#### Just-Above-Low-Level Javascript API for WebGL ####
+#### WebGL Wrapper ####
 
-The aim of the project is to create a just-above-low-level API for easy WebGL shader creation and usage
+The aim of the project is to create a WebGL wrapper for easy shader creation and usage
 
 ### Check out the blog ###
 
