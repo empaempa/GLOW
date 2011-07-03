@@ -20,8 +20,8 @@ GLOW.Attribute = (function() {
     }
 
     // constructor
-    function attribute(parameters, data, interleave) {
-        if (!once) {
+    function attribute( parameters, data, usage, interleave ) {
+        if( !once ) {
             once = true;
             lazyInit();
         }
@@ -34,26 +34,23 @@ GLOW.Attribute = (function() {
         this.offset = 0;
         this.size = sizes[parameters.type];
         this.buffer = GL.createBuffer();
-
-        // todo should all of these really get stored?
-        this.name = parameters.name;
+        this.name = parameters.name;            // saved for debug purposes
         this.type = parameters.type;
 
-        if (!interleave) {
-            if (this.data instanceof Float32Array) {
-                this.setData(this.data);
-            }
-            else {
+        if( !interleave ) {
+            if( this.data instanceof Float32Array ) {
+                this.setData( this.data, usage );
+            } else {
                 var al = this.data.length;
                 var sl = this.size;
-                var flat = new Float32Array(al * sl);
+                var flat = new Float32Array( al * sl );
                 var i = 0;
-                for (var a = 0; a < al; a++) {
-                    for(var s = 0; s < sl; s++) {
-                        flat[i++] = data[a].value[s];
+                for( var a = 0; a < al; a++ ) {
+                    for( var s = 0; s < sl; s++ ) {
+                        flat[ i++ ] = data[ a ].value[ s ];
                     }
                 }
-                this.setData(flat);
+                this.setData( flat, usage );
             }
         }
     }
@@ -65,16 +62,20 @@ GLOW.Attribute = (function() {
         // TODO
     };
 
-    attribute.prototype.setData = function(data) {
+    attribute.prototype.setData = function( data, usage ) {
         this.data = data;
-        GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
-        GL.bufferData(GL.ARRAY_BUFFER, this.data, GL.STATIC_DRAW);
+        GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+        GL.bufferData( GL.ARRAY_BUFFER, this.data, usage ? usage : GL.STATIC_DRAW );
     };
 
     attribute.prototype.bind = function() {
-        GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer);
-        GL.vertexAttribPointer(this.location, this.size, GL.FLOAT, false, this.stride, this.offset);
+        GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+        GL.vertexAttribPointer( this.location, this.size, GL.FLOAT, false, this.stride, this.offset );
     };
+    
+    attribute.prototype.dispose = function() {
+        // TODO
+    }
 
     return attribute;
 })();

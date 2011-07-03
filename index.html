@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
 	<head>
-		<title>GLOW - Mandelbrot</title>
+		<title>GLOW - Hello Cube - Please Check Source</title>
 		<meta charset="utf-8">
 		<style type="text/css">
 			body {
@@ -16,14 +16,13 @@
 			#glow span.title {margin:0 0 0 2px;border-bottom:8px solid #000;font:bold 12pt/16pt Arial, Helvetica;letter-spacing:1px;line-height:1.50}
 			#glow span.title a {text-decoration:none;color:#000}
 			#glow span.title a:visited {text-decoration:none;color:#000;}
-			#glow span.sub {margin:0 0 0 0px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
-			
+			#glow span.sub {margin:0 0 0 3px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
+
 		</style>
 	</head>
 	<body>
-		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">Mandelbrot</span></div>
+		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">Hello Cube</span></div>
 		<div id="container"></div>
-
 		<script type="text/javascript" src="src/GLOW.js"></script>
 		<script type="text/javascript" src="src/core/Context.js"></script>
 		<script type="text/javascript" src="src/core/Compiler.js"></script>
@@ -31,7 +30,7 @@
 		<script type="text/javascript" src="src/core/FBO.js"></script>
 		<script type="text/javascript" src="src/core/Texture.js"></script>
 		<script type="text/javascript" src="src/core/Cache.js"></script>
-		
+
 		<script type="text/javascript" src="src/shader/Shader.js"></script>
 		<script type="text/javascript" src="src/shader/Elements.js"></script>
 		<script type="text/javascript" src="src/shader/Uniform.js"></script>
@@ -50,133 +49,135 @@
 		<script type="text/javascript" src="src/extras/geometry/Geometry.js"></script>
 		<script type="text/javascript" src="src/extras/geometry/Cube.js"></script>
 		<script type="text/javascript" src="src/extras/geometry/Plane.js"></script>
-
 		<script type="text/javascript">
+		
+			// To get GLOW going, you need to create a GLOW.Context
+			// We also set the background color to white
+		
+			var context = new GLOW.Context();
+			context.setupClear( { red: 1, green: 1, blue: 1 } );
+			context.enableCulling( false );
 
-			var fractalShader = {
-				
+			// Attach the context's DOM element
+		
+			var container = document.getElementById( "container" );
+			container.appendChild( context.domElement );
 
-				elements: GLOW.Geometry.Plane.elements(),
+
+			// for sake of simplicity, create an object that
+			// keep all information about our cube.
+			
+			// GLOW.Shader takes an object with the following properties:
+			// vertexShader: the vertex shader code
+			// fragmentShader: the fragment shader code
+			// data: the uniform, attribute and texture data
+			// elements: the element data 
+		
+			var cubeShaderInfo = {
 				
+				// create vertex shader (note: cameraInverse * transform is usually done in JS)
+
 				vertexShader: [
 
+					"uniform	mat4 	transform;",
+					"uniform 	mat4 	cameraInverse;",
+					"uniform 	mat4 	cameraProjection;",
+
 					"attribute 	vec3 	vertices;",
-					"attribute  vec2	uvs;",
-					"varying 	vec2	uv;",
+					
+					"varying    vec2    shape;",
 
 					"void main(void)",
 					"{",
-						"uv = uvs;",
-						"gl_Position = vec4( vertices.x, vertices.y, 1.0, 1.0 );",
+						"shape = vertices.xy;",
+						"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices, 1.0 );",
+						"gl_PointSize = 10.0;",
 					"}"
 						
 				].join( "\n" ),
 
-				data: {
 
-					vertices: GLOW.Geometry.Plane.vertices(),
-					uvs: GLOW.Geometry.Plane.uvs(),
-					zoom: new GLOW.Vector2( 3.0, 3.0 * window.innerHeight / window.innerWidth ),
-					center: new GLOW.Vector2( -2, -1 ),
-					innerColor: new GLOW.Vector3( 0, 0.05, 0.2 ),
-					outerColor1: new GLOW.Vector3( 0.7, 0.7, 1.0 ),
-					outerColor2: new GLOW.Vector3( 0.1, 0.2, 0.6 ),
-					
-				},
-
+				// create fragment shader
 
 				fragmentShader: [ 	
 
 					"#ifdef GL_ES",
 						"precision highp float;",
-					"#endif",
+					"#endif",		
 
-					"varying vec2  uv;",
+					"varying	vec2		shape;",
 
-					"uniform vec2 	zoom;",
-					"uniform vec2  	center;",
-					"uniform vec3  	innerColor;",
-					"uniform vec3  	outerColor1;",
-					"uniform vec3  	outerColor2;",
-
-					"void main()",
+					"void main( void )",
 					"{",
-					    "float   real  = uv.x * zoom.x + center.x;",
-					    "float   imag  = uv.y * zoom.y + center.y;",
-					    "float   cReal = real;",
-					    "float   cImag = imag;",
-
-					    "float r2 = 0.0;",
-						"float tempreal;",
-						"int iter;",
-
-					    "for( int i = 0; i < 100; i++ )",
-						"{",
-							"if( r2 >= 4.0 ) break;",
-
-							"iter = i;",
-				        	"tempreal = real;",
-
-				        	"real = (tempreal * tempreal) - (imag * imag) + cReal;",
-				        	"imag = 2.0 * tempreal * imag + cImag;",
-				        	"r2   = (real * real) + (imag * imag);",
-					    "}",
-
-
-					    "vec3 color;",
-
-					    "if( r2 < 4.0 )",
-					        "color = innerColor;",
-					    "else",
-					        "color = mix( outerColor1, outerColor2, fract( float( iter ) * 0.05 ));",
-
-					    "gl_FragColor = vec4(color, 1.0);",
+					//	"if( length( shape ) < 1.0 ) {",
+							"gl_FragColor = vec4( 1.0, 0.0, 1.0, 1.0 );",
+					//	"} else {",
+					//		"discard;",
+					//	"}",
 					"}"
-				].join( "\n" )
+
+				].join( "\n" ),
+
+				// create all uniform and attribute data
+
+				data: {
+					
+					// create uniform data
+
+					transform: new GLOW.Matrix4(),
+					cameraInverse: GLOW.defaultCamera.inverse,
+					cameraProjection: GLOW.defaultCamera.projection,
+
+
+					// create attribute data
+
+					vertices: GLOW.Geometry.Plane.vertices(),
+				},
+				
+				
+				usage: {
+					
+					vertices: GL.DYNAMIC_DRAW
+				},
+
+				// create element data
+				
+				lineStrip: GLOW.Geometry.Plane.elements(),
 			}
-		
-		</script>
-
-		<script type="text/javascript">
-							
-			var container;
-			var context, fractal, t = 0;
-			var mouseX = 1;
 			
 			
-			// init
-			
-			context = new GLOW.Context();
-			document.getElementById( 'container' ).appendChild( context.domElement );
+			// Then we create a Shader using the info object created above 
 
-			fractal = new GLOW.Shader( fractalShader );
-
-			var centerOut = new GLOW.Vector2( -2.5, -1.1 );
-			var centerIn  = new GLOW.Vector2( -1.5, -0.1 );
-			var zoomOut   = new GLOW.Vector2( 3.5, 3.5 * window.innerHeight / window.innerWidth );
-			var zoomIn    = new GLOW.Vector2( 0.2, 0.2 * window.innerHeight / window.innerWidth );
+			var cube = new GLOW.Shader( cubeShaderInfo );
 
 			
-			// render
-
-			setInterval( render, 1000 / 30 );
-			document.addEventListener( "mousemove", onDocumentMouseMove, true );
+			// Update the default camera position
+			
+			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 100 );
+			GLOW.defaultCamera.update();
+			
+			
+			// Render (using setInterval as WebGL Inspector have problem with requestAnimationFrame)
+ 
+			setInterval( render, 1000 / 60 );
 
 			function render() {
 
-				fractal.center.sub( centerOut, centerIn ).multiplyScalar( mouseX ).addSelf( centerIn );
-				fractal.zoom.sub( zoomOut, zoomIn ).multiplyScalar( mouseX ).addSelf( zoomIn );
-
+				// clear the context's cache and graphics
+				
 				context.cache.clear();
 				context.clear();
-				fractal.draw();
-			}
 
 
-			//--- on mouse move ---
-			
-			function onDocumentMouseMove( event ) {
-				mouseX = event.clientX / window.innerWidth; 
+				// update rotation on cube
+				
+				cube.transform.addRotation( 0.01, 0.005, 0.0025 );
+				cube.transform.scale( 20, 20, 20 );
+				
+
+				// draw cube
+				
+				cube.draw();
 			}
 		</script>
 	</body>

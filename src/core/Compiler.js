@@ -41,10 +41,45 @@ GLOW.Compiler = (function() {
 			program = code.program;
 		}
 		
+
+		var elements = parameters.elements;
+		var elementType = GL.TRIANGLES;
+		var usageParameters = parameters.usage ? parameters.usage : {};
+		var usage = usageParameters.elements;
+
+		if( parameters.triangles ) {
+		    elements = parameters.triangles;
+		    usage = usageParameters.triangles;
+		} else if( parameters.triangleStrip ) {
+		    elementType = GL.TRIANGLE_STRIP;
+		    elements = parameters.triangleStrip;
+		    usage = usageParameters.triangleStrip;
+		} else if( parameters.triangleFan ) {
+		    elementType = GL.TRIANGLE_FAN;
+		    elements = parameters.triangleFan;
+		    usage = usageParameters.triangleFan;
+		} else if( parameters.points ) {
+		    elementType = GL.POINTS;
+		    elements = parameters.points;
+		    usage = usageParameters.points;
+		} else if( parameters.lines ) {
+		    elementType = GL.LINES;
+		    elements = parameters.lines;
+		    usage = usageParameters.lines;
+		} else if( parameters.lineLoop ) {
+		    elementType = GL.LINE_LOOP;
+		    elements = parameters.lineLoop;
+		    usage = usageParameters.lineLoop;
+		} else if( parameters.lineStrip ) {
+		    elementType = GL.LINE_STRIP;
+		    elements = parameters.lineStrip;
+		    usage = usageParameters.lineStrip;
+		}
+		
 		return new GLOW.CompiledData( program, 
 			                          compiler.createUniforms  ( compiler.extractUniforms  ( program ), parameters.data ),
-			                          compiler.createAttributes( compiler.extractAttributes( program ), parameters.data ),
-			                          compiler.createElements  ( parameters.elements ));
+			                          compiler.createAttributes( compiler.extractAttributes( program ), parameters.data, usageParameters, parameters.interleave ),
+			                          compiler.createElements  ( elements, elementType, usage ));
 	}
 
 
@@ -207,7 +242,7 @@ GLOW.Compiler = (function() {
 
 	//--- create attributes ---
 
-	compiler.createAttributes = function( attributeInformation, data ) {
+	compiler.createAttributes = function( attributeInformation, data, usage, interleave ) {
 
 		var a;
 		var attribute, name;
@@ -223,7 +258,7 @@ GLOW.Compiler = (function() {
 			} else if( data[ name ] instanceof GLOW.Attribute ) {
 				attributes[ name ] = data[ name ];
 			} else {
-				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ] );
+				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ] );
 			}
 		}
 
@@ -233,7 +268,7 @@ GLOW.Compiler = (function() {
 	
 	//--- create elements ---
 	
-	compiler.createElements = function( data ) {
+	compiler.createElements = function( data, type, usage ) {
 
 		var elements;
 
@@ -246,7 +281,7 @@ GLOW.Compiler = (function() {
 				data = new Uint16Array( data );
 			}
 
-			elements = new GLOW.Elements( data );
+			elements = new GLOW.Elements( data, type, usage );
 		}
 
 		return elements;
