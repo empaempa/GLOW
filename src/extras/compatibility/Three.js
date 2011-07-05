@@ -16,7 +16,7 @@ GLOW.ThreeJS = (function() {
                     if( this.data instanceof THREE.Vector2 ) {
                         this.data.GLOW = new Float32Array( 2 );
                         this.getNativeValue = function() {
-                        this.data.GLOW[ 0 ] = this.data.x;
+                            this.data.GLOW[ 0 ] = this.data.x;
                             this.data.GLOW[ 1 ] = this.data.y;
                             return this.data.GLOW;
                         }

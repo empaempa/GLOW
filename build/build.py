@@ -25,6 +25,16 @@ COMMON_FILES = [
 'core/Attribute.js'
 ]
 
+MATH_FILES = [
+'extras/math/Float.js',
+'extras/math/Int.js',
+'extras/math/Vector2.js',
+'extras/math/Vector3.js',
+'extras/math/Vector4.js',
+'extras/math/Matrix3.js',
+'extras/math/Matrix4.js',
+]
+
 EXTRAS_FILES = [
 'extras/math/Float.js',
 'extras/math/Int.js',
@@ -141,6 +151,7 @@ def parse_args():
 		parser.add_argument('--core', help='Build GLOW Core', action='store_const', const=True)
 		parser.add_argument('--extras', help='Build GLOW Extras', action='store_const', const=True)
 		parser.add_argument('--threecompatibility', help='Build GLOW THREE Compatibility', action='store_const', const=True)
+		parser.add_argument('--math', help='Build GLOW Math', action='store_const', const=True)
 		parser.add_argument('--debug', help='Generate debug versions', action='store_const', const=True, default=False)
 		parser.add_argument('--unminified', help='Generate unminified versions', action='store_const', const=True, default=False)
 		parser.add_argument('--all', help='Build all GLOW versions', action='store_true')
@@ -153,6 +164,7 @@ def parse_args():
 		parser.add_option('--core', dest='core', help='Build GLOW Core', action='store_const', const=True)
 		parser.add_option('--extras', dest='extras', help='Build GLOW Extras', action='store_const', const=True)
 		parser.add_option('--threecompatibility', dest='threecompatibility', help='Build GLOW THREE Compatibility', action='store_const', const=True)
+		parser.add_option('--math', dest='math', help='Build GLOW Math', action='store_const', const=True)
 		parser.add_option('--debug', dest='debug', help='Generate debug versions', action='store_const', const=True, default=False)
 		parser.add_option('--unminified', help='Generate unminified versions', action='store_const', const=True, default=False)
 		parser.add_option('--all', dest='all', help='Build all GLOW versions', action='store_true')
@@ -177,7 +189,8 @@ def main(argv=None):
 	['GLOW', 'includes', COMMON_FILES + EXTRAS_FILES, args.common],
 	['GLOWCore', 'includes', COMMON_FILES, args.core],
 	['GLOWExtras', 'includes_extras', EXTRAS_FILES, args.extras],
-	['GLOWThreeCompatibility', 'includes_extras', THREE_COMPATABILITY_FILES, args.threecompatibility]
+	['GLOWThreeCompatibility', 'includes_extras', THREE_COMPATABILITY_FILES, args.threecompatibility],
+	['GLOWCoreMath', 'includes_extras', MATH_FILES, args.math]
 	]
 
 	for fname_lib, fname_inc, files, enabled in config:
