@@ -11,20 +11,27 @@ GLOW.CompiledData = (function() {
 
     // constructor
     
-    function compiledData( program, uniforms, attributes, elements ) {
+    function compiledData( program, uniforms, attributes, elements, extras ) {
 	    this.program = program;
 	    this.uniforms = uniforms !== undefined ? uniforms : {};
 	    this.attributes = attributes !== undefined ? attributes : {};
 	    this.elements = elements;
+	    
+	    extras = extras !== undefined ? extras : {};
+	    this.preDrawCallback = extras.preDrawCallback;
+	    this.postDrawCallback = extras.postDrawCallback;
+	    this.blend = extras.blend;
+	    this.stencil = extras.stencil;
     }
 
 
     compiledData.prototype.clone = function( except ) {
     	var clone = new GLOW.CompiledData();
+    	except = except !== undefined ? except : {};
 
     	var u;
     	for( u in this.uniforms ) {
-    		if( except && except[ u ] ) {
+    		if( except[ u ] ) {
     			clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
     		} else {
     			clone.uniforms[ u ] = this.uniforms[ u ];
@@ -33,23 +40,47 @@ GLOW.CompiledData = (function() {
 
     	var a;
     	for( a in this.attributes ) {
-    		if( except && except[ a ] ) {
+    		if( except[ a ] ) {
     			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
     		} else {
     			clone.attributes[ a ] = this.attributes[ a ];
     		}
     	}
 
-    	if( except && except.elements ) {
+    	if( except.elements ) {
     		clone.elements = new GLOW.Elements( except.elements );
     	} else {
     		clone.elements = this.elements;
     	}
 
-        if( except && except.program ) {
+        if( except.program ) {
         	clone.program = except.program;
         } else {
         	clone.program = this.program;
+        }
+        
+        if( except.blend ) {
+            clone.blend = except.blend;
+        } else {
+            clone.blend = this.blend;
+        }
+        
+        if( except.stencil ) {
+            clone.stencil = except.stencil;
+        } else {
+            clone.stencil = this.stencil;
+        }
+        
+        if( except.preDrawCallback ) {
+            clone.preDrawCallback = except.preDrawCallback;
+        } else {
+            clone.preDrawCallback = this.preDrawCallback;
+        }
+        
+        if( except.postDrawCallback ) {
+            clone.postDrawCallback = except.postDrawCallback;
+        } else {
+            clone.postDrawCallback = this.postDrawCallback;
         }
 
     	return clone;

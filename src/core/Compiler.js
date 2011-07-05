@@ -79,7 +79,8 @@ GLOW.Compiler = (function() {
 		return new GLOW.CompiledData( program, 
 			                          compiler.createUniforms  ( compiler.extractUniforms  ( program ), parameters.data ),
 			                          compiler.createAttributes( compiler.extractAttributes( program ), parameters.data, usageParameters, parameters.interleave ),
-			                          compiler.createElements  ( elements, elementType, usage ));
+			                          compiler.createElements  ( elements, elementType, usage ), 
+			                          parameters );
 	}
 
 
