@@ -19,10 +19,10 @@ COMMON_FILES = [
 'core/Cache.js',
 'core/FBO.js',
 'core/Texture.js',
-'shader/Shader.js',
-'shader/Elements.js',
-'shader/Uniform.js',
-'shader/Attribute.js'
+'core/Shader.js',
+'core/Elements.js',
+'core/Uniform.js',
+'core/Attribute.js'
 ]
 
 EXTRAS_FILES = [
