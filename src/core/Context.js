@@ -81,15 +81,11 @@ GLOW.Context = (function() {
 
     Context.prototype.setupBlend = function( setup ) {
     	if( setup.equationRGB ) {
-    		try {
-    			if( setup.equationAlpha ) GL.blendEquationSeparate( setup.equationRGB, setup.equationAlpha );
-    			if( setup.srcRGB        ) GL.blendFuncSeparate( setup.srcRGB, setup.dstRGB, setup.srcAlpha, setup.dstAlpha );
-    		} catch( error ) { console.error( "GLOW.Context.setupBlend: " + error ); }
+			if( setup.equationAlpha ) GL.blendEquationSeparate( setup.equationRGB, setup.equationAlpha );
+			if( setup.srcRGB        ) GL.blendFuncSeparate( setup.srcRGB, setup.dstRGB, setup.srcAlpha, setup.dstAlpha );
     	} else {
-    		try {
-    			if( setup.equation ) GL.blendEquation( setup.equation );
-    			if( setup.src      ) GL.blendFunc( setup.src, setup.dst );
-    		} catch( error ) { console.error( "GLOW.Context.setupBlend: " + error ); }
+			if( setup.equation ) GL.blendEquation( setup.equation );
+			if( setup.src      ) GL.blendFunc( setup.src, setup.dst );
     	}
     	return this;
     };
@@ -103,15 +99,25 @@ GLOW.Context = (function() {
     };
 
     Context.prototype.setupDepthTest = function( setup ) {
-    	try {
-    		if( setup.func  !== undefined ) GL.depthFunc( setup.func );
-    		if( setup.write !== undefined ) GL.depthMask( setup.write );
-    		if( setup.zNear !== undefined && setup.zFar !== undefined && setup.zNear <= setup.zFar ) {
-    			GL.depthRange( Math.max( 0, Math.min( 1, setup.zNear )), Math.max( 0, Math.min( 1, setup.zFar )));
-    		}
-    	} catch( error ) { console.log( "GLOW.Context.setupDepthTest: " + error ); }
+		if( setup.func  !== undefined ) GL.depthFunc( setup.func );
+		if( setup.write !== undefined ) GL.depthMask( setup.write );
+		if( setup.zNear !== undefined && setup.zFar !== undefined && setup.zNear <= setup.zFar ) {
+			GL.depthRange( Math.max( 0, Math.min( 1, setup.zNear )), Math.max( 0, Math.min( 1, setup.zFar )));
+		}
     	return this;
     };
+
+    Context.prototype.enablePolygonOffset = function( flag, setup ) {
+        if( flag ) {
+            GL.enable( GL.POLYGON_OFFSET_FILL );
+            if( setup ) this.setupPolygonOffset( setup );
+        } else GL.disable( GL.POLYGON_OFFSET_FILL );
+        return this;
+    }
+    
+    Context.prototype.setupPolygonOffset = function( setup ) {
+        if( setup.factor && setup.units ) GL.polygonOffset( setup.factor, setup.units );
+    }
 
     Context.prototype.enableStencilTest = function( flag, setup ) {
     	if( flag ) {
@@ -122,27 +128,23 @@ GLOW.Context = (function() {
     };
 
     Context.prototype.setupStencilTest = function( setup ) {
-    	try {
-            if( setup.func && setup.funcFace ) {
-                GL.stencilFuncSeparate( setup.funcFace, setup.func, setup.funcRef, setup.funcMask );
-            } else if( setup.func ) {
-                GL.stencilFunc( setup.func, setup.funcRef, setup.funcMask );
-            }
-            
-            if( setup.mask && setup.maskFace ) {
-                GL.stencilMaskSeparate( setup.maskFace, setup.mask );
-            } else if( setup.mask ) {
-                GL.stencilMask( setup.mask );
-            }
+        if( setup.func && setup.funcFace ) {
+            GL.stencilFuncSeparate( setup.funcFace, setup.func, setup.funcRef, setup.funcMask );
+        } else if( setup.func ) {
+            GL.stencilFunc( setup.func, setup.funcRef, setup.funcMask );
+        }
+        
+        if( setup.mask && setup.maskFace ) {
+            GL.stencilMaskSeparate( setup.maskFace, setup.mask );
+        } else if( setup.mask ) {
+            GL.stencilMask( setup.mask );
+        }
 
-            if( setup.opFail && setup.opFace ) {
-                GL.stencilOpSeparate( setup.opFace, setup.opFail, setup.opZfail, setup.opZpass );
-            } else if( setup.opFail ) {
-                GL.stencilOp( setup.opFail, setup.opZfail, setup.opZpass );
-            }
-    	} catch( error ) {
-    	    console.error( "GLOW.Context.setupStencilTest: " + error );
-    	}
+        if( setup.opFail && setup.opFace ) {
+            GL.stencilOpSeparate( setup.opFace, setup.opFail, setup.opZfail, setup.opZpass );
+        } else if( setup.opFail ) {
+            GL.stencilOp( setup.opFail, setup.opZfail, setup.opZpass );
+        }
     	return this;
     };
 
