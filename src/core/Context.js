@@ -18,7 +18,7 @@ GLOW.Context = (function() {
     	this.premultipliedAlpha     = parameters.premultipliedAlpha    !== undefined ? parameters.premultipliedAlpha    : true;
     	this.preserveDrawingBuffer  = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false;
     	this.width                  = parameters.width                 !== undefined ? parameters.width                 : window.innerWidth;
-    	this.height                 = parameters.height                !== undefined ? parmaeters.height                : window.innerHeight;
+    	this.height                 = parameters.height                !== undefined ? parameters.height                : window.innerHeight;
     	this.cache                  = new GLOW.Cache();
 
     	if( parameters.context ) {
