@@ -11,10 +11,11 @@ GLOW.CompiledData = (function() {
 
     // constructor
     
-    function compiledData( program, uniforms, attributes, elements, extras ) {
+    function compiledData( program, uniforms, attributes, interleavedAttributes, elements, extras ) {
 	    this.program = program;
 	    this.uniforms = uniforms !== undefined ? uniforms : {};
 	    this.attributes = attributes !== undefined ? attributes : {};
+	    this.interleavedAttributes = interleavedAttributes !== undefined ? interleavedAttributes : {};
 	    this.elements = elements;
 	    
 	    extras = extras !== undefined ? extras : {};
@@ -41,7 +42,11 @@ GLOW.CompiledData = (function() {
     	var a;
     	for( a in this.attributes ) {
     		if( except[ a ] ) {
-    			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
+    		    if( !this.attributes[ a ].interleaved ) {
+        			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
+    		    } else {
+    		        console.error( "GLOW.Compiler.clone: Cannot use except parameter on interleaved attribute. Please make sure it's not interleaved by using the interleave property." );
+    		    }
     		} else {
     			clone.attributes[ a ] = this.attributes[ a ];
     		}

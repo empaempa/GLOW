@@ -20,7 +20,7 @@ GLOW.Attribute = (function() {
     }
 
     // constructor
-    function attribute( parameters, data, usage, interleave ) {
+    function attribute( parameters, data, usage, interleaved ) {
         if( !once ) {
             once = true;
             lazyInit();
@@ -32,46 +32,52 @@ GLOW.Attribute = (function() {
         this.locationNumber = parameters.locationNumber;
         this.stride = 0;
         this.offset = 0;
-        this.size = sizes[parameters.type];
-        this.buffer = GL.createBuffer();
-        this.name = parameters.name;            // saved for debug purposes
+        this.usage = usage !== undefined ? usage : GL.STATIC_DRAW;
+        this.interleaved = interleaved !== undefined ? interleaved : false;
+        this.size = sizes[ parameters.type ];
+        this.name = parameters.name;
         this.type = parameters.type;
 
-        if( !interleave ) {
+        if( this.interleaved === false ) {
             if( this.data instanceof Float32Array ) {
-                this.setData( this.data, usage );
+                this.bufferData( this.data, this.usage );
             } else {
-                var al = this.data.length;
-                var sl = this.size;
-                var flat = new Float32Array( al * sl );
-                var i = 0;
-                for( var a = 0; a < al; a++ ) {
-                    for( var s = 0; s < sl; s++ ) {
-                        flat[ i++ ] = data[ a ].value[ s ];
-                    }
-                }
-                this.setData( flat, usage );
+                console.error( "GLOW.Attribute.constructor: Data for attribute " + this.name + " not in Float32Array format. Please fix. Quitting." );
             }
         }
     }
 
     // methods
-    attribute.prototype.interleave = function(float32array, stride, offset) {
-        this.stride = stride;
+    attribute.prototype.setupInterleave = function( offset, stride ) {
+        this.interleaved = true;
         this.offset = offset;
-        // TODO
+        this.stride = stride;
     };
 
-    attribute.prototype.setData = function( data, usage ) {
-        this.data = data;
+    attribute.prototype.bufferData = function( data, usage ) {
+        if( data !== undefined && this.data !== data ) this.data = data;
+        if( usage !== undefined && this.usage !== usage ) this.usage = usage;
+        if( this.buffer === undefined ) this.buffer = GL.createBuffer();
+        
         GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
-        GL.bufferData( GL.ARRAY_BUFFER, this.data, usage ? usage : GL.STATIC_DRAW );
+        GL.bufferData( GL.ARRAY_BUFFER, this.data, this.usage );
     };
 
     attribute.prototype.bind = function() {
-        GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+        if( this.interleaved === false ) {
+            GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+        }
         GL.vertexAttribPointer( this.location, this.size, GL.FLOAT, false, this.stride, this.offset );
     };
+    
+    attribute.prototype.clone = function( except ) {
+        if( this.interleaved ) {
+            console.error( "GLOW.Attribute.clone: Cannot clone interleaved attribute. Please check your interleave setup." );
+            return;
+        }
+        
+        var clone = new GLOW.Attribute( this, this.data, this.usage, this.interleaved )
+    }
     
     attribute.prototype.dispose = function() {
         // TODO

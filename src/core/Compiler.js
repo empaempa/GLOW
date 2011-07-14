@@ -41,46 +41,47 @@ GLOW.Compiler = (function() {
 			program = code.program;
 		}
 		
+		var uniforms              = compiler.createUniforms      ( compiler.extractUniforms  ( program ), parameters.data );
+		var attributes            = compiler.createAttributes    ( compiler.extractAttributes( program ), parameters.data, parameters.usage, parameters.interleave );
+		var interleavedAttributes = compiler.interleaveAttributes( attributes, parameters.interleave );
 
 		var elements = parameters.elements;
 		var elementType = GL.TRIANGLES;
 		var usageParameters = parameters.usage ? parameters.usage : {};
-		var usage = usageParameters.elements;
+		var elementUsage = usageParameters.elements;
 
 		if( parameters.triangles ) {
 		    elements = parameters.triangles;
-		    usage = usageParameters.triangles;
+		    elementUsage = usageParameters.triangles;
 		} else if( parameters.triangleStrip ) {
-		    elementType = GL.TRIANGLE_STRIP;
 		    elements = parameters.triangleStrip;
-		    usage = usageParameters.triangleStrip;
+		    elementType = GL.TRIANGLE_STRIP;
+		    elementUsage = usageParameters.triangleStrip;
 		} else if( parameters.triangleFan ) {
-		    elementType = GL.TRIANGLE_FAN;
 		    elements = parameters.triangleFan;
-		    usage = usageParameters.triangleFan;
+		    elementType = GL.TRIANGLE_FAN;
+		    elementUsage = usageParameters.triangleFan;
 		} else if( parameters.points ) {
-		    elementType = GL.POINTS;
 		    elements = parameters.points;
-		    usage = usageParameters.points;
+		    elementType = GL.POINTS;
+		    elementUsage = usageParameters.points;
 		} else if( parameters.lines ) {
-		    elementType = GL.LINES;
 		    elements = parameters.lines;
-		    usage = usageParameters.lines;
+		    elementType = GL.LINES;
+		    elementUsage = usageParameters.lines;
 		} else if( parameters.lineLoop ) {
-		    elementType = GL.LINE_LOOP;
 		    elements = parameters.lineLoop;
-		    usage = usageParameters.lineLoop;
+		    elementType = GL.LINE_LOOP;
+		    elementUsage = usageParameters.lineLoop;
 		} else if( parameters.lineStrip ) {
-		    elementType = GL.LINE_STRIP;
 		    elements = parameters.lineStrip;
-		    usage = usageParameters.lineStrip;
+		    elementType = GL.LINE_STRIP;
+		    elementUsage = usageParameters.lineStrip;
 		}
-		
-		return new GLOW.CompiledData( program, 
-			                          compiler.createUniforms  ( compiler.extractUniforms  ( program ), parameters.data ),
-			                          compiler.createAttributes( compiler.extractAttributes( program ), parameters.data, usageParameters, parameters.interleave ),
-			                          compiler.createElements  ( elements, elementType, usage ), 
-			                          parameters );
+
+		elements = compiler.createElements( elements, elementType, elementUsage ); 
+
+        return new GLOW.CompiledData( program, uniforms, attributes, interleavedAttributes, elements, parameters );
 	}
 
 
@@ -248,9 +249,10 @@ GLOW.Compiler = (function() {
 		var a;
 		var attribute, name;
 		var attributes = {};
+		interleave = interleave !== undefined ? interleave : {};
+		usage = usage !== undefined ? usage : {};
 
 		for( a in attributeInformation ) {
-
 			attribute = attributeInformation[ a ];
 			name      = attribute.name;
 			
@@ -259,11 +261,89 @@ GLOW.Compiler = (function() {
 			} else if( data[ name ] instanceof GLOW.Attribute ) {
 				attributes[ name ] = data[ name ];
 			} else {
-				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ] );
+				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ], interleave[ name ] !== undefined ? interleave[ name ] : true );
 			}
 		}
 
 		return attributes;
+	}
+	
+	//--- interleave attributes ---
+	
+	compiler.interleaveAttributes = function( attributes, interleave ) {
+	    interleave = interleave !== undefined ? interleave : {};
+	    
+	    var a, al, b, bl, i;
+	    var lowestAvailableIndex = 0;
+	    var attributeByIndex = [];
+	    
+	    // get lowest available index
+	    for( a in attributes ) {
+	        if( interleave[ a ] !== undefined && interleave[ a ] !== false ) {
+	            lowestAvailableIndex = Math.max( lowestAvailableIndex - 1, interleave[ a ] ) + 1;
+	        }
+	    }
+	    
+	    // set all non-set attributes to lowest available index
+	    for( a in attributes ) {
+	        if( interleave[ a ] === undefined ) {
+	            interleave[ a ] = lowestAvailableIndex;
+	        }
+	    }
+	    
+	    // sort attributes into 2d-array
+	    for( i in interleave ) {
+	        if( interleave[ i ] !== false ) {
+	            if( attributeByIndex[ interleave[ i ]] === undefined ) {
+	                attributeByIndex[ interleave[ i ]] = [];
+	            }
+	            attributeByIndex[ interleave[ i ]].push( attributes[ i ] );
+ 	        }
+	    }
+	    
+	    // stride overflow check
+	    var stride, attribute, currentLength;
+ 	    for( a = 0, al = attributeByIndex.length; a < al; a++ ) {
+ 	        if( attributeByIndex[ a ] !== undefined ) {
+ 	            stride = 0;
+ 	            for( b = 0, bl = attributeByIndex[ a ].length; b < bl; b++ ) {
+ 	                if( stride + attributeByIndex[ a ][ b ].size * 4 > 255 ) {
+ 	                    console.warn( "GLOW.Compiler.interleaveAttributes: Stride owerflow, moving attributes to new interleave index. Please check your interleave setup!" );
+ 	                    currentLength = attributeByIndex.length;
+ 	                    attributeByIndex[ currentLength ] = [];
+ 	                    while( b < bl ) {
+ 	                        attributeByIndex[ currentLength ].push( attributeByIndex[ a ][ b ] );
+ 	                        attributeByIndex[ a ].splice( b, 1 );
+ 	                        bl--;
+ 	                    }
+ 	                    continue;
+ 	                }
+ 	                stride += attributeByIndex[ a ][ b ].size * 4;
+ 	            }
+ 	        }
+ 	    }
+ 	    
+ 	    // create interleaved attributes
+	    var name, interleavedAttributes = {};
+	    for( a = 0, al = attributeByIndex.length; a < al; a++ ) {
+	        if( attributeByIndex[ a ] !== undefined ) {
+	            name = "";
+	            for( b = 0, bl = attributeByIndex[ a ].length; b < bl; b++ ) {
+	                name += b !== bl - 1 ? attributeByIndex[ a ][ b ].name + "_" : attributeByIndex[ a ][ b ].name;
+	            }
+	            interleavedAttributes[ name ] = new GLOW.InterleavedAttributes( attributeByIndex[ a ] );
+	        }
+	    }
+	    
+	    
+	    // remove interleaved attributes from attribute object
+	    for( i in interleave ) {
+	        if( interleave[ i ] !== false ) {
+	            delete attributes[ i ];
+	        }
+	    }
+	    
+	    return interleavedAttributes;
 	}
 	
 	
@@ -273,7 +353,7 @@ GLOW.Compiler = (function() {
 
 		var elements;
 
-		if( !data ) {
+		if( data === undefined ) {
 			console.error( "GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting." );
 		} else if( data instanceof GLOW.Elements ) {
 			elements = data;
@@ -281,8 +361,7 @@ GLOW.Compiler = (function() {
 			if( !( data instanceof Uint16Array )) {
 				data = new Uint16Array( data );
 			}
-
-			elements = new GLOW.Elements( data, type, usage );
+			elements = new GLOW.Elements( data, type, usage !== undefined ? usage : GL.STATIC_DRAW );
 		}
 
 		return elements;

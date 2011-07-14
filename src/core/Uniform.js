@@ -30,8 +30,8 @@ GLOW.Uniform = (function() {
     }
 
     // constructor
-    function uniform(parameters, data) {
-        if (!once) {
+    function uniform( parameters, data ) {
+        if( !once ) {
             once = true;
             lazyInit();
         }
