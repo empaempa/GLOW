@@ -24,10 +24,9 @@ GLOW.Shader = (function() {
 
     // methods
     shader.prototype.attachData = function() {
-        var u, a;
+        var u, a, i;
 
         this.uniforms = this.compiledData.uniforms;
-        this.interleavedAttributes = this.compiledData.interleavedAttributes;
         this.elements = this.compiledData.elements;
         this.program = this.compiledData.program;
 
@@ -44,9 +43,20 @@ GLOW.Shader = (function() {
                 this.attributes = this.compiledData.attributes;
             }
             if( this[ a ] === undefined ) {
-                this[ a ] = this.compiledData.attributes[ a ].data;
+                this[ a ] = this.compiledData.attributes[ a ];
             } else {
                 console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data." );
+            }
+        }
+        
+        for( i in this.compiledData.interleavedAttributes ) {
+            if( this.interleavedAttributes === undefined ) {
+                this.interleavedAttributes = this.compiledData.interleavedAttributes;
+            }
+            if( this[ i ] === undefined ) {
+                this[ i ] = this.compiledData.interleavedAttributes[ i ];
+            } else {
+                console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on interleavedAttribute " + a + ", not attaching for easy access. Please use Shader.interleavedAttributes." + a + ".data to access data." )
             }
         }
     };
