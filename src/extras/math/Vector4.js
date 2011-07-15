@@ -95,5 +95,9 @@ GLOW.Vector4 = (function() {
 		return new GLOW.Vector4( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
 	};
 
+    vector4.prototype.getValueAsFloat32Array = function() {
+        return this.value;
+    }
+
     return vector4;
 })();

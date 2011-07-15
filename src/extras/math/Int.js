@@ -43,6 +43,10 @@ GLOW.Int = function( value ) {
         this.value[ 0 ] %= value;
         return this;
     }
-	
+
+    int.prototype.getValueAsFloat32Array = function() {
+        return this.value;
+    }
+    	
 	return int;
 }
