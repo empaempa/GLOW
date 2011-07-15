@@ -22,7 +22,8 @@ COMMON_FILES = [
 'core/Shader.js',
 'core/Elements.js',
 'core/Uniform.js',
-'core/Attribute.js'
+'core/Attribute.js',
+'core/InterleavedAttributes.js'
 ]
 
 MATH_FILES = [

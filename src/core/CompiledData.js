@@ -42,14 +42,19 @@ GLOW.CompiledData = (function() {
     	var a;
     	for( a in this.attributes ) {
     		if( except[ a ] ) {
-    		    if( !this.attributes[ a ].interleaved ) {
-        			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
-    		    } else {
-    		        console.error( "GLOW.Compiler.clone: Cannot use except parameter on interleaved attribute. Please make sure it's not interleaved by using the interleave property." );
-    		    }
+    			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
     		} else {
     			clone.attributes[ a ] = this.attributes[ a ];
     		}
+    	}
+    	
+    	var i;
+    	for( i in this.interleavedAttributes ) {
+    	    if( except[ i ] ) {
+    	        clone.interleavedAttributes[ i ] = new GLOW.InterleavedAttributes( except[ i ] );
+    	    } else {
+    	        clone.interleavedAttributes[ i ] = this.interleavedAttributes[ i ];
+    	    }
     	}
 
     	if( except.elements ) {

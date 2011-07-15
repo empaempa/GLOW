@@ -50,132 +50,152 @@
 		<script type="text/javascript" src="src/extras/geometry/Cube.js"></script>
 		<script type="text/javascript" src="src/extras/geometry/Plane.js"></script>
 		<script type="text/javascript">
-	
-		// To get GLOW going, you need to create a GLOW.Context
-		// We also set the background color to white
-	
-		var context = new GLOW.Context();
-		context.setupClear( { red: 1, green: 1, blue: 1 } );
-
-		// Attach the context's DOM element
-	
-		var container = document.getElementById( "container" );
-		container.appendChild( context.domElement );
-
-
-		// for sake of simplicity, create an object that
-		// keep all information about our cube.
 		
-		// GLOW.Shader takes an object with the following properties:
-		// vertexShader: the vertex shader code
-		// fragmentShader: the fragment shader code
-		// data: the uniform, attribute and texture data
-		// elements: the element data 
-	
-		var cubeShaderInfo = {
+			// To get GLOW going, you need to create a GLOW.Context
+			// We also set the background color to white
+		
+			var context = new GLOW.Context();
+			context.setupClear( { red: 1, green: 1, blue: 1 } );
+
+
+			// Attach the context's DOM element
+		
+			var container = document.getElementById( "container" );
+			container.appendChild( context.domElement );
+
+
+			// for sake of simplicity, create an object that
+			// keep all information about our cube.
 			
-			// create vertex shader (note: cameraInverse * transform is usually done in JS)
-
-			vertexShader: [
-
-				"uniform	mat4 	transform;",
-				"uniform 	mat4 	cameraInverse;",
-				"uniform 	mat4 	cameraProjection;",
-
-				"attribute 	vec3 	vertices;",
-				"attribute  vec3	normals;",
-				"attribute  vec2    uvs;",
+			// GLOW.Shader takes an object with the following properties:
+			// vertexShader: the vertex shader code
+			// fragmentShader: the fragment shader code
+			// data: the uniform, attribute and texture data
+			// elements: the element data 
+		
+			var cubeShaderInfo = {
 				
-				"varying    vec2    uv;",
-				"varying    float   light;",
+				// create vertex shader (note: cameraInverse * transform is usually done in JS)
 
-				"void main(void)",
-				"{",
-					"uv = uvs;",
-					"light = dot( normalize( mat3( transform[0].xyz, transform[1].xyz, transform[2].xyz ) * normals ), vec3( 0.0, 0.0, -1.0 ));",
-					"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices, 1.0 );",
-				"}"
+				vertexShader: [
+
+					"uniform	mat4 	transform;",
+					"uniform	mat4 	rotation;",
+					"uniform 	mat4 	cameraInverse;",
+					"uniform 	mat4 	cameraProjection;",
+
+					"attribute 	vec3 	vertices;",
+					"attribute  vec3	normals;",
+					"attribute  vec2    uvs;",
 					
-			].join( "\n" ),
+					"varying    vec2    uv;",
+					"varying    float   light;",
+
+					"void main(void)",
+					"{",
+						"uv = uvs;",
+						"light = dot( normalize( mat3( rotation[0].xyz, rotation[1].xyz, rotation[2].xyz ) * normals ), vec3( 0.0, 0.0, -1.0 ));",
+						"gl_Position = cameraProjection * cameraInverse * transform * rotation * vec4( vertices, 1.0 );",
+					"}"
+						
+				].join( "\n" ),
 
 
-			// create fragment shader
+				// create fragment shader
 
-			fragmentShader: [ 	
+				fragmentShader: [ 	
 
-				"#ifdef GL_ES",
-					"precision highp float;",
-				"#endif",		
+					"#ifdef GL_ES",
+						"precision highp float;",
+					"#endif",		
 
-				"uniform 	sampler2D 	texture;",
-				"varying    float  	 	light;",
-				"varying 	vec2		uv;",
+					"uniform 	sampler2D 	texture;",
+					"varying    float  	 	light;",
+					"varying 	vec2		uv;",
 
-				"void main( void )",
-				"{",
-					"gl_FragColor = texture2D( texture, uv ) * light;",
-				"}"
+					"void main( void )",
+					"{",
+						"gl_FragColor = texture2D( texture, uv ) * light;",
+					"}"
 
-			].join( "\n" ),
+				].join( "\n" ),
 
 
-			// create all uniform and attribute data
+				// create all uniform and attribute data
 
-			data: {
+				data: {
+					
+					// create uniform data
+
+					transform: new GLOW.Matrix4(),
+					rotation: new GLOW.Matrix4(),
+					cameraInverse: GLOW.defaultCamera.inverse,
+					cameraProjection: GLOW.defaultCamera.projection,
+					texture: new GLOW.Texture( "textures/crate.JPG" ),
+
+
+					// create attribute data
+
+					vertices: GLOW.Geometry.Cube.vertices( 50 ),
+					uvs: GLOW.Geometry.Cube.uvs(),
+					normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices(), GLOW.Geometry.Cube.elements())
+				},
 				
-				// create uniform data
 
-				transform: new GLOW.Matrix4(),
-				cameraInverse: GLOW.defaultCamera.inverse,
-				cameraProjection: GLOW.defaultCamera.projection,
-				texture: new GLOW.Texture( "examples/textures/crate.JPG" ),
-
-
-				// create attribute data
-
-				vertices: GLOW.Geometry.Cube.vertices( 500 ),
-				uvs: GLOW.Geometry.Cube.uvs(),
-				normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices(), GLOW.Geometry.Cube.elements())
-			},
-			
-			// create element data
-			
-			triangles: GLOW.Geometry.Cube.elements(),
-		}
-		
-
-		// Then we create a Shader using the info object created above 
-
-		var cube = new GLOW.Shader( cubeShaderInfo );
-		
-		
-		// Update the default camera position
-		
-		GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 1500 );
-		GLOW.defaultCamera.update();
-		
-		
-		// Render (using setInterval as WebGL Inspector have problem with requestAnimationFrame)
-
-		setInterval( render, 1000 / 60 );
-
-		function render() {
-
-			// clear the context's cache and graphics
-			
-			context.cache.clear();
-			context.clear();
-
-
-			// update rotation on cube
-			
-			cube.transform.addRotation( 0.01, 0.005, 0.0025 );
+				// create element data
+				
+				elements: GLOW.Geometry.Cube.elements(),
+			}
 			
 
-			// draw cube
+			// Then we compile the data to be used for shader creation later
 			
-			cube.draw();
-		}
+			var compiledCubeShaderInfo = GLOW.Compiler.compile( cubeShaderInfo );
+			
+			// create clones
+			// note that we use the compiled data except the transform, which is unique for each clone.
+			// note that except: is an object and can contain multiple unique data objects
+			
+			var cube, cubes = [];
+			
+			for( var i = 0; i < 1000; i++ ) {
+				
+				cube = new GLOW.Shader( { use: compiledCubeShaderInfo, except: { transform: new GLOW.Matrix4() } } );
+				cube.transform.setPosition( Math.sin( i * 0.5 ) * i, Math.cos( i * 0.5 ) * i, 1000 - i * 2 );
+				
+				cubes.push( cube );
+			}
+			
+			
+			// Update the default camera position
+			
+			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 1500 );
+			GLOW.defaultCamera.update();
+			
+			
+			// Render (using setInterval as WebGL Inspector have problem with requestAnimationFrame)
+ 
+			setInterval( render, 1000 / 60 );
+
+			function render() {
+
+				// the rotation uniform is shared, update this to make all rotate
+				
+				cubes[ 0 ].rotation.addRotation( 0.01, 0.01, 0.01 );
+				
+
+				// clear the context's cache and graphics
+				
+				context.cache.clear();
+				context.clear();
+
+				// draw cubes
+				
+				for( var i = 0; i < cubes.length; i++ ) {
+					
+					cubes[ i ].draw();
+				}
+			}
 		</script>
 	</body>
 </html>
