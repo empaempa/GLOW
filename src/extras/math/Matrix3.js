@@ -9,8 +9,7 @@ GLOW.Matrix3 = (function() {
 
     // constructor
     function matrix3() {
-    	this.value = new Array( 9 );
-    	this.float32Array = new Float32Array( 9 )
+    	this.value = new Float32Array( 9 );
     	this.identity();
     }
 

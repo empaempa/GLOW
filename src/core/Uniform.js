@@ -49,7 +49,7 @@ GLOW.Uniform = (function() {
     // methods
     // default data converter
     uniform.prototype.getNativeValue = function() {
-        return this.data.getValueAsFloat32Array();
+        return this.data.value;
     };
 
     return uniform;

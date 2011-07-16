@@ -94,10 +94,6 @@ GLOW.Vector2 = (function() {
 		return new GLOW.Vector2( this.value[ 0 ], this.value[ 1 ] );
 	};
 
-    vector2.prototype.getValueAsFloat32Array = function() {
-        return this.value;
-    }
-
     return vector2;
 })();
 

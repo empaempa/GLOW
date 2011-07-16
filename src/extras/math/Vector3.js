@@ -191,9 +191,5 @@ GLOW.Vector3 = (function( x, y, z ) {
     	return GLOW.Vector3( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
     }
 
-    vector3.prototype.getValueAsFloat32Array = function() {
-        return this.value;
-    }
-
     return vector3;
 })();

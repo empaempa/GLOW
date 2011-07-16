@@ -44,9 +44,5 @@ GLOW.Float = (function() {
         return this;
     }
     
-    float.prototype.getValueAsFloat32Array = function() {
-        return this.value;
-    }
-	
 	return float;
 })();

@@ -15,8 +15,7 @@ GLOW.Matrix4 = (function() {
 
     //constructor
     function matrix4() {
-    	this.value = new Array( 16 );
-    	this.float32Array = new Float32Array( 16 );
+    	this.value = new Float32Array( 16 );
     	this.rotation = new GLOW.Vector3();
     	this.position = new GLOW.Vector3();
     	this.columnX  = new GLOW.Vector3();
@@ -293,26 +292,6 @@ GLOW.Matrix4 = (function() {
     	this.value[ 2 ] *= x; this.value[ 6 ] *= y; this.value[ 10 ] *= z;
     	this.value[ 3 ] *= x; this.value[ 7 ] *= y; this.value[ 11 ] *= z;
     	return this;
-    }
-
-    matrix4.prototype.getValueAsFloat32Array = function() {
-        this.float32Array[ 0 ] = this.value[ 0 ];
-        this.float32Array[ 1 ] = this.value[ 1 ];
-        this.float32Array[ 2 ] = this.value[ 2 ];
-        this.float32Array[ 3 ] = this.value[ 3 ];
-        this.float32Array[ 4 ] = this.value[ 4 ];
-        this.float32Array[ 5 ] = this.value[ 5 ];
-        this.float32Array[ 6 ] = this.value[ 6 ];
-        this.float32Array[ 7 ] = this.value[ 7 ];
-        this.float32Array[ 8 ] = this.value[ 8 ];
-        this.float32Array[ 9 ] = this.value[ 9 ];
-        this.float32Array[ 10 ] = this.value[ 10 ];
-        this.float32Array[ 11 ] = this.value[ 11 ];
-        this.float32Array[ 12 ] = this.value[ 12 ];
-        this.float32Array[ 13 ] = this.value[ 13 ];
-        this.float32Array[ 14 ] = this.value[ 14 ];
-        this.float32Array[ 15 ] = this.value[ 15 ];
-        return this.float32Array;
     }
 
     return matrix4;
