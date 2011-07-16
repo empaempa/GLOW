@@ -73,6 +73,20 @@
 			// data: the uniform, attribute and texture data
 			// elements: the element data 
 		
+			var canvas = document.createElement( "canvas" );
+			canvas.width = "256";
+			canvas.height= "256";
+		
+		//	document.body.appendChild(canvas);
+
+			var context2d = canvas.getContext('2d');
+
+			context2d.fillStyle = '#FF00FF';  
+			context2d.fillRect(0, 0, 128, 128);
+			context2d.fillStyle = '#000000';  
+			context2d.fillRect(128, 128, 128, 128);
+
+
 			var cubeShaderInfo = {
 				
 				// create vertex shader (note: cameraInverse * transform is usually done in JS)
@@ -131,7 +145,7 @@
 					rotation: new GLOW.Matrix4(),
 					cameraInverse: GLOW.defaultCamera.inverse,
 					cameraProjection: GLOW.defaultCamera.projection,
-					texture: new GLOW.Texture( "examples/textures/crate.JPG" ),
+					texture: new GLOW.Texture( { canvas:canvas } ),
 
 
 					// create attribute data
