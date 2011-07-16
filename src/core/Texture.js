@@ -29,7 +29,6 @@ GLOW.Texture = (function() {
     	this.wrapT = parameters.wrapT !== undefined ? parameters.wrapT : parameters.wrap !== undefined ? parameters.wrap : GL.REPEAT;
     	this.magFilter = parameters.magFilter !== undefined ? parameters.magFilter : GL.LINEAR;
     	this.minFilter = parameters.minFilter !== undefined ? parameters.minFilter : GL.LINEAR_MIPMAP_LINEAR;
-    	this.mipmap = parameters.mipmap !== undefined ? parameters.mipmap : true;
     	this.textureUnit = -1;
     	this.texture = undefined;
 	}
@@ -61,11 +60,11 @@ GLOW.Texture = (function() {
 
     	GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, this.wrapS );
     	GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, this.wrapT );
-    	GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, this.minFilter );
-        if( this.mipmap ) {
-        	GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, this.magFilter );
-        	GL.generateMipmap( GL.TEXTURE_2D );
-        }
+	    GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, this.minFilter );
+    	GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, this.magFilter );
+    	if( this.minFilter !== GL.NEAREST && this.minFilter !== GL.LINEAR ) {
+    	    GL.generateMipmap( GL.TEXTURE_2D );
+	    }
     };
 
     texture.prototype.onLoad = function() {

@@ -74,17 +74,17 @@
 			// elements: the element data 
 		
 			var canvas = document.createElement( "canvas" );
-			canvas.width = "256";
-			canvas.height= "256";
+			canvas.width = "32";
+			canvas.height= "32";
 		
 		//	document.body.appendChild(canvas);
 
 			var context2d = canvas.getContext('2d');
 
 			context2d.fillStyle = '#FF00FF';  
-			context2d.fillRect(0, 0, 128, 128);
+			context2d.fillRect(0, 0, 16, 16);
 			context2d.fillStyle = '#000000';  
-			context2d.fillRect(128, 128, 128, 128);
+			context2d.fillRect(16, 16, 16, 16);
 
 
 			var cubeShaderInfo = {
@@ -145,7 +145,7 @@
 					rotation: new GLOW.Matrix4(),
 					cameraInverse: GLOW.defaultCamera.inverse,
 					cameraProjection: GLOW.defaultCamera.projection,
-					texture: new GLOW.Texture( { canvas:canvas } ),
+					texture: new GLOW.Texture( { canvas:canvas, magFilter:GL.NEAREST, minFilter:GL.NEAREST_MIPMAP_NEAREST } ),
 
 
 					// create attribute data
@@ -183,7 +183,7 @@
 			
 			// Update the default camera position
 			
-			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 1500 );
+			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 1200 );
 			GLOW.defaultCamera.update();
 			
 			
