@@ -261,7 +261,7 @@ GLOW.Compiler = (function() {
 			} else if( data[ name ] instanceof GLOW.Attribute ) {
 				attributes[ name ] = data[ name ];
 			} else {
-				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ], interleave[ name ] !== undefined ? interleave[ name ] : true );
+				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ] !== undefined ? usage[ name ] : undefined, interleave[ name ] !== undefined ? interleave[ name ] : true );
 			}
 		}
 

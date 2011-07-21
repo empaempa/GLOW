@@ -51,139 +51,112 @@
 		<script type="text/javascript" src="src/extras/geometry/Plane.js"></script>
 		<script type="text/javascript">
 		
-			// To get GLOW going, you need to create a GLOW.Context
-			// We also set the background color to white
+			// Create a GLOW.Context
 		
 			var context = new GLOW.Context();
 			context.setupClear( { red: 1, green: 1, blue: 1 } );
 
-
-			// Attach the context's DOM element
-		
 			var container = document.getElementById( "container" );
 			container.appendChild( context.domElement );
 
 
-			// for sake of simplicity, create an object that
-			// keep all information about our cube.
+			// Create shader info object
 			
-			// GLOW.Shader takes an object with the following properties:
-			// vertexShader: the vertex shader code
-			// fragmentShader: the fragment shader code
-			// data: the uniform, attribute and texture data
-			// elements: the element data 
-		
-			var canvas = document.createElement( "canvas" );
-			canvas.width = "32";
-			canvas.height= "32";
-		
-		//	document.body.appendChild(canvas);
-
-			var context2d = canvas.getContext('2d');
-
-			context2d.fillStyle = '#FF00FF';  
-			context2d.fillRect(0, 0, 16, 16);
-			context2d.fillStyle = '#000000';  
-			context2d.fillRect(16, 16, 16, 16);
-
-
 			var cubeShaderInfo = {
 				
-				// create vertex shader (note: cameraInverse * transform is usually done in JS)
-
 				vertexShader: [
-
 					"uniform	mat4 	transform;",
-					"uniform	mat4 	rotation;",
 					"uniform 	mat4 	cameraInverse;",
 					"uniform 	mat4 	cameraProjection;",
 
 					"attribute 	vec3 	vertices;",
-					"attribute  vec3	normals;",
 					"attribute  vec2    uvs;",
 					
 					"varying    vec2    uv;",
-					"varying    float   light;",
 
 					"void main(void)",
 					"{",
 						"uv = uvs;",
-						"light = dot( normalize( mat3( rotation[0].xyz, rotation[1].xyz, rotation[2].xyz ) * normals ), vec3( 0.0, 0.0, -1.0 ));",
-						"gl_Position = cameraProjection * cameraInverse * transform * rotation * vec4( vertices, 1.0 );",
+						"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices, 1.0 );",
 					"}"
-						
 				].join( "\n" ),
 
-
-				// create fragment shader
-
 				fragmentShader: [ 	
-
 					"#ifdef GL_ES",
 						"precision highp float;",
 					"#endif",		
 
 					"uniform 	sampler2D 	texture;",
-					"varying    float  	 	light;",
 					"varying 	vec2		uv;",
 
 					"void main( void )",
 					"{",
-						"gl_FragColor = texture2D( texture, uv ) * light;",
+						"gl_FragColor = texture2D( texture, uv );",
 					"}"
-
 				].join( "\n" ),
 
 
-				// create all uniform and attribute data
-
+				// please notice the texture is a video using minFilter NEAREST as
+				// we don't like to update mipmaps every frame for the video
 				data: {
-					
-					// create uniform data
-
+					texture: new GLOW.Texture( { url:"examples/videos/test.webm", minFilter:GL.NEAREST } ),
 					transform: new GLOW.Matrix4(),
-					rotation: new GLOW.Matrix4(),
 					cameraInverse: GLOW.defaultCamera.inverse,
 					cameraProjection: GLOW.defaultCamera.projection,
-					texture: new GLOW.Texture( { canvas:canvas, magFilter:GL.NEAREST, minFilter:GL.NEAREST_MIPMAP_NEAREST } ),
-
-
-					// create attribute data
-
-					vertices: GLOW.Geometry.Cube.vertices( 50 ),
+					vertices: GLOW.Geometry.Cube.vertices( 500 ),
 					uvs: GLOW.Geometry.Cube.uvs(),
-					normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices(), GLOW.Geometry.Cube.elements())
 				},
 				
-
 				// create element data
-				
 				elements: GLOW.Geometry.Cube.elements(),
 			}
 			
 
-			// Then we compile the data to be used for shader creation later
+			// Create a GLOW.Shader with video texture, using the shader info object created above 
+
+			var videoCube = new GLOW.Shader( cubeShaderInfo );
+			videoCube.transform.setPosition( 0, 325, 0 );
+			videoCube.texture.video.play();
 			
-			var compiledCubeShaderInfo = GLOW.Compiler.compile( cubeShaderInfo );
 			
-			// create clones
-			// note that we use the compiled data except the transform, which is unique for each clone.
-			// note that except: is an object and can contain multiple unique data objects
+			// Clone the videoCube except the transform and the texture, this time we load an image
 			
-			var cube, cubes = [];
+			var textureCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { url: "examples/textures/crate.JPG" })});
+			textureCube.transform.setPosition( -750, 0, 0 );
 			
-			for( var i = 0; i < 1000; i++ ) {
-				
-				cube = new GLOW.Shader( { use: compiledCubeShaderInfo, except: { transform: new GLOW.Matrix4() } } );
-				cube.transform.setPosition( Math.sin( i * 0.5 ) * i, Math.cos( i * 0.5 ) * i, 1000 - i * 2 );
-				
-				cubes.push( cube );
+			
+			// And then the same, but with canvas
+			
+			var canvas = document.createElement( "canvas" );
+			canvas.width = 64;
+			canvas.height = 64;
+			var canvasContext = canvas.getContext( "2d" );
+			canvasContext.fillStyle = "rgb(200,0,0)";
+			canvasContext.fillRect( 0, 0, 32, 32 );
+			canvasContext.fillStyle = "rgba(0, 0, 200, 0.5)";
+			canvasContext.fillRect( 32, 32, 64, 64 );
+			
+			var canvasCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { canvas: canvas })});
+			canvasCube.transform.setPosition( 750, 0, 0 );
+			
+			
+			// And lastly with a buffer
+			
+			var buffer = new Uint8Array( 64*64*4 );
+			for( var i = 0, a = 0; i < 64*64; i++ ) {
+				buffer[ a++ ] = i * 255 / 64*64;
+				buffer[ a++ ] = 0;
+				buffer[ a++ ] = i % 255;
+				buffer[ a++ ] = 255;
 			}
+			
+			var bufferCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { buffer: buffer, width: 64, height: 64 })});
+			bufferCube.transform.setPosition( 0, -325, 0 );
 			
 			
 			// Update the default camera position
 			
-			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 1200 );
+			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 2000 );
 			GLOW.defaultCamera.update();
 			
 			
@@ -193,22 +166,26 @@
 
 			function render() {
 
-				// the rotation uniform is shared, update this to make all rotate
-				
-				cubes[ 0 ].rotation.addRotation( 0.01, 0.01, 0.01 );
-				
-
 				// clear the context's cache and graphics
 				
 				context.cache.clear();
 				context.clear();
 
+
+				// update rotation on cubes
+				
+				videoCube.transform.addRotation( 0.01, 0.005, 0.0025 );
+				textureCube.transform.addRotation( 0.005, 0.0025, 0.01 );
+				canvasCube.transform.addRotation( 0.005, 0.01, 0.0025 );
+				bufferCube.transform.addRotation( 0.0025, 0.01, 0.005 );
+	
+
 				// draw cubes
 				
-				for( var i = 0; i < cubes.length; i++ ) {
-					
-					cubes[ i ].draw();
-				}
+				videoCube.draw();
+				textureCube.draw();
+				canvasCube.draw();
+				bufferCube.draw();
 			}
 		</script>
 	</body>
