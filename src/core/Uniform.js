@@ -22,18 +22,25 @@ GLOW.Uniform = (function() {
                 GL.uniform1i( this.location, this.data.textureUnit );
                 GL.activeTexture( GL.TEXTURE0 + this.data.textureUnit );
                 GL.bindTexture( GL.TEXTURE_2D, this.data.texture );
-                if( this.data.video ) {
-                    this.data.updateTexture();
+                if( this.data.autoUpdate ) {
+                    this.data.updateTexture( this.data.autoUpdate );
                 }
             }
         };
-        setFunctions[GL.SAMPLER_CUBE] = function() {
-            /* TODO */
+        setFunctions[ GL.SAMPLER_CUBE ] = function() {
+            if( this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.data )) {
+                GL.uniform1i( this.location, this.data.textureUnit );
+                GL.activeTexture( GL.TEXTURE0 + this.data.textureUnit );
+                GL.bindTexture( GL.TEXTURE_CUBE_MAP, this.data.texture );
+                if( this.data.autoUpdate ) {
+                    this.data.updateTexture( this.data.autoUpdate );
+                }
+            }
         };
     }
 
     // constructor
-    function uniform( parameters, data ) {
+    function GLOWUniform( parameters, data ) {
         if( !once ) {
             once = true;
             lazyInit();
@@ -51,9 +58,9 @@ GLOW.Uniform = (function() {
 
     // methods
     // default data converter
-    uniform.prototype.getNativeValue = function() {
+    GLOWUniform.prototype.getNativeValue = function() {
         return this.data.value;
     };
 
-    return uniform;
+    return GLOWUniform;
 })();

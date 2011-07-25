@@ -62,6 +62,40 @@
 
 			// Create shader info object
 			
+			var canvas = document.createElement( "canvas" );
+			canvas.width = 512;
+			canvas.height = 512;
+			var canvasContext = canvas.getContext( "2d" );
+			canvasContext.fillStyle = "rgb(200,0,0)";
+			canvasContext.fillRect( 0, 0, 128, 128 );
+			canvasContext.fillStyle = "rgba(0, 0, 200, 0.5)";
+			canvasContext.fillRect( 128, 128, 128, 128 );
+			
+			
+			// And lastly with a buffer
+			
+			var buffer = new Uint8Array( 512*512*4 );
+			for( var i = 0, a = 0; i < 512*512; i++ ) {
+				buffer[ a++ ] = i * 255 / 512*512;
+				buffer[ a++ ] = 0;
+				buffer[ a++ ] = i % 255;
+				buffer[ a++ ] = 255;
+			}
+			
+			var video = document.createElement( "video" );
+			video.src = "examples/videos/testSquare.webm";
+			video.play();
+			var image = new Image();
+			image.src = "examples/textures/clouds.jpg";
+			var cube = {
+				posX: buffer,
+				negX: "examples/videos/testSquare.webm",
+				posY: "examples/textures/cubemap/up.jpg",
+				negY: "examples/textures/cubemap/down.jpg",
+				posZ: "examples/textures/cubemap/front.jpg",
+				negZ: canvas
+			} 
+			
 			var cubeShaderInfo = {
 				
 				vertexShader: [
@@ -73,10 +107,12 @@
 					"attribute  vec2    uvs;",
 					
 					"varying    vec2    uv;",
+					"varying    vec3    normal;",
 
 					"void main(void)",
 					"{",
 						"uv = uvs;",
+						"normal = normalize( vertices );",
 						"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices, 1.0 );",
 					"}"
 				].join( "\n" ),
@@ -86,12 +122,13 @@
 						"precision highp float;",
 					"#endif",		
 
-					"uniform 	sampler2D 	texture;",
-					"varying 	vec2		uv;",
+					"uniform 	samplerCube 	texture;",
+					"varying 	vec2			uv;",
+					"varying	vec3			normal;",
 
 					"void main( void )",
 					"{",
-						"gl_FragColor = texture2D( texture, uv );",
+						"gl_FragColor = textureCube( texture, normalize( normal ));",
 					"}"
 				].join( "\n" ),
 
@@ -99,60 +136,21 @@
 				// please notice the texture is a video using minFilter NEAREST as
 				// we don't like to update mipmaps every frame for the video
 				data: {
-					texture: new GLOW.Texture( { url:"examples/videos/test.webm", minFilter:GL.NEAREST } ),
+					texture: new GLOW.Texture( { cube: cube, width: 512, height: 512, minFilter:GL.LINEAR } ),
 					transform: new GLOW.Matrix4(),
 					cameraInverse: GLOW.defaultCamera.inverse,
 					cameraProjection: GLOW.defaultCamera.projection,
 					vertices: GLOW.Geometry.Cube.vertices( 500 ),
-					uvs: GLOW.Geometry.Cube.uvs(),
+					uvs: GLOW.Geometry.Cube.uvs()
 				},
 				
 				// create element data
 				elements: GLOW.Geometry.Cube.elements(),
 			}
 			
-
-			// Create a GLOW.Shader with video texture, using the shader info object created above 
-
-			var videoCube = new GLOW.Shader( cubeShaderInfo );
-			videoCube.transform.setPosition( 0, 325, 0 );
-			videoCube.texture.video.play();
 			
-			
-			// Clone the videoCube except the transform and the texture, this time we load an image
-			
-			var textureCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { url: "examples/textures/crate.JPG" })});
-			textureCube.transform.setPosition( -750, 0, 0 );
-			
-			
-			// And then the same, but with canvas
-			
-			var canvas = document.createElement( "canvas" );
-			canvas.width = 64;
-			canvas.height = 64;
-			var canvasContext = canvas.getContext( "2d" );
-			canvasContext.fillStyle = "rgb(200,0,0)";
-			canvasContext.fillRect( 0, 0, 32, 32 );
-			canvasContext.fillStyle = "rgba(0, 0, 200, 0.5)";
-			canvasContext.fillRect( 32, 32, 64, 64 );
-			
-			var canvasCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { canvas: canvas })});
-			canvasCube.transform.setPosition( 750, 0, 0 );
-			
-			
-			// And lastly with a buffer
-			
-			var buffer = new Uint8Array( 64*64*4 );
-			for( var i = 0, a = 0; i < 64*64; i++ ) {
-				buffer[ a++ ] = i * 255 / 64*64;
-				buffer[ a++ ] = 0;
-				buffer[ a++ ] = i % 255;
-				buffer[ a++ ] = 255;
-			}
-			
-			var bufferCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { buffer: buffer, width: 64, height: 64 })});
-			bufferCube.transform.setPosition( 0, -325, 0 );
-			
+			var cube = new GLOW.Shader( cubeShaderInfo );
+			cube.texture.cube.negX.video.play();
 			
 			// Update the default camera position
 			
@@ -174,18 +172,12 @@
 
 				// update rotation on cubes
 				
-				videoCube.transform.addRotation( 0.01, 0.005, 0.0025 );
-				textureCube.transform.addRotation( 0.005, 0.0025, 0.01 );
-				canvasCube.transform.addRotation( 0.005, 0.01, 0.0025 );
-				bufferCube.transform.addRotation( 0.0025, 0.01, 0.005 );
+				cube.transform.addRotation( 0.0025, 0.01, 0.005 );
 	
 
 				// draw cubes
 				
-				videoCube.draw();
-				textureCube.draw();
-				canvasCube.draw();
-				bufferCube.draw();
+				cube.draw();
 			}
 		</script>
 	</body>

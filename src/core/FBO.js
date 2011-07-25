@@ -3,7 +3,7 @@ GLOW.FBO = (function() {
     "use strict"; "use restrict";
 
 	// constructor
-	function fbo( parameters ) {
+	function GLOWFBO( parameters ) {
 
     	parameters = parameters !== undefined ? parameters : {};
 
@@ -64,43 +64,43 @@ GLOW.FBO = (function() {
 	}
 
     // methods
-    fbo.prototype.init = function( textureUnit ) {
+    GLOWFBO.prototype.init = function( textureUnit ) {
     	this.textureUnit = textureUnit;
-    }
+    };
 
-    fbo.prototype.bind = function() {
+    GLOWFBO.prototype.bind = function() {
     	// TODO: add cache
     	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
     	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
     	return this;
-    }
+    };
 
-    fbo.prototype.unbind = function() {
+    GLOWFBO.prototype.unbind = function() {
     	// TODO: add cache
     	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
     	GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
     	return this;
-    }
+    };
 
-    fbo.prototype.setupViewport = function( setup ) {
+    GLOWFBO.prototype.setupViewport = function( setup ) {
     	this.viewport.x = setup.x !== undefined ? setup.x : 0;
     	this.viewport.y = setup.y !== undefined ? setup.y : 0;
     	this.viewport.width = setup.width !== undefined ? setup.width : window.innerWidth;
     	this.viewport.height = setup.height !== undefined ? setup.height : window.innerHeight;
     	return this;
-    }
+    };
 
-    fbo.prototype.resize = function() {
+    GLOWFBO.prototype.resize = function() {
     	// TODO
     	return this;
-    }
+    };
 
-    fbo.prototype.generateMipMaps = function() {
+    GLOWFBO.prototype.generateMipMaps = function() {
     	GL.bindTexture( GL.TEXTURE_2D, this.texture );
     	GL.generateMipmap( GL.TEXTURE_2D );
     	GL.bindTexture( GL.TEXTURE_2D, null );
     	return this;
-    }
+    };
     
-    return fbo;
+    return GLOWFBO;
 })();

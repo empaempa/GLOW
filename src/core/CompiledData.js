@@ -11,7 +11,7 @@ GLOW.CompiledData = (function() {
 
     // constructor
     
-    function compiledData( program, uniforms, attributes, interleavedAttributes, elements, extras ) {
+    function GLOWCompiledData( program, uniforms, attributes, interleavedAttributes, elements, extras ) {
 	    this.program = program;
 	    this.uniforms = uniforms !== undefined ? uniforms : {};
 	    this.attributes = attributes !== undefined ? attributes : {};
@@ -25,8 +25,8 @@ GLOW.CompiledData = (function() {
 	    this.stencil = extras.stencil;
     }
 
-
-    compiledData.prototype.clone = function( except ) {
+    // methods
+    GLOWCompiledData.prototype.clone = function( except ) {
     	var clone = new GLOW.CompiledData();
     	except = except !== undefined ? except : {};
 
@@ -99,6 +99,6 @@ GLOW.CompiledData = (function() {
     	return clone;
     };
     
-    return compiledData;
+    return GLOWCompiledData;
 })();
 

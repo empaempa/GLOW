@@ -16,14 +16,14 @@ GLOW.Shader = (function() {
     // private data, functions and initializations here
 
     // constructor
-    function shader( parameters ) {
+    function GLOWShader( parameters ) {
         this.id = GLOW.uniqueId();
         this.compiledData = parameters.use ? parameters.use.clone( parameters.except ) : GLOW.Compiler.compile( parameters );
         this.attachData();
     }
 
     // methods
-    shader.prototype.attachData = function() {
+    GLOWShader.prototype.attachData = function() {
         var u, a, i;
 
         this.uniforms = this.compiledData.uniforms;
@@ -61,7 +61,7 @@ GLOW.Shader = (function() {
         }
     };
 
-    shader.prototype.draw = function() {
+    GLOWShader.prototype.draw = function() {
         var compiledData = this.compiledData;
         var cache = GLOW.currentContext.cache;
 
@@ -110,15 +110,15 @@ GLOW.Shader = (function() {
         if( compiledData.postDrawCallback ) compiledData.postDrawCallback( this );
     };
 
-    shader.prototype.clone = function(except) {
+    GLOWShader.prototype.clone = function(except) {
         return new GLOW.Shader( { use: this.compiledData, except: except } );
     };
 
-    shader.prototype.dispose = function() {
+    GLOWShader.prototype.dispose = function() {
         // TODO
     };
 
-    return shader;
+    return GLOWShader;
 })();
 
 

@@ -20,7 +20,7 @@ GLOW.Attribute = (function() {
     }
 
     // constructor
-    function attribute( parameters, data, usage, interleaved ) {
+    function GLOWAttribute( parameters, data, usage, interleaved ) {
         if( !once ) {
             once = true;
             lazyInit();
@@ -48,13 +48,13 @@ GLOW.Attribute = (function() {
     }
 
     // methods
-    attribute.prototype.setupInterleave = function( offset, stride ) {
+    GLOWAttribute.prototype.setupInterleave = function( offset, stride ) {
         this.interleaved = true;
         this.offset = offset;
         this.stride = stride;
     };
 
-    attribute.prototype.bufferData = function( data, usage ) {
+    GLOWAttribute.prototype.bufferData = function( data, usage ) {
         if( data !== undefined && this.data !== data ) this.data = data;
         if( usage !== undefined && this.usage !== usage ) this.usage = usage;
         if( this.buffer === undefined ) this.buffer = GL.createBuffer();
@@ -63,14 +63,14 @@ GLOW.Attribute = (function() {
         GL.bufferData( GL.ARRAY_BUFFER, this.data, this.usage );
     };
 
-    attribute.prototype.bind = function() {
+    GLOWAttribute.prototype.bind = function() {
         if( this.interleaved === false ) {
             GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
         }
         GL.vertexAttribPointer( this.location, this.size, GL.FLOAT, false, this.stride, this.offset );
     };
     
-    attribute.prototype.clone = function( except ) {
+    GLOWAttribute.prototype.clone = function( except ) {
         if( this.interleaved ) {
             console.error( "GLOW.Attribute.clone: Cannot clone interleaved attribute. Please check your interleave setup." );
             return;
@@ -79,9 +79,9 @@ GLOW.Attribute = (function() {
         var clone = new GLOW.Attribute( this, this.data, this.usage, this.interleaved )
     }
     
-    attribute.prototype.dispose = function() {
+    GLOWAttribute.prototype.dispose = function() {
         // TODO
     }
 
-    return attribute;
+    return GLOWAttribute;
 })();

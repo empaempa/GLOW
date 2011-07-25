@@ -7,7 +7,7 @@ GLOW.Context = (function() {
 	"use strict"; "use restrict";
 
     // constructor
-    function Context( parameters ) {
+    function GLOWContext( parameters ) {
     	if( parameters === undefined ) parameters = {};
 
     	this.id                     = parameters.id                    !== undefined ? parameters.id                    : GLOW.uniqueId();
@@ -52,7 +52,7 @@ GLOW.Context = (function() {
 	
 	
 	// methods
-    Context.prototype.setupClear = function( setup ) {
+    GLOWContext.prototype.setupClear = function( setup ) {
     	var r = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : 0; 
     	var g = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : 0; 
     	var b = setup.blue  !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : 0; 
@@ -65,13 +65,13 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.clear = function( bits ) {
+    GLOWContext.prototype.clear = function( bits ) {
     	if( bits === undefined ) { bits = this.clearBits };
     	GL.clear( bits );
     	return this;
     };
 
-    Context.prototype.enableBlend = function( flag, setup ) {
+    GLOWContext.prototype.enableBlend = function( flag, setup ) {
     	if( flag ) {
     		GL.enable( GL.BLEND );
     		if( setup ) this.setupBlend( setup );
@@ -79,7 +79,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.setupBlend = function( setup ) {
+    GLOWContext.prototype.setupBlend = function( setup ) {
     	if( setup.equationRGB ) {
 			if( setup.equationAlpha ) GL.blendEquationSeparate( setup.equationRGB, setup.equationAlpha );
 			if( setup.srcRGB        ) GL.blendFuncSeparate( setup.srcRGB, setup.dstRGB, setup.srcAlpha, setup.dstAlpha );
@@ -90,7 +90,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.enableDepthTest = function( flag, setup ) {
+    GLOWContext.prototype.enableDepthTest = function( flag, setup ) {
     	if( flag ) {
     		GL.enable( GL.DEPTH_TEST );
     		if( setup ) this.setupDepthTest( setup );
@@ -98,7 +98,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.setupDepthTest = function( setup ) {
+    GLOWContext.prototype.setupDepthTest = function( setup ) {
 		if( setup.func  !== undefined ) GL.depthFunc( setup.func );
 		if( setup.write !== undefined ) GL.depthMask( setup.write );
 		if( setup.zNear !== undefined && setup.zFar !== undefined && setup.zNear <= setup.zFar ) {
@@ -107,7 +107,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.enablePolygonOffset = function( flag, setup ) {
+    GLOWContext.prototype.enablePolygonOffset = function( flag, setup ) {
         if( flag ) {
             GL.enable( GL.POLYGON_OFFSET_FILL );
             if( setup ) this.setupPolygonOffset( setup );
@@ -115,11 +115,11 @@ GLOW.Context = (function() {
         return this;
     }
     
-    Context.prototype.setupPolygonOffset = function( setup ) {
+    GLOWContext.prototype.setupPolygonOffset = function( setup ) {
         if( setup.factor && setup.units ) GL.polygonOffset( setup.factor, setup.units );
     }
 
-    Context.prototype.enableStencilTest = function( flag, setup ) {
+    GLOWContext.prototype.enableStencilTest = function( flag, setup ) {
     	if( flag ) {
     		GL.enable( GL.STENCIL_TEST );
     		if( setup ) this.setupStencilTest( setup );
@@ -127,7 +127,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.setupStencilTest = function( setup ) {
+    GLOWContext.prototype.setupStencilTest = function( setup ) {
         if( setup.func && setup.funcFace ) {
             GL.stencilFuncSeparate( setup.funcFace, setup.func, setup.funcRef, setup.funcMask );
         } else if( setup.func ) {
@@ -148,7 +148,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.enableCulling = function( flag, setup ) {
+    GLOWContext.prototype.enableCulling = function( flag, setup ) {
     	if( flag ) {
     		GL.enable( GL.CULL_FACE );
     		if( setup ) this.setupCulling( setup );
@@ -156,7 +156,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.setupCulling = function( setup ) {
+    GLOWContext.prototype.setupCulling = function( setup ) {
     	try {
     		if( setup.frontFace ) GL.frontFace( setup.frontFace );
     		if( setup.cullFace  ) GL.cullFace ( setup.cullFace  );
@@ -166,7 +166,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.enableScissor = function( flag, setup ) {
+    GLOWContext.prototype.enableScissor = function( flag, setup ) {
     	if( flag ) {
     		GL.enable( GL.SCISSOR_TEST );
     		if( setup ) this.setupScissor( setup );
@@ -176,7 +176,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.setupScissor = function( setup ) {
+    GLOWContext.prototype.setupScissor = function( setup ) {
         try {
             GL.scissor( setup.x, setup.y, setup.width, setup.height );
         } catch( error ) {
@@ -185,7 +185,7 @@ GLOW.Context = (function() {
     	return this;
     };
 
-    Context.prototype.setupViewport = function( setup ) {
+    GLOWContext.prototype.setupViewport = function( setup ) {
         setup = setup !== undefined ? setup : {};
         var x = setup.x !== undefined ? setup.x : 0;
         var y = setup.y !== undefined ? setup.y : 0;
@@ -195,7 +195,7 @@ GLOW.Context = (function() {
     	return this;
     };
 	
-	return Context;
+	return GLOWContext;
 })();
 
 

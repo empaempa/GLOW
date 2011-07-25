@@ -146,18 +146,14 @@ GLOW.Compiler = (function() {
 	//--- extract uniforms ---
 
 	compiler.extractUniforms = function( program ) {
-
 		var uniforms = {};
 		var uniform;
 		var locationNumber = 0;
 		var result;
 
 		while( true ) {
-
 			result = GL.getActiveUniform( program, locationNumber );
-
 			if( result !== null && result !== -1 && result !== undefined ) {
-
                 uniform = {
                     name: result.name.split( "[" )[ 0 ],
                     size: result.size,
@@ -165,11 +161,8 @@ GLOW.Compiler = (function() {
                     location: GL.getUniformLocation( program, result.name.split( "[" )[ 0 ] ),
                     locationNumber: locationNumber
                 };
-                
 				uniforms[ uniform.name ] = uniform;
-			
 			} else break;
-
 			locationNumber++;
 		}
 
@@ -180,17 +173,13 @@ GLOW.Compiler = (function() {
 	//--- extract attributes ---
 	
 	compiler.extractAttributes = function( program ) {
-
 		var attribute, locationNumber = 0;
 		var attributes = {};
         var result;
 
 		while( true ) {
-
 			result = GL.getActiveAttrib( program, locationNumber );
-
 			if( result !== null && result !== -1 && result !== undefined ) {
-
                 attribute = {
                     name: result.name,
                     size: result.size,
@@ -198,11 +187,8 @@ GLOW.Compiler = (function() {
                     location: GL.getAttribLocation( program, result.name ),
                     locationNumber: locationNumber
                 }
-                
 				attributes[ attribute.name ] = attribute;
-
 			} else break;
-
 			locationNumber++;
 		}
 
@@ -214,25 +200,21 @@ GLOW.Compiler = (function() {
 	//--- create uniforms ---
 
 	compiler.createUniforms = function( uniformInformation, data ) {
-
 		var u;
 		var uniforms = {};
 		var uniform, name;
 		var textureUnit = 0;
 
 		for( u in uniformInformation ) {
-			
 			uniform = uniformInformation[ u ];
 			name    = uniform.name;
-			
 			if( data[ name ] === undefined ) {
 				console.warn( "GLOW.Compiler.createUniforms: missing declaration for uniform " + name );
 			} else if( data[ name ] instanceof GLOW.Uniform ) {
 				uniforms[ name ] = data[ name ];
 			} else {
 				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
-
-				if( uniforms[ name ].type === GL.SAMPLER_2D ) {
+				if( uniforms[ name ].type === GL.SAMPLER_2D || uniforms[ name ].type === GL.SAMPLER_CUBE ) {
 					uniforms[ name ].data.init( textureUnit++ );
 				}
 			}

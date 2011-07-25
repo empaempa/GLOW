@@ -2,7 +2,7 @@ GLOW.InterleavedAttributes = (function() {
     "use strict"; "use restrict";
 
     // constructor
-    function interleavedAttributes( attributes ) {
+    function GLOWInterleavedAttributes( attributes ) {
         this.id = GLOW.uniqueId();
         this.attributes = attributes;
         
@@ -56,7 +56,7 @@ GLOW.InterleavedAttributes = (function() {
     }
     
     // methods
-    interleavedAttributes.prototype.bufferData = function( data, usage ) {
+    GLOWInterleavedAttributes.prototype.bufferData = function( data, usage ) {
         if( data !== undefined && this.data !== data ) this.data = data;
         if( this.buffer === undefined ) this.buffer = GL.createBuffer();
 
@@ -64,7 +64,7 @@ GLOW.InterleavedAttributes = (function() {
         GL.bufferData( GL.ARRAY_BUFFER, this.data, usage ? usage : GL.STATIC_DRAW );
     };
 
-    interleavedAttributes.prototype.bind = function() {
+    GLOWInterleavedAttributes.prototype.bind = function() {
         GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
         
         var a, al = this.attributes.length;
@@ -74,5 +74,5 @@ GLOW.InterleavedAttributes = (function() {
     };
     
     
-    return interleavedAttributes;
+    return GLOWInterleavedAttributes;
 })();

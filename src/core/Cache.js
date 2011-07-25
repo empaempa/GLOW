@@ -10,7 +10,7 @@ GLOW.Cache = (function() {
     // private data, functions and initializations here
 
     // constructor
-    function cache() {
+    function GLOWCache() {
         this.highestAttributeNumber = -1;
         this.uniformByLocation = [];
         this.attributeByLocation = [];
@@ -21,7 +21,7 @@ GLOW.Cache = (function() {
     }
 
     // methods
-    cache.prototype.programCached = function( program ) {
+    GLOWCache.prototype.programCached = function( program ) {
         if( this.active ) {
             if( program.id === this.programId ) return true;
             this.programId = program.id;
@@ -29,13 +29,13 @@ GLOW.Cache = (function() {
         return false;
     };
 
-    cache.prototype.setProgramHighestAttributeNumber = function( program ) {
+    GLOWCache.prototype.setProgramHighestAttributeNumber = function( program ) {
         var saveHighestAttributeNumber = this.highestAttributeNumber;
         this.highestAttributeNumber = program.highestAttributeNumber;
         return program.highestAttributeNumber - saveHighestAttributeNumber;
     };
 
-    cache.prototype.uniformCached = function( uniform ) {
+    GLOWCache.prototype.uniformCached = function( uniform ) {
         if( this.active ) {
             if( this.uniformByLocation[ uniform.locationNumber ] === uniform.id ) return true;
             this.uniformByLocation[ uniform.locationNumber ] = uniform.id
@@ -43,7 +43,7 @@ GLOW.Cache = (function() {
         return false;
     };
 
-    cache.prototype.attributeCached = function( attribute ) {
+    GLOWCache.prototype.attributeCached = function( attribute ) {
         if( this.active ) {
             if( this.attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
             this.attributeByLocation[ attribute.locationNumber ] = attribute.id
@@ -51,7 +51,7 @@ GLOW.Cache = (function() {
         return false;
     };
 
-    cache.prototype.textureCached = function( texture ) {
+    GLOWCache.prototype.textureCached = function( texture ) {
         if( this.active ) {
             if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
             this.textureByLocation[ texture.textureUnit ] = texture.id
@@ -59,7 +59,7 @@ GLOW.Cache = (function() {
         return false;
     };
 
-    cache.prototype.elementsCached = function( elements ) {
+    GLOWCache.prototype.elementsCached = function( elements ) {
         if( this.active ) {
             if( elements.id === this.elementId ) return true;
             this.elementId = elements.id;
@@ -67,7 +67,7 @@ GLOW.Cache = (function() {
         return false;
     };
 
-    cache.prototype.clear = function() {
+    GLOWCache.prototype.clear = function() {
         this.highestAttributeNumber = -1;
         this.uniformByLocation.length = 0;
         this.attributeByLocation.length = 0;
@@ -76,5 +76,5 @@ GLOW.Cache = (function() {
         this.programId = -1;
     };
     
-    return cache;
+    return GLOWCache;
 })();

@@ -10,7 +10,7 @@ GLOW.Elements = (function() {
     // private data, functions and initializations here
 
     // constructor
-    function elements( data, type, usage ) {
+    function GLOWElements( data, type, usage ) {
         this.id = GLOW.uniqueId();
         this.elements = GL.createBuffer();
         this.length = data.length;
@@ -21,17 +21,17 @@ GLOW.Elements = (function() {
     }
 
     // methods
-    elements.prototype.draw = function() {
+    GLOWElements.prototype.draw = function() {
         if( !GLOW.currentContext.cache.elementsCached( this )) {
              GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements );
         }
         GL.drawElements( this.type, this.length, GL.UNSIGNED_SHORT, 0 );
     };
     
-    elements.prototype.dispose = function() {
+    GLOWElements.prototype.dispose = function() {
         // TODO
-    }
+    };
     
 
-    return elements;
+    return GLOWElements;
 })();
