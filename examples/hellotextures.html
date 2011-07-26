@@ -78,7 +78,7 @@
 					transform: new GLOW.Matrix4(),
 					cameraInverse: GLOW.defaultCamera.inverse,
 					cameraProjection: GLOW.defaultCamera.projection,
-					vertices: GLOW.Geometry.Cube.vertices( 500 ),
+					vertices: GLOW.Geometry.Cube.vertices( 350 ),
 					uvs: GLOW.Geometry.Cube.uvs(),
 				},
 				
@@ -90,43 +90,43 @@
 			// Create a GLOW.Shader with video texture, using the shader info object created above 
 
 			var videoCube = new GLOW.Shader( cubeShaderInfo );
-			videoCube.transform.setPosition( 0, 325, 0 );
+			videoCube.transform.setPosition( -500, -325, 0 );
 			videoCube.texture.data.play();
 			
 			
 			// Clone the videoCube except the transform and the texture, this time we load an image
 			
 			var textureCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { data: "textures/crate.JPG" })});
-			textureCube.transform.setPosition( -750, 0, 0 );
+			textureCube.transform.setPosition( -500, 325, 0 );
 			
 			
 			// And then the same, but with canvas
 			
 			var canvas = document.createElement( "canvas" );
-			canvas.width = 64;
-			canvas.height = 64;
+			canvas.width = 512;
+			canvas.height = 512;
 			var canvasContext = canvas.getContext( "2d" );
 			canvasContext.fillStyle = "rgb(200,0,0)";
-			canvasContext.fillRect( 0, 0, 32, 32 );
+			canvasContext.fillRect( 0, 0, 256, 256 );
 			canvasContext.fillStyle = "rgba(0, 0, 200, 0.5)";
-			canvasContext.fillRect( 32, 32, 64, 64 );
+			canvasContext.fillRect( 256, 256, 256, 256 );
 			
 			var canvasCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { data: canvas })});
-			canvasCube.transform.setPosition( 750, 0, 0 );
+			canvasCube.transform.setPosition( 500, 325, 0 );
 			
 			
-			// And lastly with a buffer
+			// And then with a buffer
 			
-			var buffer = new Uint8Array( 64*64*4 );
-			for( var i = 0, a = 0; i < 64*64; i++ ) {
-				buffer[ a++ ] = i * 255 / 64*64;
+			var buffer = new Uint8Array( 512*512*4 );
+			for( var i = 0, a = 0; i < 512*512; i++ ) {
+				buffer[ a++ ] = i * 255 / 512*512;
 				buffer[ a++ ] = 0;
 				buffer[ a++ ] = i % 255;
 				buffer[ a++ ] = 255;
 			}
 			
-			var bufferCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { data: buffer, width: 64, height: 64 })});
-			bufferCube.transform.setPosition( 0, -325, 0 );
+			var bufferCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { data: buffer, width: 512, height: 512 })});
+			bufferCube.transform.setPosition( 500, -325, 0 );
 			
 			
 			// Update the default camera position

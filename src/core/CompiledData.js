@@ -34,7 +34,8 @@ GLOW.CompiledData = (function() {
     	for( u in this.uniforms ) {
     		if( except[ u ] ) {
     			clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
-				if( clone.uniforms[ u ].type === GL.SAMPLER_2D ) {
+				if( clone.uniforms[ u ].type === GL.SAMPLER_2D || 
+				    clone.uniforms[ u ].type === GL.SAMPLER_CUBE ) {
 					clone.uniforms[ u ].data.init( this.uniforms[ u ].data.textureUnit );
 				}
     		} else {
