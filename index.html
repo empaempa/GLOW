@@ -136,7 +136,7 @@
 				// please notice the texture is a video using minFilter NEAREST as
 				// we don't like to update mipmaps every frame for the video
 				data: {
-					texture: new GLOW.Texture( { cube: cube, width: 512, height: 512, minFilter:GL.LINEAR } ),
+					texture: new GLOW.Texture( { data: cube, width: 512, height: 512, minFilter:GL.LINEAR } ),
 					transform: new GLOW.Matrix4(),
 					cameraInverse: GLOW.defaultCamera.inverse,
 					cameraProjection: GLOW.defaultCamera.projection,
@@ -150,7 +150,7 @@
 			
 			
 			var cube = new GLOW.Shader( cubeShaderInfo );
-			cube.texture.cube.negX.video.play();
+			cube.texture.data.negX.play();
 			
 			// Update the default camera position
 			

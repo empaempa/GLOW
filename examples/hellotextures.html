@@ -74,7 +74,7 @@
 				// please notice the texture is a video using minFilter NEAREST as
 				// we don't like to update mipmaps every frame for the video
 				data: {
-					texture: new GLOW.Texture( { url:"videos/test.webm", minFilter:GL.NEAREST } ),
+					texture: new GLOW.Texture( { data:"videos/test.webm", minFilter:GL.NEAREST } ),
 					transform: new GLOW.Matrix4(),
 					cameraInverse: GLOW.defaultCamera.inverse,
 					cameraProjection: GLOW.defaultCamera.projection,
@@ -91,12 +91,12 @@
 
 			var videoCube = new GLOW.Shader( cubeShaderInfo );
 			videoCube.transform.setPosition( 0, 325, 0 );
-			videoCube.texture.video.play();
+			videoCube.texture.data.play();
 			
 			
 			// Clone the videoCube except the transform and the texture, this time we load an image
 			
-			var textureCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { url: "textures/crate.JPG" })});
+			var textureCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { data: "textures/crate.JPG" })});
 			textureCube.transform.setPosition( -750, 0, 0 );
 			
 			
@@ -111,7 +111,7 @@
 			canvasContext.fillStyle = "rgba(0, 0, 200, 0.5)";
 			canvasContext.fillRect( 32, 32, 64, 64 );
 			
-			var canvasCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { canvas: canvas })});
+			var canvasCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { data: canvas })});
 			canvasCube.transform.setPosition( 750, 0, 0 );
 			
 			
@@ -125,7 +125,7 @@
 				buffer[ a++ ] = 255;
 			}
 			
-			var bufferCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { buffer: buffer, width: 64, height: 64 })});
+			var bufferCube = videoCube.clone( { transform: new GLOW.Matrix4(), texture: new GLOW.Texture( { data: buffer, width: 64, height: 64 })});
 			bufferCube.transform.setPosition( 0, -325, 0 );
 			
 			
