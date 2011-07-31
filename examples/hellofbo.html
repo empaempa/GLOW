@@ -115,7 +115,7 @@
 			// and assign it to the post effect shader object that
 			// we create below
 			
-			var FBO = new GLOW.FBO();
+			var FBO = new GLOW.FBO( { depth:true, stencil:false } );
 
 			
 			// setup the post effect shader object
@@ -211,6 +211,10 @@
 				// draw cube
 				
 				cube.draw();
+				context.cache.clear();
+				cube.transform.addPosition( 0, 250, -50 );
+				cube.draw();
+				cube.transform.addPosition( 0, -250, 50 );
 
 				// unbind the FBO se we render to the screen
 				
