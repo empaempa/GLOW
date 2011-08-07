@@ -49,6 +49,8 @@
 		<script type="text/javascript" src="src/extras/geometry/Geometry.js"></script>
 		<script type="text/javascript" src="src/extras/geometry/Cube.js"></script>
 		<script type="text/javascript" src="src/extras/geometry/Plane.js"></script>
+
+		<script type="text/javascript" src="src/extras/io/Load.js"></script>
 		<script type="text/javascript">
 		
 			// Create a GLOW.Context
@@ -59,126 +61,20 @@
 			var container = document.getElementById( "container" );
 			container.appendChild( context.domElement );
 
-
-			// Create shader info object
+			new GLOW.Load( { img: "examples/textures/clouds.jpg", 
+			                 video: "examples/videos/test.webm",
+							 shader: "examples/shaders/glass.glsl",
+							 onLoadItem: onItem,
+							 onLoadComplete: init } );
 			
-			var canvas = document.createElement( "canvas" );
-			canvas.width = 512;
-			canvas.height = 512;
-			var canvasContext = canvas.getContext( "2d" );
-			canvasContext.fillStyle = "rgb(200,0,0)";
-			canvasContext.fillRect( 0, 0, 128, 128 );
-			canvasContext.fillStyle = "rgba(0, 0, 200, 0.5)";
-			canvasContext.fillRect( 128, 128, 128, 128 );
-			
-			
-			// And lastly with a buffer
-			
-			var buffer = new Uint8Array( 512*512*4 );
-			for( var i = 0, a = 0; i < 512*512; i++ ) {
-				buffer[ a++ ] = i * 255 / 512*512;
-				buffer[ a++ ] = 0;
-				buffer[ a++ ] = i % 255;
-				buffer[ a++ ] = 255;
+			function onItem( percent ) {
+				console.log( percent );
 			}
 			
-			var video = document.createElement( "video" );
-			video.src = "examples/videos/testSquare.webm";
-			video.play();
-			var image = new Image();
-			image.src = "examples/textures/clouds.jpg";
-			var cube = {
-				posX: buffer,
-				negX: "examples/videos/testSquare.webm",
-				posY: "examples/textures/cubemap/up.jpg",
-				negY: "examples/textures/cubemap/down.jpg",
-				posZ: "examples/textures/cubemap/front.jpg",
-				negZ: canvas
-			} 
-			
-			var cubeShaderInfo = {
-				
-				vertexShader: [
-					"uniform	mat4 	transform;",
-					"uniform 	mat4 	cameraInverse;",
-					"uniform 	mat4 	cameraProjection;",
-
-					"attribute 	vec3 	vertices;",
-					"attribute  vec2    uvs;",
-					
-					"varying    vec2    uv;",
-					"varying    vec3    normal;",
-
-					"void main(void)",
-					"{",
-						"uv = uvs;",
-						"normal = normalize( vertices );",
-						"gl_Position = cameraProjection * cameraInverse * transform * vec4( vertices, 1.0 );",
-					"}"
-				].join( "\n" ),
-
-				fragmentShader: [ 	
-					"#ifdef GL_ES",
-						"precision highp float;",
-					"#endif",		
-
-					"uniform 	samplerCube 	texture;",
-					"varying 	vec2			uv;",
-					"varying	vec3			normal;",
-
-					"void main( void )",
-					"{",
-						"gl_FragColor = textureCube( texture, normalize( normal ));",
-					"}"
-				].join( "\n" ),
-
-
-				// please notice the texture is a video using minFilter NEAREST as
-				// we don't like to update mipmaps every frame for the video
-				data: {
-					texture: new GLOW.Texture( { data: cube, width: 512, height: 512, minFilter:GL.LINEAR } ),
-					transform: new GLOW.Matrix4(),
-					cameraInverse: GLOW.defaultCamera.inverse,
-					cameraProjection: GLOW.defaultCamera.projection,
-					vertices: GLOW.Geometry.Cube.vertices( 500 ),
-					uvs: GLOW.Geometry.Cube.uvs()
-				},
-				
-				// create element data
-				elements: GLOW.Geometry.Cube.elements(),
+			function init( data ) {
+				var a = data;
 			}
-			
-			
-			var cube = new GLOW.Shader( cubeShaderInfo );
-			cube.texture.data.negX.play();
-			
-			// Update the default camera position
-			
-			GLOW.defaultCamera.localMatrix.setPosition( 0, 0, 2000 );
-			GLOW.defaultCamera.update();
-			
-			
-			// Render (using setInterval as WebGL Inspector have problem with requestAnimationFrame)
- 
-			setInterval( render, 1000 / 60 );
 
-			function render() {
-
-				// clear the context's cache and graphics
-				
-				context.cache.clear();
-				context.clear();
-
-
-				// update rotation on cubes
-				
-				cube.transform.addRotation( 0.0025, 0.01, 0.005 );
-	
-
-				// draw cubes
-				
-				cube.draw();
-			}
 		</script>
 	</body>
 </html>
