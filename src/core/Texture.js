@@ -191,12 +191,12 @@ GLOW.Texture = (function() {
     }
     
     GLOWTexture.prototype.onLoadVideo = function() {
-		this.removeEventListener( "loadeddata", this.onLoadVideo, false );
+		this.removeEventListener( "loadeddata", this.scope.onLoadVideo, false );
         this.scope.createTexture();
     }
 
     GLOWTexture.prototype.onLoadCubeVideo = function() {
-		this.removeEventListener( "loadeddata", this.onLoadVideo, false );
+		this.removeEventListener( "loadeddata", this.scope.onLoadVideo, false );
         this.scope.itemsToLoad--;
         if( this.scope.itemsToLoad === 0 ) {
             this.scope.createTexture();

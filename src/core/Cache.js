@@ -15,12 +15,35 @@ GLOW.Cache = (function() {
         this.uniformByLocation = [];
         this.attributeByLocation = [];
         this.textureByLocation = [];
+        this.compiledCode = [];
         this.elementId = -1;
         this.programId = -1;
         this.active = true;
     }
 
     // methods
+    GLOWCache.prototype.codeCompiled = function( vertexShader, fragmentShader ) {
+        var code, c, cl = this.compiledCode.length;
+        
+		for( c = 0; c < cl; c++ ) {
+			code = this.compiledCode[ c ];
+			if( vertexShader === code.vertexShader && fragmentShader === code.fragmentShader ) { break; }
+		}
+		
+		if( c === cl ) {
+			this.compiledCode.push( { vertexShader: vertexShader, 
+				                      fragmentShader: fragmentShader } );
+			return undefined;
+		} else {
+		    return this.compiledCode[ c ].program;
+		}
+    };
+    
+    GLOWCache.prototype.addCompiledProgram = function( program ) {
+        this.compiledCode[ this.compiledCode.length - 1 ].program = program;
+    }
+    
+    
     GLOWCache.prototype.programCached = function( program ) {
         if( this.active ) {
             if( program.id === this.programId ) return true;

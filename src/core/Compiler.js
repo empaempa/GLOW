@@ -10,7 +10,6 @@ GLOW.Compiler = (function() {
 	"use restrict";
 	
 	var compiler = {};
-	var compiledCode = [];
 	
 	//--- compile ------------------------------------------
 	// parameter object containing:
@@ -22,23 +21,13 @@ GLOW.Compiler = (function() {
 	compiler.compile = function( parameters ) {
 		var c, cl = compiledCode.length;
 		var code;
-		var program;
+		var program = GLOW.currentContext.cache.codeCompiled( parameters.vertexShader, parameters.fragmentShader );
 		
-		for( c = 0; c < cl; c++ ) {
-			code = compiledCode[ c ];
-			if( parameters.vertexShader   === code.vertexShader &&
-				parameters.fragmentShader === code.fragmentShader ) { break; }
-		}
-
-		if( c === cl ) {
+		if( program === undefined ) {
 			program = compiler.linkProgram( compiler.compileVertexShader  ( parameters.vertexShader   ),
 			                                compiler.compileFragmentShader( parameters.fragmentShader ));
-
-			compiledCode.push( { vertexShader: parameters.vertexShader, 
-				                 fragmentShader: parameters.fragmentShader,
-				                 program: program } );
-		} else {
-			program = code.program;
+			
+			GLOW.currentContext.cache.addCompiledProgram( program );
 		}
 		
 		var uniforms              = compiler.createUniforms      ( compiler.extractUniforms  ( program ), parameters.data );
