@@ -1,111 +1,3010 @@
 // GLOW.js r1.1 - http://github.com/empaempa/GLOW
-var GLOW=function(){var b={},a={},c=-1;b.currentContext={};b.registerContext=function(c){a[c.id]=c;b.enableContext(c)};b.getContextById=function(c){if(a[c])return a[c];console.error("Couldn't find context id "+c+", returning current with id "+b.currentContext.id);return b.currentContext};b.enableContext=function(a){b.currentContext=typeof a==="string"?getContextById(a):a;GL=b.GL=b.currentContext.GL};b.uniqueId=function(){return++c};return b}(),GL={};
-GLOW.Context=function(){function b(a){a===void 0&&(a={});this.id=a.id!==void 0?a.id:GLOW.uniqueId();this.alpha=a.alpha!==void 0?a.alpha:!0;this.depth=a.depth!==void 0?a.depth:!0;this.antialias=a.antialias!==void 0?a.antialias:!0;this.stencil=a.stencil!==void 0?a.stencil:!1;this.premultipliedAlpha=a.premultipliedAlpha!==void 0?a.premultipliedAlpha:!0;this.preserveDrawingBuffer=a.preserveDrawingBuffer!==void 0?a.preserveDrawingBuffer:!1;this.width=a.width!==void 0?a.width:window.innerWidth;this.height=
-a.height!==void 0?a.height:window.innerHeight;this.cache=new GLOW.Cache;if(a.context)this.GL=a.context,GLOW.registerContext(this);else{try{this.domElement=document.createElement("canvas"),this.GL=this.domElement.getContext("experimental-webgl",{alpha:this.alpha,depth:this.depth,antialias:this.antialias,stencil:this.stencil,premultipliedAlpha:this.premultipliedAlpha,preserveDrawingBuffer:this.preserveDrawingBuffer}),this.domElement.width=this.width,this.domElement.height=this.height}catch(c){console.error("GLOW.Context.construct: "+
-c)}GLOW.registerContext(this);this.enableCulling(!0,{frontFace:GL.CCW,cullFace:GL.BACK});this.enableDepthTest(!0,{func:GL.LEQUAL,write:!0,zNear:0,zFar:1});this.enableBlend(!1);this.setupClear({clearBits:GL.COLOR_BUFFER_BIT|GL.DEPTH_BUFFER_BIT});this.setupViewport({x:0,y:0,width:this.width,height:this.height});this.clear()}}b.prototype.setupClear=function(a){var c=a.depth!==void 0?Math.min(1,Math.max(0,a.depth)):1;GL.clearColor(a.red!==void 0?Math.min(1,Math.max(0,a.red)):0,a.green!==void 0?Math.min(1,
-Math.max(0,a.green)):0,a.blue!==void 0?Math.min(1,Math.max(0,a.blue)):0,a.alpha!==void 0?Math.min(1,Math.max(0,a.alpha)):1);GL.clearDepth(c);this.clearBits=a.clearBits!==void 0?a.clearBits:this.clearBits;return this};b.prototype.clear=function(a){if(a===void 0)a=this.clearBits;GL.clear(a);return this};b.prototype.enableBlend=function(a,c){a?(GL.enable(GL.BLEND),c&&this.setupBlend(c)):GL.disable(GL.BLEND);return this};b.prototype.setupBlend=function(a){a.equationRGB?(a.equationAlpha&&GL.blendEquationSeparate(a.equationRGB,
-a.equationAlpha),a.srcRGB&&GL.blendFuncSeparate(a.srcRGB,a.dstRGB,a.srcAlpha,a.dstAlpha)):(a.equation&&GL.blendEquation(a.equation),a.src&&GL.blendFunc(a.src,a.dst));return this};b.prototype.enableDepthTest=function(a,c){a?(GL.enable(GL.DEPTH_TEST),c&&this.setupDepthTest(c)):GL.disable(GL.DEPTH_TEST);return this};b.prototype.setupDepthTest=function(a){a.func!==void 0&&GL.depthFunc(a.func);a.write!==void 0&&GL.depthMask(a.write);a.zNear!==void 0&&a.zFar!==void 0&&a.zNear<=a.zFar&&GL.depthRange(Math.max(0,
-Math.min(1,a.zNear)),Math.max(0,Math.min(1,a.zFar)));return this};b.prototype.enablePolygonOffset=function(a,c){a?(GL.enable(GL.POLYGON_OFFSET_FILL),c&&this.setupPolygonOffset(c)):GL.disable(GL.POLYGON_OFFSET_FILL);return this};b.prototype.setupPolygonOffset=function(a){a.factor&&a.units&&GL.polygonOffset(a.factor,a.units)};b.prototype.enableStencilTest=function(a,c){a?(GL.enable(GL.STENCIL_TEST),c&&this.setupStencilTest(c)):GL.disable(GL.STENCIL_TEST);return this};b.prototype.setupStencilTest=function(a){a.func&&
-a.funcFace?GL.stencilFuncSeparate(a.funcFace,a.func,a.funcRef,a.funcMask):a.func&&GL.stencilFunc(a.func,a.funcRef,a.funcMask);a.mask&&a.maskFace?GL.stencilMaskSeparate(a.maskFace,a.mask):a.mask&&GL.stencilMask(a.mask);a.opFail&&a.opFace?GL.stencilOpSeparate(a.opFace,a.opFail,a.opZfail,a.opZpass):a.opFail&&GL.stencilOp(a.opFail,a.opZfail,a.opZpass);return this};b.prototype.enableCulling=function(a,c){a?(GL.enable(GL.CULL_FACE),c&&this.setupCulling(c)):GL.disable(GL.CULL_FACE);return this};b.prototype.setupCulling=
-function(a){try{a.frontFace&&GL.frontFace(a.frontFace),a.cullFace&&GL.cullFace(a.cullFace)}catch(c){console.error("GLOW.Context.setupCulling: "+c)}return this};b.prototype.enableScissor=function(a,c){a?(GL.enable(GL.SCISSOR_TEST),c&&this.setupScissor(c)):GL.disable(GL.SCISSOR_TEST);return this};b.prototype.setupScissor=function(a){try{GL.scissor(a.x,a.y,a.width,a.height)}catch(c){console.error("GLOW.Context.setupScissorTest: "+c)}return this};b.prototype.setupViewport=function(a){var a=a!==void 0?
-a:{},c=a.x!==void 0?a.x:0,b=a.y!==void 0?a.y:0,d=this.width=a.width!==void 0?a.width:window.innerWidth,a=this.height=a.height!==void 0?a.height:window.innerHeight;this.GL.viewport(c,b,d,a);return this};return b}();
-GLOW.Compiler=function(){var b={};b.compile=function(a){var c=GLOW.currentContext.cache.codeCompiled(a.vertexShader,a.fragmentShader);c===void 0&&(c=b.linkProgram(b.compileVertexShader(a.vertexShader),b.compileFragmentShader(a.fragmentShader)),GLOW.currentContext.cache.addCompiledProgram(c));var e=b.createUniforms(b.extractUniforms(c),a.data),d=b.createAttributes(b.extractAttributes(c),a.data,a.usage,a.interleave),f=b.interleaveAttributes(d,a.interleave),h=a.elements,g=GL.TRIANGLES,i=a.usage?a.usage:
-{},j=i.elements;if(a.triangles)h=a.triangles,j=i.triangles;else if(a.triangleStrip)h=a.triangleStrip,g=GL.TRIANGLE_STRIP,j=i.triangleStrip;else if(a.triangleFan)h=a.triangleFan,g=GL.TRIANGLE_FAN,j=i.triangleFan;else if(a.points)h=a.points,g=GL.POINTS,j=i.points;else if(a.lines)h=a.lines,g=GL.LINES,j=i.lines;else if(a.lineLoop)h=a.lineLoop,g=GL.LINE_LOOP,j=i.lineLoop;else if(a.lineStrip)h=a.lineStrip,g=GL.LINE_STRIP,j=i.lineStrip;h=b.createElements(h,g,j);return new GLOW.CompiledData(c,e,d,f,h,a)};
-b.compileVertexShader=function(a){var c;c=GL.createShader(GL.VERTEX_SHADER);c.id=GLOW.uniqueId();GL.shaderSource(c,a);GL.compileShader(c);GL.getShaderParameter(c,GL.COMPILE_STATUS)||console.error("GLOW.Compiler.compileVertexShader: "+GL.getShaderInfoLog(c));return c};b.compileFragmentShader=function(a){var c;c=GL.createShader(GL.FRAGMENT_SHADER);c.id=GLOW.uniqueId();GL.shaderSource(c,a);GL.compileShader(c);GL.getShaderParameter(c,GL.COMPILE_STATUS)||console.error("GLOW.Compiler.compileFragmentShader: "+
-GL.getShaderInfoLog(c));return c};b.linkProgram=function(a,c){var b;b=GL.createProgram();b.id=GLOW.uniqueId();GL.attachShader(b,a);GL.attachShader(b,c);GL.linkProgram(b);GL.getProgramParameter(b,GL.LINK_STATUS)||console.error("GLOW.Compiler.linkProgram: Could not initialise program");return b};b.extractUniforms=function(a){for(var c={},b,d=0;;){b=GL.getActiveUniform(a,d);if(b!==null&&b!==-1&&b!==void 0)b={name:b.name.split("[")[0],size:b.size,type:b.type,location:GL.getUniformLocation(a,b.name.split("[")[0]),
-locationNumber:d},c[b.name]=b;else break;d++}return c};b.extractAttributes=function(a){for(var c,b=0,d={};;){c=GL.getActiveAttrib(a,b);if(c!==null&&c!==-1&&c!==void 0)c={name:c.name,size:c.size,type:c.type,location:GL.getAttribLocation(a,c.name),locationNumber:b},d[c.name]=c;else break;b++}a.highestAttributeNumber=b-1;return d};b.createUniforms=function(a,c){var b,d={},f,h,g=0;for(b in a)f=a[b],h=f.name,c[h]===void 0?console.warn("GLOW.Compiler.createUniforms: missing declaration for uniform "+h):
-c[h]instanceof GLOW.Uniform?d[h]=c[h]:(d[h]=new GLOW.Uniform(f,c[h]),(d[h].type===GL.SAMPLER_2D||d[h].type===GL.SAMPLER_CUBE)&&d[h].data.init(g++));return d};b.createAttributes=function(a,c,b,d){var f,h,g,i={},d=d!==void 0?d:{},b=b!==void 0?b:{};for(f in a)h=a[f],g=h.name,c[g]===void 0?console.warn("GLOW.Compiler.createAttributes: missing declaration for attribute "+g):i[g]=c[g]instanceof GLOW.Attribute?c[g]:new GLOW.Attribute(h,c[g],b[g]!==void 0?b[g]:void 0,d[g]!==void 0?d[g]:!0);return i};b.interleaveAttributes=
-function(a,c){var c=c!==void 0?c:{},b,d,f,h,g;d=0;var i=[];for(b in a)c[b]!==void 0&&c[b]!==!1&&(d=Math.max(d-1,c[b])+1);for(b in a)c[b]===void 0&&(c[b]=d);for(g in c)c[g]!==!1&&(i[c[g]]===void 0&&(i[c[g]]=[]),i[c[g]].push(a[g]));var j,k;b=0;for(d=i.length;b<d;b++)if(i[b]!==void 0){f=j=0;for(h=i[b].length;f<h;f++)if(j+i[b][f].size*4>255){console.warn("GLOW.Compiler.interleaveAttributes: Stride owerflow, moving attributes to new interleave index. Please check your interleave setup!");k=i.length;for(i[k]=
-[];f<h;)i[k].push(i[b][f]),i[b].splice(f,1),h--}else j+=i[b][f].size*4}k={};b=0;for(d=i.length;b<d;b++)if(i[b]!==void 0){j="";f=0;for(h=i[b].length;f<h;f++)j+=f!==h-1?i[b][f].name+"_":i[b][f].name;k[j]=new GLOW.InterleavedAttributes(i[b])}for(g in c)c[g]!==!1&&delete a[g];return k};b.createElements=function(a,c,b){var d;a===void 0?console.error("GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting."):a instanceof GLOW.Elements?d=a:(a instanceof Uint16Array||(a=new Uint16Array(a)),
-d=new GLOW.Elements(a,c,b!==void 0?b:GL.STATIC_DRAW));return d};return b}();
-GLOW.CompiledData=function(){function b(a,c,b,d,f,h){this.program=a;this.uniforms=c!==void 0?c:{};this.attributes=b!==void 0?b:{};this.interleavedAttributes=d!==void 0?d:{};this.elements=f;h=h!==void 0?h:{};this.preDrawCallback=h.preDrawCallback;this.postDrawCallback=h.postDrawCallback;this.blend=h.blend;this.stencil=h.stencil}b.prototype.clone=function(a){var c=new GLOW.CompiledData,a=a!==void 0?a:{},b;for(b in this.uniforms)a[b]?(c.uniforms[b]=new GLOW.Uniform(this.uniforms[b],a[b]),(c.uniforms[b].type===
-GL.SAMPLER_2D||c.uniforms[b].type===GL.SAMPLER_CUBE)&&c.uniforms[b].data.init(this.uniforms[b].data.textureUnit)):c.uniforms[b]=this.uniforms[b];for(var d in this.attributes)c.attributes[d]=a[d]?new GLOW.Attribute(this.attributes[d],a[d]):this.attributes[d];for(var f in this.interleavedAttributes)c.interleavedAttributes[f]=a[f]?new GLOW.InterleavedAttributes(a[f]):this.interleavedAttributes[f];c.elements=a.elements?new GLOW.Elements(a.elements):this.elements;c.program=a.program?a.program:this.program;
-c.blend=a.blend?a.blend:this.blend;c.stencil=a.stencil?a.stencil:this.stencil;c.preDrawCallback=a.preDrawCallback?a.preDrawCallback:this.preDrawCallback;c.postDrawCallback=a.postDrawCallback?a.postDrawCallback:this.postDrawCallback;return c};return b}();
-GLOW.Cache=function(){function b(){this.highestAttributeNumber=-1;this.uniformByLocation=[];this.attributeByLocation=[];this.textureByLocation=[];this.compiledCode=[];this.programId=this.elementId=-1;this.active=!0}b.prototype.codeCompiled=function(a,c){var b,d,f=this.compiledCode.length;for(d=0;d<f;d++)if(b=this.compiledCode[d],a===b.vertexShader&&c===b.fragmentShader)break;if(d===f)this.compiledCode.push({vertexShader:a,fragmentShader:c});else return this.compiledCode[d].program};b.prototype.addCompiledProgram=
-function(a){this.compiledCode[this.compiledCode.length-1].program=a};b.prototype.programCached=function(a){if(this.active){if(a.id===this.programId)return!0;this.programId=a.id}return!1};b.prototype.setProgramHighestAttributeNumber=function(a){var c=this.highestAttributeNumber;this.highestAttributeNumber=a.highestAttributeNumber;return a.highestAttributeNumber-c};b.prototype.uniformCached=function(a){if(this.active){if(this.uniformByLocation[a.locationNumber]===a.id)return!0;this.uniformByLocation[a.locationNumber]=
-a.id}return!1};b.prototype.attributeCached=function(a){if(this.active){if(this.attributeByLocation[a.locationNumber]===a.id)return!0;this.attributeByLocation[a.locationNumber]=a.id}return!1};b.prototype.textureCached=function(a){if(this.active){if(this.textureByLocation[a.textureUnit]===a.id)return!0;this.textureByLocation[a.textureUnit]=a.id}return!1};b.prototype.elementsCached=function(a){if(this.active){if(a.id===this.elementId)return!0;this.elementId=a.id}return!1};b.prototype.clear=function(){this.highestAttributeNumber=
--1;this.uniformByLocation.length=0;this.attributeByLocation.length=0;this.textureByLocation.length=0;this.programId=this.elementId=-1};return b}();
-GLOW.FBO=function(){function b(c){c=c!==void 0?c:{};this.id=GLOW.uniqueId();this.width=c.width!==void 0?c.width:c.size!==void 0?c.size:window.innerWidth;this.height=c.height!==void 0?c.height:c.size!==void 0?c.size:window.innerHeight;var b=c.wrapS!==void 0?c.wrapS:c.wrap!==void 0?c.wrap:GL.CLAMP_TO_EDGE,d=c.wrapT!==void 0?c.wrapT:c.wrap!==void 0?c.wrap:GL.CLAMP_TO_EDGE,f=c.magFilter!==void 0?c.magFilter:GL.LINEAR,h=c.minFilter!==void 0?c.minFilter:GL.LINEAR,g=c.internalFormat!==void 0?c.internalFormat:
-GL.RGBA,i=c.format!==void 0?c.format:GL.RGBA,j=c.type!==void 0?c.type:GL.UNSIGNED_BYTE,k=c.depth!==void 0?c.depth:!0,l=c.stencil!==void 0?c.stencil:!1;this.textureUnit=-1;this.textureType=c.cube!==!0?GL.TEXTURE_2D:GL.TEXTURE_CUBE_MAP;this.viewport={x:0,y:0,width:this.width,height:this.height};this.texture=GL.createTexture();GL.bindTexture(this.textureType,this.texture);GL.texParameteri(this.textureType,GL.TEXTURE_WRAP_S,b);GL.texParameteri(this.textureType,GL.TEXTURE_WRAP_T,d);GL.texParameteri(this.textureType,
-GL.TEXTURE_MAG_FILTER,f);GL.texParameteri(this.textureType,GL.TEXTURE_MIN_FILTER,h);if(this.textureType===GL.TEXTURE_2D)GL.texImage2D(this.textureType,0,g,this.width,this.height,0,i,j,null);else for(c=0;c<6;c++)GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X+c,0,g,this.width,this.height,0,i,j,null);if(k||l)this.renderBuffer=GL.createRenderbuffer(),GL.bindRenderbuffer(GL.RENDERBUFFER,this.renderBuffer),k&&!l?GL.renderbufferStorage(GL.RENDERBUFFER,GL.DEPTH_COMPONENT16,this.width,this.height):!k&&l?GL.renderbufferStorage(GL.RENDERBUFFER,
-GL.STENCIL_INDEX8,this.width,this.height):k&&l&&GL.renderbufferStorage(GL.RENDERBUFFER,GL.DEPTH_STENCIL,this.width,this.height);if(this.textureType===GL.TEXTURE_2D)this.frameBuffer=GL.createFramebuffer(),GL.bindFramebuffer(GL.FRAMEBUFFER,this.frameBuffer),GL.framebufferTexture2D(GL.FRAMEBUFFER,GL.COLOR_ATTACHMENT0,GL.TEXTURE_2D,this.texture,0),k&&!l?GL.framebufferRenderbuffer(GL.FRAMEBUFFER,GL.DEPTH_ATTACHMENT,GL.RENDERBUFFER,this.renderBuffer):!k&&l?GL.framebufferRenderbuffer(GL.FRAMEBUFFER,GL.STENCIL_ATTACHMENT,
-GL.RENDERBUFFER,this.renderBuffer):k&&l&&GL.framebufferRenderbuffer(GL.FRAMEBUFFER,GL.DEPTH_STENCIL_ATTACHMENT,GL.RENDERBUFFER,this.renderBuffer);else{this.frameBuffers={};for(var n in a)this.frameBuffers[n]=GL.createFramebuffer(),GL.bindFramebuffer(GL.FRAMEBUFFER,this.frameBuffers[n]),GL.framebufferTexture2D(GL.FRAMEBUFFER,GL.COLOR_ATTACHMENT0,GL.TEXTURE_CUBE_MAP_POSITIVE_X+a[n],this.texture,0),k&&!l?GL.framebufferRenderbuffer(GL.FRAMEBUFFER,GL.DEPTH_ATTACHMENT,GL.RENDERBUFFER,this.renderBuffer):
-!k&&l?GL.framebufferRenderbuffer(GL.FRAMEBUFFER,GL.STENCIL_ATTACHMENT,GL.RENDERBUFFER,this.renderBuffer):k&&l&&GL.framebufferRenderbuffer(GL.FRAMEBUFFER,GL.DEPTH_STENCIL_ATTACHMENT,GL.RENDERBUFFER,this.renderBuffer)}GL.bindTexture(this.textureType,null);GL.bindRenderbuffer(GL.RENDERBUFFER,null);GL.bindFramebuffer(GL.FRAMEBUFFER,null)}var a={posX:0,negX:1,posY:2,negY:3,posZ:4,negZ:5};b.prototype.init=function(a){this.textureUnit=a};b.prototype.bind=function(a){this.textureType===GL.TEXTURE_2D?GL.bindFramebuffer(GL.FRAMEBUFFER,
-this.frameBuffer):GL.bindFramebuffer(GL.FRAMEBUFFER,this.frameBuffers[a!==void 0?a:"posX"]);GL.viewport(this.viewport.x,this.viewport.y,this.viewport.width,this.viewport.height);return this};b.prototype.unbind=function(){GL.bindFramebuffer(GL.FRAMEBUFFER,null);GL.viewport(0,0,GLOW.currentContext.width,GLOW.currentContext.height);return this};b.prototype.setupViewport=function(a){this.viewport.x=a.x!==void 0?a.x:0;this.viewport.y=a.y!==void 0?a.y:0;this.viewport.width=a.width!==void 0?a.width:window.innerWidth;
-this.viewport.height=a.height!==void 0?a.height:window.innerHeight;return this};b.prototype.resize=function(){return this};b.prototype.generateMipMaps=function(){GL.bindTexture(this.textureType,this.texture);GL.generateMipmap(this.textureType);GL.bindTexture(this.textureType,null);return this};return b}();
-GLOW.Texture=function(){function b(a){if(a.url!==void 0)a.data=a.url;this.id=GLOW.uniqueId();this.data=a.data;this.autoUpdate=a.autoUpdate;this.internalFormat=a.internalFormat!==void 0?a.internalFormat:GL.RGBA;this.format=a.format!==void 0?a.format:GL.RGBA;this.type=a.type!==void 0?a.type:GL.UNSIGNED_BYTE;this.wrapS=a.wrapS!==void 0?a.wrapS:a.wrap!==void 0?a.wrap:GL.REPEAT;this.wrapT=a.wrapT!==void 0?a.wrapT:a.wrap!==void 0?a.wrap:GL.REPEAT;this.magFilter=a.magFilter!==void 0?a.magFilter:GL.LINEAR;
-this.minFilter=a.minFilter!==void 0?a.minFilter:GL.LINEAR_MIPMAP_LINEAR;this.width=a.width;this.height=a.height;this.textureUnit=-1;this.texture=void 0}var a={posX:0,negX:1,posY:2,negY:3,posZ:4,negZ:5};b.prototype.init=function(b){this.textureUnit=b;if(typeof this.data==="string"){this.textureType=GL.TEXTURE_2D;var b=this.data,e=b.toLowerCase();if(e.indexOf(".jpg")!==-1||e.indexOf(".png")!==-1||e.indexOf(".gif")!==-1||e.indexOf("jpeg")!==-1)this.data=new Image,this.data.scope=this,this.data.onload=
-this.onLoadImage;else{if(this.autoUpdate===void 0)this.autoUpdate=!0;this.data=document.createElement("video");this.data.scope=this;this.data.addEventListener("loadeddata",this.onLoadVideo,!1)}this.data.src=b}else if(this.data instanceof HTMLImageElement||this.data instanceof HTMLVideoElement||this.data instanceof HTMLCanvasElement||this.data instanceof Uint8Array)this.textureType=GL.TEXTURE_2D,this.createTexture();else{this.textureType=GL.TEXTURE_CUBE_MAP;this.itemsToLoad=0;for(var d in a)this.data[d]!==
-void 0?typeof this.data[d]==="string"&&this.itemsToLoad++:console.error("GLOW.Texture.init: data type error. Did you forget cube map "+d+"? If not, the data type is not supported");if(this.itemsToLoad===0)this.createTexture();else for(d in a)if(typeof this.data[d]==="string")b=this.data[d],e=b.toLowerCase(),e.indexOf(".jpg")!==-1||e.indexOf(".png")!==-1||e.indexOf(".gif")!==-1||e.indexOf("jpeg")!==-1?(this.data[d]=new Image,this.data[d].scope=this,this.data[d].onload=this.onLoadCubeImage):(this.autoUpdate!==
-void 0?this.autoUpdate[d]=this.autoUpdate[d]!==void 0?this.autoUpdate[d]:!0:(this.autoUpdate={},this.autoUpdate[d]=!0),this.data[d]=document.createElement("video"),this.data[d].scope=this,this.data[d].addEventListener("loadeddata",this.onLoadCubeVideo,!1)),this.data[d].src=b}};b.prototype.createTexture=function(){this.texture=GL.createTexture();GL.bindTexture(this.textureType,this.texture);if(this.textureType===GL.TEXTURE_2D)if(this.data instanceof Uint8Array)if(this.width!==void 0&&this.height!==
-void 0)GL.texImage2D(this.textureType,0,this.internalFormat,this.width,this.height,0,this.format,this.type,this.data);else{console.error("GLOW.Texture.createTexture: Textures of type Uint8Array requires width and height parameters. Quitting.");return}else GL.texImage2D(this.textureType,0,this.internalFormat,this.format,this.type,this.data);else for(var b in a)if(this.data[b]instanceof Uint8Array)if(this.width!==void 0&&this.height!==void 0)GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X+a[b],0,this.internalFormat,
-this.width,this.height,0,this.format,this.type,this.data[b]);else{console.error("GLOW.Texture.createTexture: Textures of type Uint8Array requires width and height parameters. Quitting.");return}else GL.texImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X+a[b],0,this.internalFormat,this.format,this.type,this.data[b]);GL.texParameteri(this.textureType,GL.TEXTURE_WRAP_S,this.wrapS);GL.texParameteri(this.textureType,GL.TEXTURE_WRAP_T,this.wrapT);GL.texParameteri(this.textureType,GL.TEXTURE_MIN_FILTER,this.minFilter);
-GL.texParameteri(this.textureType,GL.TEXTURE_MAG_FILTER,this.magFilter);this.minFilter!==GL.NEAREST&&this.minFilter!==GL.LINEAR&&GL.generateMipmap(this.textureType)};b.prototype.updateTexture=function(b){var b=b!==void 0?b:{},e=b.level!==void 0?b.level:0,d=b.xOffset!==void 0?b.xOffset:0,f=b.yOffset!==void 0?b.yOffset:0,h=b.updateMipmap!==void 0?b.updateMipmap:!0;GLOW.currentContext.cache.textureCached(this)||GL.bindTexture(this.textureType,this.texture);if(this.textureType==GL.TEXTURE_2D)this.data instanceof
-Uint8Array?GL.texSubImage2D(this.textureType,e,d,f,this.width,this.height,this.format,this.type,this.data):GL.texSubImage2D(this.textureType,e,d,f,this.format,this.type,this.data);else for(var g in b)a[g]!==void 0&&(this.data[g]instanceof Uint8Array?GL.texSubImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X+a[g],e,d,f,this.width,this.height,this.format,this.type,this.data[g]):GL.texSubImage2D(GL.TEXTURE_CUBE_MAP_POSITIVE_X+a[g],e,d,f,this.format,this.type,this.data[g]));this.minFilter!==GL.NEAREST&&this.minFilter!==
-GL.LINEAR&&h===!0&&GL.generateMipmap(this.textureType)};b.prototype.onLoadImage=function(){this.scope.createTexture()};b.prototype.onLoadCubeImage=function(){this.scope.itemsToLoad--;this.scope.itemsToLoad===0&&this.scope.createTexture()};b.prototype.onLoadVideo=function(){this.removeEventListener("loadeddata",this.scope.onLoadVideo,!1);this.scope.createTexture()};b.prototype.onLoadCubeVideo=function(){this.removeEventListener("loadeddata",this.scope.onLoadVideo,!1);this.scope.itemsToLoad--;this.scope.itemsToLoad===
-0&&this.scope.createTexture()};b.prototype.play=function(){if(this.textureType===GL.TEXTURE_2D)this.data instanceof HTMLVideoElement&&this.data.play();else for(var b in a)this.data[b]instanceof HTMLVideoElement&&this.data[b].play()};return b}();
-GLOW.Shader=function(){function b(a){this.id=GLOW.uniqueId();this.compiledData=a.use?a.use.clone(a.except):GLOW.Compiler.compile(a);this.attachData()}b.prototype.attachData=function(){var a,b,e;this.uniforms=this.compiledData.uniforms;this.elements=this.compiledData.elements;this.program=this.compiledData.program;for(a in this.compiledData.uniforms)this[a]===void 0?this[a]=this.compiledData.uniforms[a].data:console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on uniform "+a+", not attaching for easy access. Please use Shader.uniforms."+
-a+".data to access data.");for(b in this.compiledData.attributes){if(this.attributes===void 0)this.attributes=this.compiledData.attributes;this[b]===void 0?this[b]=this.compiledData.attributes[b]:console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on attribute "+b+", not attaching for easy access. Please use Shader.attributes."+b+".data to access data.")}for(e in this.compiledData.interleavedAttributes){if(this.interleavedAttributes===void 0)this.interleavedAttributes=this.compiledData.interleavedAttributes;
-this[e]===void 0?this[e]=this.compiledData.interleavedAttributes[e]:console.warn("GLOW.Shader.attachUniformAndAttributeData: name collision on interleavedAttribute "+b+", not attaching for easy access. Please use Shader.interleavedAttributes."+b+".data to access data.")}};b.prototype.draw=function(){var a=this.compiledData,b=GLOW.currentContext.cache;if(!b.programCached(a.program)){GL.useProgram(a.program);var e=b.setProgramHighestAttributeNumber(a.program);if(e){var d=a.program.highestAttributeNumber,
-f=d-e+1;if(e>0)for(;f<=d;f++)GL.enableVertexAttribArray(f);else for(;f>=d;f--)GL.disableVertexAttribArray(f)}}for(var h in a.uniforms)b.uniformCached(a.uniforms[h])||a.uniforms[h].load();for(var g in a.attributes)a.attributes[g].interleaved===!1&&(b.attributeCached(a.attributes[g])||a.attributes[g].bind());for(g in a.interleavedAttributes)a.interleavedAttributes[g].bind();a.preDrawCallback&&a.preDrawCallback(this);a.elements.draw();a.postDrawCallback&&a.postDrawCallback(this)};b.prototype.clone=function(a){return new GLOW.Shader({use:this.compiledData,
-except:a})};b.prototype.dispose=function(){};return b}();
-GLOW.Elements=function(){function b(a,b,e){this.id=GLOW.uniqueId();this.elements=GL.createBuffer();this.length=a.length;this.type=b!==void 0?b:GL.TRIANGLES;GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER,this.elements);GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,a,e?e:GL.STATIC_DRAW)}b.prototype.draw=function(){GLOW.currentContext.cache.elementsCached(this)||GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER,this.elements);GL.drawElements(this.type,this.length,GL.UNSIGNED_SHORT,0)};b.prototype.dispose=function(){};return b}();
-GLOW.Uniform=function(){function b(){e[GL.INT]=function(){GL.uniform1iv(this.location,this.getNativeValue())};e[GL.FLOAT]=function(){GL.uniform1fv(this.location,this.getNativeValue())};e[GL.INT_VEC2]=function(){GL.uniform2iv(this.location,this.getNativeValue())};e[GL.INT_VEC3]=function(){GL.uniform3iv(this.location,this.getNativeValue())};e[GL.INT_VEC4]=function(){GL.uniform4iv(this.location,this.getNativeValue())};e[GL.FLOAT_VEC2]=function(){GL.uniform2fv(this.location,this.getNativeValue())};e[GL.FLOAT_VEC3]=
-function(){GL.uniform3fv(this.location,this.getNativeValue())};e[GL.FLOAT_VEC4]=function(){GL.uniform4fv(this.location,this.getNativeValue())};e[GL.FLOAT_MAT2]=function(){GL.uniformMatrix2fv(this.location,!1,this.getNativeValue())};e[GL.FLOAT_MAT3]=function(){GL.uniformMatrix3fv(this.location,!1,this.getNativeValue())};e[GL.FLOAT_MAT4]=function(){GL.uniformMatrix4fv(this.location,!1,this.getNativeValue())};e[GL.SAMPLER_2D]=function(){this.data.texture!==void 0&&this.data.textureUnit!==-1&&!GLOW.currentContext.cache.textureCached(this.data)&&
-(GL.uniform1i(this.location,this.data.textureUnit),GL.activeTexture(GL.TEXTURE0+this.data.textureUnit),GL.bindTexture(GL.TEXTURE_2D,this.data.texture),this.data.autoUpdate&&this.data.updateTexture(this.data.autoUpdate))};e[GL.SAMPLER_CUBE]=function(){this.data.texture!==void 0&&this.data.textureUnit!==-1&&!GLOW.currentContext.cache.textureCached(this.data)&&(GL.uniform1i(this.location,this.data.textureUnit),GL.activeTexture(GL.TEXTURE0+this.data.textureUnit),GL.bindTexture(GL.TEXTURE_CUBE_MAP,this.data.texture),
-this.data.autoUpdate&&this.data.updateTexture(this.data.autoUpdate))}}function a(a,f){c||(c=!0,b());this.id=GLOW.uniqueId();this.data=f;this.name=a.name;this.length=a.length;this.type=a.type;this.location=a.location;this.locationNumber=a.locationNumber;this.load=a.loadFunction||e[this.type]}var c=!1,e=[];a.prototype.getNativeValue=function(){return this.data.value};return a}();
-GLOW.Attribute=function(){function b(b,d,f,h){a||(a=!0,c[GL.INT]=1,c[GL.INT_VEC2]=2,c[GL.INT_VEC3]=3,c[GL.INT_VEC4]=4,c[GL.FLOAT]=1,c[GL.FLOAT_VEC2]=2,c[GL.FLOAT_VEC3]=3,c[GL.FLOAT_VEC4]=4,c[GL.FLOAT_MAT2]=4,c[GL.FLOAT_MAT3]=9,c[GL.FLOAT_MAT4]=16);this.id=GLOW.uniqueId();this.data=d;this.location=b.location;this.locationNumber=b.locationNumber;this.offset=this.stride=0;this.usage=f!==void 0?f:GL.STATIC_DRAW;this.interleaved=h!==void 0?h:!1;this.size=c[b.type];this.name=b.name;this.type=b.type;this.interleaved===
-!1&&(this.data instanceof Float32Array?this.bufferData(this.data,this.usage):console.error("GLOW.Attribute.constructor: Data for attribute "+this.name+" not in Float32Array format. Please fix. Quitting."))}var a=!1,c=[];b.prototype.setupInterleave=function(a,b){this.interleaved=!0;this.offset=a;this.stride=b};b.prototype.bufferData=function(a,b){if(a!==void 0&&this.data!==a)this.data=a;if(b!==void 0&&this.usage!==b)this.usage=b;if(this.buffer===void 0)this.buffer=GL.createBuffer();GL.bindBuffer(GL.ARRAY_BUFFER,
-this.buffer);GL.bufferData(GL.ARRAY_BUFFER,this.data,this.usage)};b.prototype.bind=function(){this.interleaved===!1&&GL.bindBuffer(GL.ARRAY_BUFFER,this.buffer);GL.vertexAttribPointer(this.location,this.size,GL.FLOAT,!1,this.stride,this.offset)};b.prototype.clone=function(){this.interleaved?console.error("GLOW.Attribute.clone: Cannot clone interleaved attribute. Please check your interleave setup."):new GLOW.Attribute(this,this.data,this.usage,this.interleaved)};b.prototype.dispose=function(){};return b}();
-GLOW.InterleavedAttributes=function(){function b(a){this.id=GLOW.uniqueId();this.attributes=a;var b,e=a[0].data.length/a[0].size,d,f=a.length,h,g,i,j=[],k,l=[];for(d=0;d<f;d++)j[d]=0;for(b=0;b<e;b++)for(d=0;d<f;d++){k=a[d].data;i=j[d];h=0;for(g=a[d].size;h<g;h++)l.push(k[i++]);j[d]=i}this.data=new Float32Array(l);this.usage=a[0].usage;for(d=0;d<f;d++)if(this.usage!==a[d].usage){console.warn("GLOW.InterleavedAttributes.construct: Attribute "+a[d].name+" has different usage, defaulting to STATIC_DRAW.");
-this.usage=GL.STATIC_DRAW;break}this.bufferData(this.data,this.usage);for(d=b=0;d<f;d++)b+=a[d].size*4;for(d=e=0;d<f;d++)a[d].setupInterleave(e,b),e+=a[d].size*4}b.prototype.bufferData=function(a,b){if(a!==void 0&&this.data!==a)this.data=a;if(this.buffer===void 0)this.buffer=GL.createBuffer();GL.bindBuffer(GL.ARRAY_BUFFER,this.buffer);GL.bufferData(GL.ARRAY_BUFFER,this.data,b?b:GL.STATIC_DRAW)};b.prototype.bind=function(){GL.bindBuffer(GL.ARRAY_BUFFER,this.buffer);var a,b=this.attributes.length;for(a=
-0;a<b;a++)this.attributes[a].bind()};return b}();
-GLOW.Float=function(){function b(a){this.value=new Float32Array(1);this.value[0]=a!==void 0?a:0}b.prototype.set=function(a){this.value[0]=a;return this};b.prototype.add=function(a){this.value[0]+=a;return this};b.prototype.sub=function(a){this.value[0]-=a;return this};b.prototype.multiply=function(a){this.value[0]*=a;return this};b.prototype.divide=function(a){this.value[0]/=a;return this};b.prototype.modulo=function(a){this.value[0]%=a;return this};return b}();
-GLOW.Int=function(){function b(a){this.value=new int32Array(1);this.value[0]=a!==void 0?a:0}b.prototype.set=function(a){this.value[0]=a;return this};b.prototype.add=function(a){this.value[0]+=a;return this};b.prototype.sub=function(a){this.value[0]-=a;return this};b.prototype.multiply=function(a){this.value[0]*=a;return this};b.prototype.divide=function(a){this.value[0]/=a;return this};b.prototype.modulo=function(a){this.value[0]%=a;return this};return b};
-GLOW.Vector2=function(){function b(a,b){this.value=new Float32Array(2);this.value[0]=a!==void 0?a:0;this.value[1]=b!==void 0?b:0}b.prototype.set=function(a,b){this.value[0]=a;this.value[1]=b;return this};b.prototype.copy=function(a){this.value[0]=a.value[0];this.value[1]=a.value[1];return this};b.prototype.addSelf=function(a){this.value[0]+=a.value[0];this.value[1]+=a.value[1];return this};b.prototype.add=function(a,b){this.value[0]=a.value[0]+b.value[0];this.value[1]=a.value[1]+b.value[1];return this};
-b.prototype.subSelf=function(a){this.value[0]-=a.x;this.value[1]-=a.y;return this};b.prototype.sub=function(a,b){this.value[0]=a.value[0]-b.value[0];this.value[1]=a.value[1]-b.value[1];return this};b.prototype.multiplySelf=function(a){this.value[0]*=a.value[0];this.value[1]*=a.value[1];return this};b.prototype.multiply=function(a,b){this.value[0]=a.value[0]*b.value[0];this.value[1]=a.value[1]*b.value[1];return this};b.prototype.multiplyScalar=function(a){this.value[0]*=a;this.value[1]*=a;return this};
-b.prototype.negate=function(){this.value[0]=-this.value[0];this.value[1]=-this.value[1];return this};b.prototype.normalize=function(){this.multiplyScalar(1/this.length());return this};b.prototype.length=function(){return Math.sqrt(this.lengthSq())};b.prototype.lengthSq=function(){return this.value[0]*this.value[0]+this.value[1]*this.value[1]};b.prototype.clone=function(){return new GLOW.Vector2(this.value[0],this.value[1])};return b}();
-GLOW.Vector3=function(){function b(a,b,e){this.value=new Float32Array(3);this.value[0]=a!==void 0?a:0;this.value[1]=b!==void 0?b:0;this.value[2]=e!==void 0?e:0}b.prototype.set=function(a,b,e){this.value[0]=a;this.value[1]=b;this.value[2]=e;return this};b.prototype.copy=function(){this.set(this.value[0],this.value[1],this.value[2]);return this};b.prototype.add=function(a,b){a=a.value;b=b.value;this.value[0]=a[0]+b[0];this.value[1]=a[1]+b[1];this.value[2]=a[2]+b[2];return this};b.prototype.addSelf=
-function(a){a=a.value;this.value[0]+=a[0];this.value[1]+=a[1];this.value[2]+=a[2];return this};b.prototype.addScalar=function(a){this.value[0]+=a;this.value[1]+=a;this.value[2]+=a;return this};b.prototype.sub=function(a,b){a=a.value;b=b.value;this.value[0]=a[0]-b[0];this.value[1]=a[1]-b[1];this.value[2]=a[2]-b[2];return this};b.prototype.subSelf=function(a){a=a.value;this.value[0]-=a[0];this.value[1]-=a[1];this.value[2]-=a[2];return this};b.prototype.cross=function(a,b){a=a.value;b=b.value;this.value[0]=
-a[1]*b[2]-a[2]*b[1];this.value[1]=a[2]*b[0]-a[0]*b[2];this.value[2]=a[0]*b[1]-a[1]*b[0];return this};b.prototype.crossSelf=function(a){var a=a.value,b=a[0],e=a[1],a=a[2],d=this.value[0],f=this.value[1],h=this.value[2];this.value[0]=e*h-a*f;this.value[1]=a*d-b*h;this.value[2]=b*f-e*d;return this};b.prototype.multiply=function(a,b){a=a.value;b=b.value;this.value[0]=a[0]*b[0];this.value[1]=a[1]*b[1];this.value[2]=a[2]*b[2];return this};b.prototype.multiplySelf=function(a){a=a.value;this.value[0]*=a[0];
-this.value[1]*=a[1];this.value[2]*=a[2];return this};b.prototype.multiplyScalar=function(a){this.value[0]*=a;this.value[1]*=a;this.value[2]*=a;return this};b.prototype.divideSelf=function(a){a=a.value;this.value[0]/=a[0];this.value[1]/=a[1];this.value[2]/=a[2];return this};b.prototype.divideScalar=function(a){this.value[0]/=a;this.value[1]/=a;this.value[2]/=a;return this};b.prototype.negate=function(){this.value[0]=-this.value[0];this.value[1]=-this.value[1];this.value[2]=-this.value[2];return this};
-b.prototype.dot=function(a){a=a.value;return this.value[0]*a[0]+this.value[1]*a[1]+this.value[2]*a[2]};b.prototype.distanceTo=function(a){return Math.sqrt(this.distanceToSquared(a))};b.prototype.distanceToSquared=function(a){var a=a.value,b=this.value[0]-a[0],e=this.value[1]-a[1],a=this.value[2]-a[2];return b*b+e*e+a*a};b.prototype.length=function(){return Math.sqrt(this.lengthSq())};b.prototype.lengthSq=function(){return this.value[0]*this.value[0]+this.value[1]*this.value[1]+this.value[2]*this.value[2]};
-b.prototype.lengthManhattan=function(){return this.value[0]+this.value[1]+this.value[2]};b.prototype.normalize=function(){var a=Math.sqrt(this.value[0]*this.value[0]+this.value[1]*this.value[1]+this.value[2]*this.value[2]);a>0?this.multiplyScalar(1/a):this.set(0,0,0);return this};b.prototype.setPositionFromMatrix=function(a){a=a.value;this.value[0]=a[12];this.value[1]=a[13];this.value[2]=a[14]};b.prototype.setLength=function(a){return this.normalize().multiplyScalar(a)};b.prototype.isZero=function(){return Math.abs(this.value[0])<
-1.0E-4&&Math.abs(this.value[1])<1.0E-4&&Math.abs(this.value[2])<1.0E-4};b.prototype.clone=function(){return GLOW.Vector3(this.value[0],this.value[1],this.value[2])};return b}();
-GLOW.Vector4=function(){function b(a,b,e,d){this.value=new Float32Array(4);this.value[0]=a!==void 0?a:0;this.value[1]=b!==void 0?b:0;this.value[2]=e!==void 0?e:0;this.value[3]=d!==void 0?d:0}b.prototype.set=function(a,b,e,d){this.value[0]=a;this.value[1]=b;this.value[2]=e;this.value[3]=d;return this};b.prototype.copy=function(a){this.value[0]=a.value[0];this.value[1]=a.value[1];this.value[2]=a.value[2];this.value[3]=a.value[3];return this};b.prototype.add=function(a,b){this.value[0]=a.value[0]+b.value[0];
-this.value[1]=a.value[1]+b.value[1];this.value[2]=a.value[2]+b.value[2];this.value[3]=a.value[3]+b.value[3];return this};b.prototype.addSelf=function(a){this.value[0]+=a.value[0];this.value[1]+=a.value[1];this.value[2]+=a.value[2];this.value[3]+=a.value[3];return this};b.prototype.sub=function(a,b){this.value[0]=a.value[0]-b.value[0];this.value[1]=a.value[1]-b.value[1];this.value[2]=a.value[2]-b.value[2];this.value[3]=a.value[3]-b.value[3];return this};b.prototype.subSelf=function(a){this.value[0]-=
-a.value[0];this.value[1]-=a.value[1];this.value[2]-=a.value[2];this.value[3]-=a.value[3];return this};b.prototype.multiplyScalar=function(a){this.value[0]*=a;this.value[1]*=a;this.value[2]*=a;this.value[3]*=a;return this};b.prototype.divideScalar=function(a){this.value[0]/=a;this.value[1]/=a;this.value[2]/=a;this.value[3]/=a;return this};b.prototype.lerpSelf=function(a,b){this.value[0]+=(a.x-this.value[0])*b;this.value[1]+=(a.y-this.value[1])*b;this.value[2]+=(a.z-this.value[2])*b;this.value[3]+=
-(a.w-this.value[3])*b;return this};b.prototype.clone=function(){return new GLOW.Vector4(this.value[0],this.value[1],this.value[2],this.value[3])};return b}();
-GLOW.Matrix3=function(){function b(){this.value=new Float32Array(9);this.identity()}b.prototype.set=function(a,b,e,d,f,h,g,i,j){this.value[0]=a;this.value[4]=b;this.value[8]=e;this.value[1]=d;this.value[5]=f;this.value[9]=h;this.value[2]=g;this.value[6]=i;this.value[10]=j;return this};b.prototype.identity=function(){this.set(1,0,0,0,1,0,0,0,1);return this};b.prototype.getValueAsFloat32Array=function(){this.float32Array[0]=this.value[0];this.float32Array[1]=this.value[1];this.float32Array[2]=this.value[2];
-this.float32Array[3]=this.value[3];this.float32Array[4]=this.value[4];this.float32Array[5]=this.value[5];this.float32Array[6]=this.value[6];this.float32Array[7]=this.value[7];this.float32Array[8]=this.value[8];return this.float32Array};return b}();
-GLOW.Matrix4=function(){function b(){this.value=new Float32Array(16);this.rotation=new GLOW.Vector3;this.position=new GLOW.Vector3;this.columnX=new GLOW.Vector3;this.columnY=new GLOW.Vector3;this.columnZ=new GLOW.Vector3;this.identity()}b.prototype.set=function(a,b,e,d,f,h,g,i,j,k,l,n,o,r,p,q){this.value[0]=a;this.value[4]=b;this.value[8]=e;this.value[12]=d;this.value[1]=f;this.value[5]=h;this.value[9]=g;this.value[13]=i;this.value[2]=j;this.value[6]=k;this.value[10]=l;this.value[14]=n;this.value[3]=
-o;this.value[7]=r;this.value[11]=p;this.value[15]=q;return this};b.prototype.identity=function(){this.set(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);return this};b.prototype.copy=function(a){a=a.value;this.set(a[0],a[4],a[8],a[12],a[1],a[5],a[9],a[13],a[2],a[6],a[10],a[14],a[3],a[7],a[11],a[15]);return this};b.prototype.lookAt=function(a,b){var e=GLOW.Matrix4.tempVector3A,d=GLOW.Matrix4.tempVector3B,f=GLOW.Matrix4.tempVector3C,h=this.getPosition();h.value[0]=this.value[12];h.value[1]=this.value[13];h.value[2]=
-this.value[14];f.sub(h,a).normalize();f.length()===0&&(f.value[3]=1);e.cross(b,f).normalize();e.length()===0&&(f.value[0]+=1.0E-4,e.cross(b,f).normalize());d.cross(f,e).normalize();e=e.value;d=d.value;f=f.value;this.value[0]=e[0];this.value[4]=d[0];this.value[8]=f[0];this.value[1]=e[1];this.value[5]=d[1];this.value[9]=f[1];this.value[2]=e[2];this.value[6]=d[2];this.value[10]=f[2];return this};b.prototype.multiplyVector3=function(a){var b=a.value[0],e=a.value[1],d=a.value[2],f=1/(this.value[3]*b+this.value[7]*
-e+this.value[11]*d+this.value[15]);a.value[0]=(this.value[0]*b+this.value[4]*e+this.value[8]*d+this.value[12])*f;a.value[1]=(this.value[1]*b+this.value[5]*e+this.value[9]*d+this.value[13])*f;a.value[2]=(this.value[2]*b+this.value[6]*e+this.value[10]*d+this.value[14])*f;return a};b.prototype.multiplyVector4=function(a){var b=a.value[0],e=a.value[1],d=a.value[2],f=a.value[3];a.value[0]=this.value[0]*b+this.value[4]*e+this.value[8]*d+this.value[12]*f;a.value[1]=this.value[1]*b+this.value[5]*e+this.value[9]*
-d+this.value[13]*f;a.value[2]=this.value[2]*b+this.value[6]*e+this.value[10]*d+this.value[14]*f;a.value[3]=this.value[3]*b+this.value[7]*e+this.value[11]*d+this.value[15]*f;return a};b.prototype.rotateAxis=function(a){var b=a.value[0],e=a.value[1],d=a.value[2];a.value[0]=b*this.value[0]+e*this.value[4]+d*this.value[8];a.value[1]=b*this.value[1]+e*this.value[5]+d*this.value[9];a.value[2]=b*this.value[2]+e*this.value[6]+d*this.value[10];a.normalize();return a};b.prototype.crossVector=function(a){var b=
-GLOW.Vector4(),e=a.value[0],d=a.value[1],f=a.value[2],a=a.value[3];b.value[0]=this.value[0]*e+this.value[4]*d+this.value[8]*f+this.value[12]*a;b.value[1]=this.value[1]*e+this.value[5]*d+this.value[9]*f+this.value[13]*a;b.value[2]=this.value[2]*e+this.value[6]*d+this.value[10]*f+this.value[14]*a;b.value[3]=a?this.value[3]*e+this.value[7]*d+this.value[11]*f+this.value[15]*a:1;return b};b.prototype.multiply=function(a,b){var a=a.value,b=b.value,e=a[0],d=a[4],f=a[8],h=a[12],g=a[1],i=a[5],j=a[9],k=a[13],
-l=a[2],n=a[6],o=a[10],r=a[14],p=a[3],q=a[7],s=a[11],t=a[15],u=b[0],v=b[4],w=b[8],x=b[12],y=b[1],z=b[5],A=b[9],B=b[13],C=b[2],D=b[6],E=b[10],F=b[14];this.value[0]=e*u+d*y+f*C;this.value[4]=e*v+d*z+f*D;this.value[8]=e*w+d*A+f*E;this.value[12]=e*x+d*B+f*F+h;this.value[1]=g*u+i*y+j*C;this.value[5]=g*v+i*z+j*D;this.value[9]=g*w+i*A+j*E;this.value[13]=g*x+i*B+j*F+k;this.value[2]=l*u+n*y+o*C;this.value[6]=l*v+n*z+o*D;this.value[10]=l*w+n*A+o*E;this.value[14]=l*x+n*B+o*F+r;this.value[3]=p*u+q*y+s*C;this.value[7]=
-p*v+q*z+s*D;this.value[11]=p*w+q*A+s*E;this.value[15]=p*x+q*B+s*F+t;return this};b.prototype.multiplySelf=function(a){this.multiply(m,a);return this};b.prototype.multiplyScalar=function(a){this.value[0]*=a;this.value[4]*=a;this.value[8]*=a;this.value[12]*=a;this.value[1]*=a;this.value[5]*=a;this.value[9]*=a;this.value[13]*=a;this.value[2]*=a;this.value[6]*=a;this.value[10]*=a;this.value[14]*=a;this.value[3]*=a;this.value[7]*=a;this.value[11]*=a;this.value[15]*=a;return this};b.prototype.determinant=
-function(){var a=this.value[0],b=this.value[4],e=this.value[8],d=this.value[12],f=this.value[1],h=this.value[5],g=this.value[9],i=this.value[13],j=this.value[2],k=this.value[6],l=this.value[10],n=this.value[14],o=this.value[3],r=this.value[7],p=this.value[11],q=this.value[15];return d*g*k*o-e*i*k*o-d*h*l*o+b*i*l*o+e*h*n*o-b*g*n*o-d*g*j*r+e*i*j*r+d*f*l*r-a*i*l*r-e*f*n*r+a*g*n*r+d*h*j*p-b*i*j*p-d*f*k*p+a*i*k*p+b*f*n*p-a*h*n*p-e*h*j*q+b*g*j*q+e*f*k*q-a*g*k*q-b*f*l*q+a*h*l*q};b.prototype.transpose=function(){var a;
-a=this.value[1];this.value[1]=this.value[4];this.value[4]=a;a=this.value[2];this.value[2]=this.value[8];this.value[8]=a;a=this.value[6];this.value[6]=this.value[9];this.value[9]=a;a=this.value[3];this.value[3]=this.value[12];this.value[12]=a;a=this.value[7];this.value[7]=this.value[13];this.value[13]=a;a=this.value[11];this.value[11]=this.value[14];this.value[11]=a;return this};b.prototype.clone=function(){var a=new GLOW.Matrix4;a.value=new Float32Array(m);return a};b.prototype.setPosition=function(a,
-b,e){this.value[12]=a;this.value[13]=b;this.value[14]=e;return this};b.prototype.addPosition=function(a,b,e){this.value[12]+=a;this.value[13]+=b;this.value[14]+=e};b.prototype.setRotation=function(a,b,e){this.rotation.set(a,b,e);var d=Math.cos(a),a=Math.sin(a),f=Math.cos(b),b=Math.sin(b),h=Math.cos(e),e=Math.sin(e),g=d*b,i=a*b;this.value[0]=f*h;this.value[4]=-f*e;this.value[8]=b;this.value[1]=i*h+d*e;this.value[5]=-i*e+d*h;this.value[9]=-a*f;this.value[2]=-g*h+a*e;this.value[6]=g*e+a*h;this.value[10]=
-d*f;return this};b.prototype.addRotation=function(a,b,e){this.rotation.value[0]+=a;this.rotation.value[1]+=b;this.rotation.value[2]+=e;this.setRotation(this.rotation.value[0],this.rotation.value[1],this.rotation.value[2])};b.prototype.getPosition=function(){this.position.set(this.value[12],this.value[13],this.value[14]);return this.position};b.prototype.getColumnX=function(){this.columnX.set(this.value[0],this.value[1],this.value[2]);return this.columnX};b.prototype.getColumnY=function(){this.columnY.set(this.value[4],
-this.value[5],this.value[6]);return this.columnY};b.prototype.getColumnZ=function(){this.columnZ.set(this.value[8],this.value[9],this.value[10]);return this.columnZ};b.prototype.scale=function(a,b,e){var d;b!==void 0&&e!==void 0?d=a:(d=a.value[0],b=a.value[1],e=a.value[2]);this.value[0]*=d;this.value[4]*=b;this.value[8]*=e;this.value[1]*=d;this.value[5]*=b;this.value[9]*=e;this.value[2]*=d;this.value[6]*=b;this.value[10]*=e;this.value[3]*=d;this.value[7]*=b;this.value[11]*=e;return this};return b}();
-GLOW.Matrix4.makeInverse=function(b,a){a===void 0&&(a=new GLOW.Matrix4);var c=b.value,e=a.value,d=c[0],f=c[4],h=c[8],g=c[12],i=c[1],j=c[5],k=c[9],l=c[13],n=c[2],o=c[6],r=c[10],p=c[14],q=c[3],s=c[7],t=c[11],c=c[15];e[0]=k*p*s-l*r*s+l*o*t-j*p*t-k*o*c+j*r*c;e[1]=l*r*q-k*p*q-l*n*t+i*p*t+k*n*c-i*r*c;e[2]=j*p*q-l*o*q+l*n*s-i*p*s-j*n*c+i*o*c;e[3]=k*o*q-j*r*q-k*n*s+i*r*s+j*n*t-i*o*t;e[4]=g*r*s-h*p*s-g*o*t+f*p*t+h*o*c-f*r*c;e[5]=h*p*q-g*r*q+g*n*t-d*p*t-h*n*c+d*r*c;e[6]=g*o*q-f*p*q-g*n*s+d*p*s+f*n*c-d*o*c;
-e[7]=f*r*q-h*o*q+h*n*s-d*r*s-f*n*t+d*o*t;e[8]=h*l*s-g*k*s+g*j*t-f*l*t-h*j*c+f*k*c;e[9]=g*k*q-h*l*q-g*i*t+d*l*t+h*i*c-d*k*c;e[10]=h*l*q-g*j*q+g*i*s-d*l*s-f*i*c+d*j*c;e[11]=h*j*q-f*k*q-h*i*s+d*k*s+f*i*t-d*j*t;e[12]=g*k*o-h*l*o-g*j*r+f*l*r+h*j*p-f*k*p;e[13]=h*l*n-g*k*n+g*i*r-d*l*r-h*i*p+d*k*p;e[14]=g*j*n-f*l*n-g*i*o+d*l*o+f*i*p-d*j*p;e[15]=f*k*n-h*j*n+h*i*o-d*k*o-f*i*r+d*j*r;a.multiplyScalar(1/b.determinant());return a};
-GLOW.Matrix4.makeFrustum=function(b,a,c,e,d,f){var h,g;h=new GLOW.Matrix4;g=h.value;g[0]=2*d/(a-b);g[4]=0;g[8]=(a+b)/(a-b);g[12]=0;g[1]=0;g[5]=2*d/(e-c);g[9]=(e+c)/(e-c);g[13]=0;g[2]=0;g[6]=0;g[10]=-(f+d)/(f-d);g[14]=-2*f*d/(f-d);g[3]=0;g[7]=0;g[11]=-1;g[15]=0;return h};GLOW.Matrix4.makeProjection=function(b,a,c,e){var d,b=c*Math.tan(b*Math.PI/360);d=-b;return GLOW.Matrix4.makeFrustum(d*a,b*a,d,b,c,e)};
-GLOW.Matrix4.makeOrtho=function(b,a,c,e,d,f){var h,g,i,j,k;h=GLOW.Matrix4();i=a-b;j=c-e;k=f-d;g=h.value;g[0]=2/i;g[4]=0;g[8]=0;g[12]=-((a+b)/i);g[1]=0;g[5]=2/j;g[9]=0;g[13]=-((c+e)/j);g[2]=0;g[6]=0;g[10]=-2/k;g[14]=-((f+d)/k);g[3]=0;g[7]=0;g[11]=0;g[15]=1;return h};GLOW.Matrix4.tempVector3A=new GLOW.Vector3;GLOW.Matrix4.tempVector3B=new GLOW.Vector3;GLOW.Matrix4.tempVector3C=new GLOW.Vector3;GLOW.Matrix4.tempVector3D=new GLOW.Vector3;
-GLOW.Geometry={randomVector3Array:function(b,a){var a=a!==void 0?a:1,c,e=[],d=a*2;for(c=0;c<b;c++)e.push(GLOW.Vector3(Math.random()*d-a,Math.random()*d-a,Math.random()*d-a));return e},elements:function(b){var a=0,c,e=new Uint16Array(b*3);for(c=0;c<b;c++)e[a]=a++,e[a]=a++,e[a]=a++;return e},faceNormals:function(b,a){var c=new Float32Array(b.length),e,d=a.length,f,h,g,i=new GLOW.Vector3,j=new GLOW.Vector3,k=new GLOW.Vector3,l=new GLOW.Vector3;for(e=0;e<d;)f=a[e++]*3,h=a[e++]*3,g=a[e++]*3,i.set(b[f+
-0],b[f+1],b[f+2]),j.set(b[h+0],b[h+1],b[h+2]),k.set(b[g+0],b[g+1],b[g+2]),j.subSelf(i),k.subSelf(i),l.cross(k,j).normalize(),c[f+0]=l.value[0],c[f+1]=l.value[1],c[f+2]=l.value[2],c[h+0]=l.value[0],c[h+1]=l.value[1],c[h+2]=l.value[2],c[g+0]=l.value[0],c[g+1]=l.value[1],c[g+2]=l.value[2];return c}};
-GLOW.Geometry.Cube={vertices:function(b){var a=new Float32Array(72),c=0,b=b!==void 0?b*0.5:5;a[c++]=-b;a[c++]=+b;a[c++]=+b;a[c++]=-b;a[c++]=-b;a[c++]=+b;a[c++]=+b;a[c++]=-b;a[c++]=+b;a[c++]=+b;a[c++]=+b;a[c++]=+b;a[c++]=-b;a[c++]=+b;a[c++]=-b;a[c++]=+b;a[c++]=+b;a[c++]=-b;a[c++]=+b;a[c++]=-b;a[c++]=-b;a[c++]=-b;a[c++]=-b;a[c++]=-b;a[c++]=-b;a[c++]=+b;a[c++]=-b;a[c++]=-b;a[c++]=-b;a[c++]=-b;a[c++]=-b;a[c++]=-b;a[c++]=+b;a[c++]=-b;a[c++]=+b;a[c++]=+b;a[c++]=+b;a[c++]=-b;a[c++]=-b;a[c++]=+b;a[c++]=+b;
-a[c++]=-b;a[c++]=+b;a[c++]=+b;a[c++]=+b;a[c++]=+b;a[c++]=-b;a[c++]=+b;a[c++]=+b;a[c++]=+b;a[c++]=-b;a[c++]=-b;a[c++]=+b;a[c++]=-b;a[c++]=-b;a[c++]=+b;a[c++]=+b;a[c++]=+b;a[c++]=+b;a[c++]=+b;a[c++]=-b;a[c++]=-b;a[c++]=-b;a[c++]=+b;a[c++]=-b;a[c++]=-b;a[c++]=+b;a[c++]=-b;a[c++]=+b;a[c++]=-b;a[c++]=-b;a[c++]=+b;return a},elements:function(){var b=new Uint16Array(36),a=0;b[a++]=0;b[a++]=1;b[a++]=2;b[a++]=0;b[a++]=2;b[a++]=3;b[a++]=4;b[a++]=5;b[a++]=6;b[a++]=4;b[a++]=6;b[a++]=7;b[a++]=8;b[a++]=9;b[a++]=
-10;b[a++]=8;b[a++]=10;b[a++]=11;b[a++]=12;b[a++]=13;b[a++]=14;b[a++]=12;b[a++]=14;b[a++]=15;b[a++]=16;b[a++]=17;b[a++]=18;b[a++]=16;b[a++]=18;b[a++]=19;b[a++]=20;b[a++]=21;b[a++]=22;b[a++]=20;b[a++]=22;b[a++]=23;return b},uvs:function(){var b=new Float32Array(48),a=0;b[a++]=0;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=1;
-b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=0;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=1;b[a++]=0;b[a++]=0;b[a++]=0;return b}};
-GLOW.Geometry.Plane={vertices:function(b){var a=new Float32Array(12),c=0,b=b!==void 0?b*0.5:1;a[c++]=+b;a[c++]=-b;a[c++]=0;a[c++]=+b;a[c++]=+b;a[c++]=0;a[c++]=-b;a[c++]=+b;a[c++]=0;a[c++]=-b;a[c++]=-b;a[c++]=0;return a},elements:function(){var b=new Uint16Array(6),a=0;b[a++]=0;b[a++]=1;b[a++]=2;b[a++]=0;b[a++]=2;b[a++]=3;return b},uvs:function(){var b=new Float32Array(8),a=0;b[a++]=1;b[a++]=0;b[a++]=1;b[a++]=1;b[a++]=0;b[a++]=1;b[a++]=0;b[a++]=0;return b}};
-GLOW.Node=function(b){this.localMatrix=new GLOW.Matrix4;this.globalMatrix=new GLOW.Matrix4;this.viewMatrix=new GLOW.Matrix4;this.useXYZStyleTransform=!1;this.position={x:0,y:0,z:0};this.rotation={x:0,y:0,z:0};this.scale={x:1,y:1,z:1};this.children=[];this.parent=void 0;if(b)this.shader=b,this.draw=b.draw};
-GLOW.Node.prototype.update=function(b,a){this.useXYZStyleTransform&&(this.localMatrix.setPosition(this.position.x,this.position.y,this.position.z),this.localMatrix.setRotation(this.rotation.x,this.rotation.y,this.rotation.z),this.localMatrix.scale(this.scale.x,this.scale.y,this.scale.z));b?this.globalMatrix.multiply(b,this.localMatrix):this.globalMatrix.copy(this.localMatrix);a&&this.viewMatrix.multiply(a,this.globalMatrix);var c,e=this.children.length;for(c=0;c<e;c++)this.children[c].update(this.globalMatrix,
-a);return this};GLOW.Node.prototype.addChild=function(b){if(this.children.indexOf(b)===-1)this.children.push(b),b.parent&&b.parent.removeChild(b),b.parent=this;return this};GLOW.Node.prototype.removeChild=function(b){var a=this.children.indexOf(b);if(a!==-1)this.children.splice(1,a),b.parent=void 0;return this};
-GLOW.Camera=function(b){GLOW.Node.call(this);var b=b!==void 0?b:{},a=b.fov!==void 0?b.fov:40,c=b.aspect!==void 0?b.aspect:window.innerWidth/window.innerHeight,e=b.near!==void 0?b.near:0.1,d=b.far!==void 0?b.far:1E4;this.useTarget=b.useTarget!==void 0?b.useTarget:!0;this.projection=GLOW.Matrix4.makeProjection(a,c,e,d);this.inverse=new GLOW.Matrix4;this.target=new GLOW.Vector3(0,0,-100);this.up=new GLOW.Vector3(0,1,0);this.update()};GLOW.Camera.prototype=new GLOW.Node;
-GLOW.Camera.prototype.constructor=GLOW.Camera;GLOW.Camera.prototype.supr=GLOW.Node.prototype;
-GLOW.Camera.prototype.update=function(b,a){this.useXYZStyleTransform?(this.localMatrix.setPosition(this.position.x,this.position.y,this.position.z),this.useTarget?this.localMatrix.lookAt(this.target,this.up):this.localMatrix.setRotation(this.rotation.x,this.rotation.y,this.rotation.z),this.localMatrix.scale(this.scale.x,this.scale.y,this.scale.z)):this.useTarget&&this.localMatrix.lookAt(this.target,this.up);b?this.globalMatrix.multiply(b,this.localMatrix):this.globalMatrix.copy(this.localMatrix);
-GLOW.Matrix4.makeInverse(this.globalMatrix,this.inverse);var c,e=this.children.length;for(c=0;c<e;c++)this.children[c].update(this.globalMatrix,a)};GLOW.defaultCamera=new GLOW.Camera;
+/*
+* GLOW - Just-Above-Low-Level WebGL API
+*/
+
+var GLOW = (function() {
+    "use strict"; "use restrict";
+
+    var glow = {};
+    var contexts = {};
+    var uniqueIdCounter = -1;
+
+    glow.currentContext = {};
+
+    glow.registerContext = function( context ) {
+        contexts[ context.id ] = context;
+        glow.enableContext( context );
+    };
+
+    glow.getContextById = function( id ) {
+        if( contexts[ id ] ) {
+            return contexts[ id ];
+        }
+        console.error( "Couldn't find context id " + id + ", returning current with id " + glow.currentContext.id );
+        return glow.currentContext;
+    };
+
+    glow.enableContext = function( contextOrId ) {
+        if( typeof( contextOrId ) === 'string' ) {
+            glow.currentContext = getContextById(contextOrId);
+        } else {
+            glow.currentContext = contextOrId;
+        }
+        GL = glow.GL = glow.currentContext.GL;
+    };
+
+    glow.uniqueId = function() {
+        return ++uniqueIdCounter;
+    };
+
+    return glow;
+}());
+
+/*
+* Current GL - set to latest registered or enabled GL context 
+*/
+var GL = {};
+/*
+* GLOW Context
+*/
+
+GLOW.Context = (function() {
+	
+	"use strict"; "use restrict";
+
+    // constructor
+    function GLOWContext( parameters ) {
+    	if( parameters === undefined ) parameters = {};
+
+    	this.id                     = parameters.id                    !== undefined ? parameters.id                    : GLOW.uniqueId();
+    	this.alpha                  = parameters.alpha                 !== undefined ? parameters.alpha                 : true;
+    	this.depth                  = parameters.depth                 !== undefined ? parameters.depth                 : true;
+    	this.antialias              = parameters.antialias             !== undefined ? parameters.antialias             : true;
+    	this.stencil                = parameters.stencil               !== undefined ? parameters.stencil               : false;
+    	this.premultipliedAlpha     = parameters.premultipliedAlpha    !== undefined ? parameters.premultipliedAlpha    : true;
+    	this.preserveDrawingBuffer  = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false;
+    	this.width                  = parameters.width                 !== undefined ? parameters.width                 : window.innerWidth;
+    	this.height                 = parameters.height                !== undefined ? parameters.height                : window.innerHeight;
+    	this.cache                  = new GLOW.Cache();
+        this.viewport               = { x: 0, y: 0, width: 0, height: 0 };
+
+    	if( parameters.context ) {
+    	    this.GL = parameters.context;
+        	GLOW.registerContext( this );
+    	} else {
+        	try {
+        		this.domElement = document.createElement( 'canvas' );
+        		this.GL         = this.domElement.getContext( 'experimental-webgl', { alpha:                 this.alpha, 
+                                                                                      depth:                 this.depth, 
+                                                                                      antialias:             this.antialias,
+                                                                                      stencil:               this.stencil,
+                                                                                      premultipliedAlpha:    this.premultipliedAlpha,
+                                                                                      preserveDrawingBuffer: this.preserveDrawingBuffer } );
+        		this.domElement.width  = this.width;
+        		this.domElement.height = this.height;
+        	} catch( error ) {
+        		console.error( "GLOW.Context.construct: " + error );
+        	}
+
+        	GLOW.registerContext( this );
+
+        	this.enableCulling( true, { frontFace: GL.CCW, cullFace: GL.BACK } );
+        	this.enableDepthTest( true, { func: GL.LEQUAL, write: true, zNear: 0, zFar: 1 } );
+        	this.enableBlend( false );
+        	this.setupClear( { clearBits: GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT } );
+        	this.setupViewport( { x: 0, y: 0, width: this.width, height: this.height } );
+        	this.clear();
+    	}
+    }
+	
+	
+	// methods
+    GLOWContext.prototype.setupClear = function( setup ) {
+    	var r = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : 0; 
+    	var g = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : 0; 
+    	var b = setup.blue  !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : 0; 
+    	var a = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : 1;
+    	var d = setup.depth !== undefined ? Math.min( 1, Math.max( 0, setup.depth )) : 1;
+
+    	GL.clearColor( r, g, b, a );
+    	GL.clearDepth( d );
+    	this.clearBits = setup.clearBits !== undefined ? setup.clearBits : this.clearBits;
+    	return this;
+    };
+
+    GLOWContext.prototype.clear = function( bits ) {
+    	if( bits === undefined ) { bits = this.clearBits };
+    	GL.clear( bits );
+    	return this;
+    };
+
+    GLOWContext.prototype.enableBlend = function( flag, setup ) {
+    	if( flag ) {
+    		GL.enable( GL.BLEND );
+    		if( setup ) this.setupBlend( setup );
+    	} else GL.disable( GL.BLEND );
+    	return this;
+    };
+
+    GLOWContext.prototype.setupBlend = function( setup ) {
+    	if( setup.equationRGB ) {
+			if( setup.equationAlpha ) GL.blendEquationSeparate( setup.equationRGB, setup.equationAlpha );
+			if( setup.srcRGB        ) GL.blendFuncSeparate( setup.srcRGB, setup.dstRGB, setup.srcAlpha, setup.dstAlpha );
+    	} else {
+			if( setup.equation ) GL.blendEquation( setup.equation );
+			if( setup.src      ) GL.blendFunc( setup.src, setup.dst );
+    	}
+    	return this;
+    };
+
+    GLOWContext.prototype.enableDepthTest = function( flag, setup ) {
+    	if( flag ) {
+    		GL.enable( GL.DEPTH_TEST );
+    		if( setup ) this.setupDepthTest( setup );
+    	} else GL.disable( GL.DEPTH_TEST );
+    	return this;
+    };
+
+    GLOWContext.prototype.setupDepthTest = function( setup ) {
+		if( setup.func  !== undefined ) GL.depthFunc( setup.func );
+		if( setup.write !== undefined ) GL.depthMask( setup.write );
+		if( setup.zNear !== undefined && setup.zFar !== undefined && setup.zNear <= setup.zFar ) {
+			GL.depthRange( Math.max( 0, Math.min( 1, setup.zNear )), Math.max( 0, Math.min( 1, setup.zFar )));
+		}
+    	return this;
+    };
+
+    GLOWContext.prototype.enablePolygonOffset = function( flag, setup ) {
+        if( flag ) {
+            GL.enable( GL.POLYGON_OFFSET_FILL );
+            if( setup ) this.setupPolygonOffset( setup );
+        } else GL.disable( GL.POLYGON_OFFSET_FILL );
+        return this;
+    }
+    
+    GLOWContext.prototype.setupPolygonOffset = function( setup ) {
+        if( setup.factor && setup.units ) GL.polygonOffset( setup.factor, setup.units );
+    }
+
+    GLOWContext.prototype.enableStencilTest = function( flag, setup ) {
+    	if( flag ) {
+    		GL.enable( GL.STENCIL_TEST );
+    		if( setup ) this.setupStencilTest( setup );
+    	} else GL.disable( GL.STENCIL_TEST );
+    	return this;
+    };
+
+    GLOWContext.prototype.setupStencilTest = function( setup ) {
+        if( setup.func && setup.funcFace ) {
+            GL.stencilFuncSeparate( setup.funcFace, setup.func, setup.funcRef, setup.funcMask );
+        } else if( setup.func ) {
+            GL.stencilFunc( setup.func, setup.funcRef, setup.funcMask );
+        }
+        
+        if( setup.mask && setup.maskFace ) {
+            GL.stencilMaskSeparate( setup.maskFace, setup.mask );
+        } else if( setup.mask ) {
+            GL.stencilMask( setup.mask );
+        }
+
+        if( setup.opFail && setup.opFace ) {
+            GL.stencilOpSeparate( setup.opFace, setup.opFail, setup.opZfail, setup.opZpass );
+        } else if( setup.opFail ) {
+            GL.stencilOp( setup.opFail, setup.opZfail, setup.opZpass );
+        }
+    	return this;
+    };
+
+    GLOWContext.prototype.enableCulling = function( flag, setup ) {
+    	if( flag ) {
+    		GL.enable( GL.CULL_FACE );
+    		if( setup ) this.setupCulling( setup );
+    	} else GL.disable( GL.CULL_FACE );
+    	return this;
+    };
+
+    GLOWContext.prototype.setupCulling = function( setup ) {
+    	try {
+    		if( setup.frontFace ) GL.frontFace( setup.frontFace );
+    		if( setup.cullFace  ) GL.cullFace ( setup.cullFace  );
+    	} catch( error ) {
+    		console.error( "GLOW.Context.setupCulling: " + error );
+    	}
+    	return this;
+    };
+
+    GLOWContext.prototype.enableScissor = function( flag, setup ) {
+    	if( flag ) {
+    		GL.enable( GL.SCISSOR_TEST );
+    		if( setup ) this.setupScissor( setup );
+    	} else {
+    		GL.disable( GL.SCISSOR_TEST );
+    	}
+    	return this;
+    };
+
+    GLOWContext.prototype.setupScissor = function( setup ) {
+        try {
+            GL.scissor( setup.x, setup.y, setup.width, setup.height );
+        } catch( error ) {
+            console.error( "GLOW.Context.setupScissorTest: " + error );
+        } 
+    	return this;
+    };
+
+    GLOWContext.prototype.setViewport = function() {
+        this.setupViewport();
+    };
+
+    GLOWContext.prototype.setupViewport = function( setup ) {
+        if( setup ) {
+        	this.viewport.x      = setup.x      !== undefined ? setup.x      : this.viewport.x;
+        	this.viewport.y      = setup.y      !== undefined ? setup.y      : this.viewport.y;
+        	this.viewport.width  = setup.width  !== undefined ? setup.width  : this.viewport.width;
+        	this.viewport.height = setup.height !== undefined ? setup.height : this.viewport.height;
+        }
+    	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
+    	return this;
+    };
+
+    GLOWContext.prototype.availableExtensions = function() {
+        return GL.getSupportedExtensions();
+    };
+	
+    GLOWContext.prototype.enableExtension = function( extensionName ) {
+        var availableExtensions = GL.getSupportedExtensions();
+        for( var a = 0, al = availableExtensions.length; a < al; a++ ) {
+            if( extensionName.toLowerCase() === availableExtensions[ a ].toLowerCase())
+                break;
+        }
+                
+        if( a !== al ) {
+            return GL.getExtension( availableExtensions[ a ] );
+        } else {
+            return undefined;
+        }
+    };
+	
+	return GLOWContext;
+})();
+
+
+/*
+* GLOW.Compiler
+* @author: Mikael Emtinger, gomo.se
+* Compiles vertex- and fragementshader, uniforms, attributes and elements into a GLOW.CompiledData
+*/
+
+GLOW.Compiler = (function() {
+	
+	"use strict"; 
+	"use restrict";
+	
+	var compiler = {};
+	
+	//--- compile ------------------------------------------
+	// parameter object containing:
+	//  vertexShaderCode = string, the vertex shader code
+	//  fragmentShaderCode = string, the framgnet shader code
+	//  uniformsAndAttributes = object, for example { transform: GLOW.Matrix4 }
+	//  elements = array or UInt16Array with elements
+	
+	compiler.compile = function( parameters ) {
+		var program = GLOW.currentContext.cache.codeCompiled( parameters.vertexShader, parameters.fragmentShader );
+		if( program === undefined ) {
+			program = compiler.linkProgram( compiler.compileVertexShader  ( parameters.vertexShader   ),
+			                                compiler.compileFragmentShader( parameters.fragmentShader ));
+			GLOW.currentContext.cache.addCompiledProgram( program );
+		}
+		
+		var uniforms              = compiler.createUniforms      ( compiler.extractUniforms  ( program ), parameters.data );
+		var attributes            = compiler.createAttributes    ( compiler.extractAttributes( program ), parameters.data, parameters.usage, parameters.interleave );
+		var interleavedAttributes = compiler.interleaveAttributes( attributes, parameters.interleave );
+
+		var elements = parameters.elements;
+		var elementType = GL.TRIANGLES;
+		var usageParameters = parameters.usage ? parameters.usage : {};
+		var elementUsage = usageParameters.elements;
+
+		if( parameters.triangles ) {
+		    elements = parameters.triangles;
+		    elementUsage = usageParameters.triangles;
+		} else if( parameters.triangleStrip ) {
+		    elements = parameters.triangleStrip;
+		    elementType = GL.TRIANGLE_STRIP;
+		    elementUsage = usageParameters.triangleStrip;
+		} else if( parameters.triangleFan ) {
+		    elements = parameters.triangleFan;
+		    elementType = GL.TRIANGLE_FAN;
+		    elementUsage = usageParameters.triangleFan;
+		} else if( parameters.points ) {
+		    elements = parameters.points;
+		    elementType = GL.POINTS;
+		    elementUsage = usageParameters.points;
+		} else if( parameters.lines ) {
+		    elements = parameters.lines;
+		    elementType = GL.LINES;
+		    elementUsage = usageParameters.lines;
+		} else if( parameters.lineLoop ) {
+		    elements = parameters.lineLoop;
+		    elementType = GL.LINE_LOOP;
+		    elementUsage = usageParameters.lineLoop;
+		} else if( parameters.lineStrip ) {
+		    elements = parameters.lineStrip;
+		    elementType = GL.LINE_STRIP;
+		    elementUsage = usageParameters.lineStrip;
+		}
+
+		elements = compiler.createElements( elements, elementType, elementUsage ); 
+
+        return new GLOW.CompiledData( program, uniforms, attributes, interleavedAttributes, elements, parameters );
+	}
+
+
+	//--- compile vertex shader ---
+
+	compiler.compileVertexShader = function( vertexShaderCode ) {
+
+		var vertexShader;
+		vertexShader    = GL.createShader( GL.VERTEX_SHADER );
+		vertexShader.id = GLOW.uniqueId();
+		
+		GL.shaderSource ( vertexShader, vertexShaderCode );
+		GL.compileShader( vertexShader );
+
+	    if( !GL.getShaderParameter( vertexShader, GL.COMPILE_STATUS )) {
+			console.error( "GLOW.Compiler.compileVertexShader: " + GL.getShaderInfoLog( vertexShader ));
+		}
+		
+		return vertexShader;
+	}
+
+
+	//--- compile fragment shader code ---
+
+	compiler.compileFragmentShader = function( fragmentShaderCode ) {
+
+		var fragmentShader;
+		fragmentShader    = GL.createShader( GL.FRAGMENT_SHADER );
+		fragmentShader.id = GLOW.uniqueId();
+		
+		GL.shaderSource ( fragmentShader, fragmentShaderCode );
+		GL.compileShader( fragmentShader );
+
+	    if( !GL.getShaderParameter( fragmentShader, GL.COMPILE_STATUS )) {
+			console.error( "GLOW.Compiler.compileFragmentShader: " + GL.getShaderInfoLog( fragmentShader ));
+		}
+		
+		return fragmentShader;
+	}
+
+
+	//--- link program ---
+
+	compiler.linkProgram = function( vertexShader, fragmentShader ) {
+
+		var program;
+	    program    = GL.createProgram();
+		program.id = GLOW.uniqueId();
+
+	    GL.attachShader( program, vertexShader );
+	    GL.attachShader( program, fragmentShader );
+	    GL.linkProgram ( program );
+
+	    if( !GL.getProgramParameter( program, GL.LINK_STATUS )) {
+			console.error( "GLOW.Compiler.linkProgram: Could not initialise program" );
+	    }
+	
+		return program;
+	}
+	
+	
+	//--- extract uniforms ---
+
+	compiler.extractUniforms = function( program ) {
+		var uniforms = {};
+		var uniform;
+		var locationNumber = 0;
+		var result;
+
+		while( true ) {
+			result = GL.getActiveUniform( program, locationNumber );
+			if( result !== null && result !== -1 && result !== undefined ) {
+                uniform = {
+                    name: result.name.split( "[" )[ 0 ],
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getUniformLocation( program, result.name.split( "[" )[ 0 ] ),
+                    locationNumber: locationNumber
+                };
+				uniforms[ uniform.name ] = uniform;
+			} else break;
+			locationNumber++;
+		}
+
+		return uniforms;
+	}
+
+
+	//--- extract attributes ---
+	
+	compiler.extractAttributes = function( program ) {
+		var attribute, locationNumber = 0;
+		var attributes = {};
+        var result;
+
+		while( true ) {
+			result = GL.getActiveAttrib( program, locationNumber );
+			if( result !== null && result !== -1 && result !== undefined ) {
+                attribute = {
+                    name: result.name,
+                    size: result.size,
+                    type: result.type,
+                    location: GL.getAttribLocation( program, result.name ),
+                    locationNumber: locationNumber
+                }
+				attributes[ attribute.name ] = attribute;
+			} else break;
+			locationNumber++;
+		}
+
+		program.highestAttributeNumber = locationNumber - 1;
+		return attributes;
+	}
+	
+
+	//--- create uniforms ---
+
+	compiler.createUniforms = function( uniformInformation, data ) {
+		var u;
+		var uniforms = {};
+		var uniform, name;
+		var textureUnit = 0;
+
+		for( u in uniformInformation ) {
+			uniform = uniformInformation[ u ];
+			name    = uniform.name;
+			if( data[ name ] === undefined ) {
+				console.warn( "GLOW.Compiler.createUniforms: missing declaration for uniform " + name );
+			} else if( data[ name ] instanceof GLOW.Uniform ) {
+				uniforms[ name ] = data[ name ];
+			} else {
+				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
+				if( uniforms[ name ].type === GL.SAMPLER_2D || uniforms[ name ].type === GL.SAMPLER_CUBE ) {
+					uniforms[ name ].data.init( textureUnit++ );
+				}
+			}
+		}
+		
+		return uniforms;
+	}
+
+
+	//--- create attributes ---
+
+	compiler.createAttributes = function( attributeInformation, data, usage, interleave ) {
+
+		var a;
+		var attribute, name;
+		var attributes = {};
+		interleave = interleave !== undefined ? interleave : {};
+		usage = usage !== undefined ? usage : {};
+
+		for( a in attributeInformation ) {
+			attribute = attributeInformation[ a ];
+			name      = attribute.name;
+			
+			if( data[ name ] === undefined ) {
+				console.warn( "GLOW.Compiler.createAttributes: missing declaration for attribute " + name );
+			} else if( data[ name ] instanceof GLOW.Attribute ) {
+				attributes[ name ] = data[ name ];
+			} else {
+				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ] !== undefined ? usage[ name ] : undefined, interleave[ name ] !== undefined ? interleave[ name ] : true );
+			}
+		}
+
+		return attributes;
+	}
+	
+	//--- interleave attributes ---
+	
+	compiler.interleaveAttributes = function( attributes, interleave ) {
+	    interleave = interleave !== undefined ? interleave : {};
+	    
+	    var a, al, b, bl, i;
+	    var lowestAvailableIndex = 0;
+	    var attributeByIndex = [];
+	    
+	    // get lowest available index
+	    for( a in attributes ) {
+	        if( interleave[ a ] !== undefined && interleave[ a ] !== false ) {
+	            lowestAvailableIndex = Math.max( lowestAvailableIndex - 1, interleave[ a ] ) + 1;
+	        }
+	    }
+	    
+	    // set all non-set attributes to lowest available index
+	    for( a in attributes ) {
+	        if( interleave[ a ] === undefined ) {
+	            interleave[ a ] = lowestAvailableIndex;
+	        }
+	    }
+	    
+	    // sort attributes into 2d-array
+	    for( i in interleave ) {
+	        if( interleave[ i ] !== false ) {
+	            if( attributeByIndex[ interleave[ i ]] === undefined ) {
+	                attributeByIndex[ interleave[ i ]] = [];
+	            }
+	            attributeByIndex[ interleave[ i ]].push( attributes[ i ] );
+ 	        }
+	    }
+	    
+	    // stride overflow check
+	    var stride, attribute, currentLength;
+ 	    for( a = 0, al = attributeByIndex.length; a < al; a++ ) {
+ 	        if( attributeByIndex[ a ] !== undefined ) {
+ 	            stride = 0;
+ 	            for( b = 0, bl = attributeByIndex[ a ].length; b < bl; b++ ) {
+ 	                if( stride + attributeByIndex[ a ][ b ].size * 4 > 255 ) {
+ 	                    console.warn( "GLOW.Compiler.interleaveAttributes: Stride owerflow, moving attributes to new interleave index. Please check your interleave setup!" );
+ 	                    currentLength = attributeByIndex.length;
+ 	                    attributeByIndex[ currentLength ] = [];
+ 	                    while( b < bl ) {
+ 	                        attributeByIndex[ currentLength ].push( attributeByIndex[ a ][ b ] );
+ 	                        attributeByIndex[ a ].splice( b, 1 );
+ 	                        bl--;
+ 	                    }
+ 	                    continue;
+ 	                }
+ 	                stride += attributeByIndex[ a ][ b ].size * 4;
+ 	            }
+ 	        }
+ 	    }
+ 	    
+ 	    // create interleaved attributes
+	    var name, interleavedAttributes = {};
+	    for( a = 0, al = attributeByIndex.length; a < al; a++ ) {
+	        if( attributeByIndex[ a ] !== undefined ) {
+	            name = "";
+	            for( b = 0, bl = attributeByIndex[ a ].length; b < bl; b++ ) {
+	                name += b !== bl - 1 ? attributeByIndex[ a ][ b ].name + "_" : attributeByIndex[ a ][ b ].name;
+	            }
+	            interleavedAttributes[ name ] = new GLOW.InterleavedAttributes( attributeByIndex[ a ] );
+	        }
+	    }
+	    
+	    
+	    // remove interleaved attributes from attribute object
+	    for( i in interleave ) {
+	        if( interleave[ i ] !== false ) {
+	            delete attributes[ i ];
+	        }
+	    }
+	    
+	    return interleavedAttributes;
+	}
+	
+	
+	//--- create elements ---
+	
+	compiler.createElements = function( data, type, usage ) {
+
+		var elements;
+
+		if( data === undefined ) {
+			console.error( "GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting." );
+		} else if( data instanceof GLOW.Elements ) {
+			elements = data;
+		} else {
+			if( !( data instanceof Uint16Array )) {
+				data = new Uint16Array( data );
+			}
+			elements = new GLOW.Elements( data, type, usage !== undefined ? usage : GL.STATIC_DRAW );
+		}
+
+		return elements;
+	}
+	
+	return compiler;
+	
+})();/*
+* Shader Compiled Data
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.CompiledData = (function() {
+    
+    "use strict"; "use restrict";
+    
+    // private data, functions and initializations here
+
+    // constructor
+    
+    function GLOWCompiledData( program, uniforms, attributes, interleavedAttributes, elements, extras ) {
+	    this.program = program;
+	    this.uniforms = uniforms !== undefined ? uniforms : {};
+	    this.attributes = attributes !== undefined ? attributes : {};
+	    this.interleavedAttributes = interleavedAttributes !== undefined ? interleavedAttributes : {};
+	    this.elements = elements;
+	    
+	    extras = extras !== undefined ? extras : {};
+	    this.preDrawCallback = extras.preDrawCallback;
+	    this.postDrawCallback = extras.postDrawCallback;
+	    this.blend = extras.blend;
+	    this.stencil = extras.stencil;
+    }
+
+    // methods
+    GLOWCompiledData.prototype.clone = function( except ) {
+    	var clone = new GLOW.CompiledData();
+    	except = except !== undefined ? except : {};
+
+    	var u;
+    	for( u in this.uniforms ) {
+    		if( except[ u ] ) {
+    			clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
+				if( clone.uniforms[ u ].type === GL.SAMPLER_2D || 
+				    clone.uniforms[ u ].type === GL.SAMPLER_CUBE ) {
+					clone.uniforms[ u ].data.init( this.uniforms[ u ].data.textureUnit );
+				}
+    		} else {
+    			clone.uniforms[ u ] = this.uniforms[ u ];
+    		}
+    	}
+
+    	var a;
+    	for( a in this.attributes ) {
+    		if( except[ a ] ) {
+    			clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
+    		} else {
+    			clone.attributes[ a ] = this.attributes[ a ];
+    		}
+    	}
+    	
+    	var i;
+    	for( i in this.interleavedAttributes ) {
+    	    if( except[ i ] ) {
+    	        clone.interleavedAttributes[ i ] = new GLOW.InterleavedAttributes( except[ i ] );
+    	    } else {
+    	        clone.interleavedAttributes[ i ] = this.interleavedAttributes[ i ];
+    	    }
+    	}
+
+    	if( except.elements ) {
+    		clone.elements = new GLOW.Elements( except.elements );
+    	} else {
+    		clone.elements = this.elements;
+    	}
+
+        if( except.program ) {
+        	clone.program = except.program;
+        } else {
+        	clone.program = this.program;
+        }
+        
+        if( except.blend ) {
+            clone.blend = except.blend;
+        } else {
+            clone.blend = this.blend;
+        }
+        
+        if( except.stencil ) {
+            clone.stencil = except.stencil;
+        } else {
+            clone.stencil = this.stencil;
+        }
+        
+        if( except.preDrawCallback ) {
+            clone.preDrawCallback = except.preDrawCallback;
+        } else {
+            clone.preDrawCallback = this.preDrawCallback;
+        }
+        
+        if( except.postDrawCallback ) {
+            clone.postDrawCallback = except.postDrawCallback;
+        } else {
+            clone.postDrawCallback = this.postDrawCallback;
+        }
+
+    	return clone;
+    };
+    
+    return GLOWCompiledData;
+})();
+
+/*
+* Cache
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Cache = (function() {
+    
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+
+    // constructor
+    function GLOWCache() {
+        this.highestAttributeNumber = -1;
+        this.uniformByLocation = [];
+        this.attributeByLocation = [];
+        this.textureByLocation = [];
+        this.compiledCode = [];
+        this.elementId = -1;
+        this.programId = -1;
+        this.active = true;
+    }
+
+    // methods
+    GLOWCache.prototype.codeCompiled = function( vertexShader, fragmentShader ) {
+        var code, c, cl = this.compiledCode.length;
+        
+		for( c = 0; c < cl; c++ ) {
+			code = this.compiledCode[ c ];
+			if( vertexShader === code.vertexShader && fragmentShader === code.fragmentShader ) { break; }
+		}
+		
+		if( c === cl ) {
+			this.compiledCode.push( { vertexShader: vertexShader, 
+				                      fragmentShader: fragmentShader } );
+			return undefined;
+		} else {
+		    return this.compiledCode[ c ].program;
+		}
+    };
+    
+    GLOWCache.prototype.addCompiledProgram = function( program ) {
+        this.compiledCode[ this.compiledCode.length - 1 ].program = program;
+    }
+    
+    
+    GLOWCache.prototype.programCached = function( program ) {
+        if( this.active ) {
+            if( program.id === this.programId ) return true;
+            this.programId = program.id;
+        }
+        return false;
+    };
+
+    GLOWCache.prototype.setProgramHighestAttributeNumber = function( program ) {
+        var saveHighestAttributeNumber = this.highestAttributeNumber;
+        this.highestAttributeNumber = program.highestAttributeNumber;
+        return program.highestAttributeNumber - saveHighestAttributeNumber;
+    };
+
+    GLOWCache.prototype.uniformCached = function( uniform ) {
+        if( this.active ) {
+            if( this.uniformByLocation[ uniform.locationNumber ] === uniform.id ) return true;
+            this.uniformByLocation[ uniform.locationNumber ] = uniform.id;
+        }
+        return false;
+    };
+    
+    GLOWCache.prototype.invalidateUniform = function( uniform ) {
+        this.uniformByLocation[ uniform.locationNumber ] = undefined;
+    }
+
+    GLOWCache.prototype.attributeCached = function( attribute ) {
+        if( this.active ) {
+            if( this.attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
+            this.attributeByLocation[ attribute.locationNumber ] = attribute.id;
+        }
+        return false;
+    };
+
+    GLOWCache.prototype.invalidateAttribute = function( attribute ) {
+        this.attributeByLocation[ attribute.locationNumber ] = undefined;
+    }
+
+    GLOWCache.prototype.textureCached = function( texture ) {
+        if( this.active ) {
+            if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
+            this.textureByLocation[ texture.textureUnit ] = texture.id;
+        }
+        return false;
+    };
+
+    GLOWCache.prototype.invalidateTexture = function( texture ) {
+        this.textureByLocation[ texture.textureUnit ] = undefined;
+    };
+
+    GLOWCache.prototype.elementsCached = function( elements ) {
+        if( this.active ) {
+            if( elements.id === this.elementId ) return true;
+            this.elementId = elements.id;
+        }
+        return false;
+    };
+
+    GLOWCache.prototype.invalidateElements = function() {
+        this.elementId = -1;
+    };
+
+    GLOWCache.prototype.clear = function() {
+        this.highestAttributeNumber = -1;
+        this.uniformByLocation.length = 0;
+        this.attributeByLocation.length = 0;
+        this.textureByLocation.length = 0;
+        this.elementId = -1;
+        this.programId = -1;
+    };
+    
+    return GLOWCache;
+})();
+GLOW.FBO = (function() {
+    
+    "use strict"; "use restrict";
+
+    var cubeSideOffsets = { "posX":0, "negX":1, "posY":2, "negY":3, "posZ":4, "negZ":5 };
+
+	// constructor
+	function GLOWFBO( parameters ) {
+
+    	parameters = parameters !== undefined ? parameters : {};
+
+    	this.id            = GLOW.uniqueId();
+    	this.width         = parameters.width          !== undefined ? parameters.width          : parameters.size !== undefined ? parameters.size : window.innerWidth;
+    	this.height        = parameters.height         !== undefined ? parameters.height         : parameters.size !== undefined ? parameters.size : window.innerHeight;
+    	var wrapS          = parameters.wrapS          !== undefined ? parameters.wrapS          : parameters.wrap !== undefined ? parameters.wrap : GL.CLAMP_TO_EDGE;
+    	var wrapT          = parameters.wrapT          !== undefined ? parameters.wrapT          : parameters.wrap !== undefined ? parameters.wrap : GL.CLAMP_TO_EDGE;
+    	var magFilter      = parameters.magFilter      !== undefined ? parameters.magFilter      : GL.LINEAR;
+    	var minFilter      = parameters.minFilter      !== undefined ? parameters.minFilter      : GL.LINEAR;
+    	var internalFormat = parameters.internalFormat !== undefined ? parameters.internalFormat : GL.RGBA;
+    	var format         = parameters.format         !== undefined ? parameters.format         : GL.RGBA;
+    	var type           = parameters.type           !== undefined ? parameters.type           : GL.UNSIGNED_BYTE;
+    	var depth          = parameters.depth          !== undefined ? parameters.depth          : true;
+    	var stencil        = parameters.stencil        !== undefined ? parameters.stencil        : false;
+
+        this.isBound       = false;
+    	this.textureUnit   = -1;
+        this.textureType   = parameters.cube !== true ? GL.TEXTURE_2D : GL.TEXTURE_CUBE_MAP;
+    	this.viewport      = { x: 0, y: 0, width: this.width, height: this.height };
+    	this.clearSettings = { r: 0, g: 0, b: 0, a: 1, depth: 1, clearBits: 0 };
+    	
+    	this.clearSettings.clearBits  = GL.COLOR_BUFFER_BIT;
+    	this.clearSettings.clearBits |= depth   ? GL.DEPTH_BUFFER_BIT   : 0;
+        this.clearSettings.clearBits |= stencil ? GL.STENCIL_BUFFER_BIT : 0;
+        this.setupClear( parameters );
+
+    	// setup texture
+    	this.texture = GL.createTexture();
+    	GL.bindTexture  ( this.textureType, this.texture );
+    	GL.texParameteri( this.textureType, GL.TEXTURE_WRAP_S, wrapS );
+    	GL.texParameteri( this.textureType, GL.TEXTURE_WRAP_T, wrapT );
+    	GL.texParameteri( this.textureType, GL.TEXTURE_MAG_FILTER, magFilter );
+    	GL.texParameteri( this.textureType, GL.TEXTURE_MIN_FILTER, minFilter );
+
+        if( this.textureType === GL.TEXTURE_2D ) {
+        	GL.texImage2D( this.textureType, 0, internalFormat, this.width, this.height, 0, format, type, null );
+        } else {
+            for( var t = 0; t < 6; t++ ) {
+            	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + t, 0, internalFormat, this.width, this.height, 0, format, type, null );
+            }
+        }
+
+        // setup render buffer
+        if( depth || stencil ) {
+        	this.renderBuffer = GL.createRenderbuffer();
+    		GL.bindRenderbuffer( GL.RENDERBUFFER, this.renderBuffer );
+    		if( depth && !stencil ) {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_COMPONENT16, this.width, this.height );
+    		} else if( !depth && stencil ) {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.STENCIL_INDEX8, this.width, this.height );
+    		} else if( depth && stencil ) {
+    			GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_STENCIL, this.width, this.height );
+    		}
+        }
+
+
+        // setup frame buffer
+        if( this.textureType === GL.TEXTURE_2D ) {
+        	this.frameBuffer = GL.createFramebuffer();
+    		GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+    		GL.framebufferTexture2D( GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, this.texture, 0 );
+
+    		if( depth && !stencil ) {
+    			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		} else if( !depth && stencil ) {
+    			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		} else if( depth && stencil ) {
+    			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+    		}
+        } else {
+        	this.frameBuffers = {};
+        	for( var f in cubeSideOffsets ) {
+        	    this.frameBuffers[ f ] = GL.createFramebuffer();
+        		GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffers[ f ] );
+        		GL.framebufferTexture2D( GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ f ], this.texture, 0 );
+
+        		if( depth && !stencil ) {
+        			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+        		} else if( !depth && stencil ) {
+        			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+        		} else if( depth && stencil ) {
+        			GL.framebufferRenderbuffer( GL.FRAMEBUFFER, GL.DEPTH_STENCIL_ATTACHMENT, GL.RENDERBUFFER, this.renderBuffer );
+        		}
+        	}
+        }
+    	
+		// release
+		GL.bindTexture( this.textureType, null );
+		GL.bindRenderbuffer( GL.RENDERBUFFER, null );
+		GL.bindFramebuffer( GL.FRAMEBUFFER, null);
+	}
+
+    // methods
+    GLOWFBO.prototype.init = function( textureUnit ) {
+    	this.textureUnit = textureUnit;
+    };
+
+    GLOWFBO.prototype.bind = function( side ) {
+        if( !this.isBound ) {
+            this.isBound = true;
+            if( this.textureType === GL.TEXTURE_2D ) {
+            	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+            } else {
+                side = side !== undefined ? side : "posX";
+            	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffers[ side ] );
+            }
+        }
+    	return this;
+    };
+
+    GLOWFBO.prototype.unbind = function() {
+    	// TODO: add cache
+    	if( this.isBound ) {
+    	    this.isBound = false;
+        	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
+        	GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
+    	}
+    	return this;
+    };
+
+    GLOWFBO.prototype.setViewport = function() {
+        this.setupViewport();
+    };
+
+    GLOWFBO.prototype.setupViewport = function( setup ) {
+        if( setup ) {
+        	this.viewport.x      = setup.x      !== undefined ? setup.x      : this.viewport.x;
+        	this.viewport.y      = setup.y      !== undefined ? setup.y      : this.viewport.y;
+        	this.viewport.width  = setup.width  !== undefined ? setup.width  : this.viewport.width;
+        	this.viewport.height = setup.height !== undefined ? setup.height : this.viewport.height;
+        }
+    	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
+    	return this;
+    };
+
+    GLOWFBO.prototype.setupClear = function( setup ) {
+    	if( setup !== undefined ) {
+        	this.clearSettings.r         = setup.red       !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : this.clearSettings.r; 
+        	this.clearSettings.g         = setup.green     !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : this.clearSettings.g; 
+        	this.clearSettings.b         = setup.blue      !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : this.clearSettings.b; 
+        	this.clearSettings.a         = setup.alpha     !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : this.clearSettings.a;
+        	this.clearSettings.depth     = setup.depth     !== undefined ? Math.min( 1, Math.max( 0, setup.depth )) : this.clearSettings.depth;
+        	this.clearSettings.clearBits = setup.clearBits !== undefined ? setup.clearBits : this.clearSettings.clearBits;
+    	}
+
+    	GL.clearColor( this.clearSettings.r, this.clearSettings.g, this.clearSettings.b, this.clearSettings.a );
+    	GL.clearDepth( this.clearSettings.depth );
+    	return this;
+    };
+
+    GLOWFBO.prototype.clear = function( setup ) {
+        if( this.isBound ) {
+            this.setupClear( setup );
+        	GL.clear( this.clearSettings.clearBits );
+        }
+    	return this;
+    };
+    
+    GLOWFBO.prototype.resize = function() {
+    	// TODO
+    	return this;
+    };
+
+    GLOWFBO.prototype.generateMipMaps = function() {
+    	GL.bindTexture( this.textureType, this.texture );
+    	GL.generateMipmap( this.textureType );
+    	GL.bindTexture( this.textureType, null );
+    	return this;
+    };
+    
+    return GLOWFBO;
+})();
+GLOW.Texture = (function() {
+	
+	"use strict"; "use restrict";
+
+    var cubeSideOffsets = { "posX":0, "negX":1, "posY":2, "negY":3, "posZ":4, "negZ":5 };
+	
+	// constructor
+	function GLOWTexture( parameters ) {
+        if( parameters.url !== undefined ) {
+            parameters.data = parameters.url;
+        }
+    	
+    	this.id = GLOW.uniqueId();
+        this.data = parameters.data;
+        this.autoUpdate = parameters.autoUpdate;
+    	this.internalFormat = parameters.internalFormat !== undefined ? parameters.internalFormat : GL.RGBA;
+    	this.format = parameters.format !== undefined ? parameters.format : GL.RGBA;
+    	this.type = parameters.type !== undefined ? parameters.type : GL.UNSIGNED_BYTE;
+    	this.wrapS = parameters.wrapS !== undefined ? parameters.wrapS : parameters.wrap !== undefined ? parameters.wrap : GL.REPEAT;
+    	this.wrapT = parameters.wrapT !== undefined ? parameters.wrapT : parameters.wrap !== undefined ? parameters.wrap : GL.REPEAT;
+    	this.magFilter = parameters.magFilter !== undefined ? parameters.magFilter : GL.LINEAR;
+    	this.minFilter = parameters.minFilter !== undefined ? parameters.minFilter : GL.LINEAR_MIPMAP_LINEAR;
+	    this.width  = parameters.width;
+	    this.height = parameters.height;
+    	this.textureUnit = -1;
+    	this.texture = undefined;
+	}
+
+	// methods
+    GLOWTexture.prototype.init = function( textureUnit ) {
+    	this.textureUnit = textureUnit;
+    	
+    	if( typeof( this.data ) === "string" ) {
+        	this.textureType = GL.TEXTURE_2D;
+            var originalURL  = this.data;
+        	var lowerCaseURL = originalURL.toLowerCase();
+        	if( lowerCaseURL.indexOf( ".jpg" ) !== -1 || 
+                lowerCaseURL.indexOf( ".png" ) !== -1 ||
+                lowerCaseURL.indexOf( ".gif" ) !== -1 ||
+                lowerCaseURL.indexOf( "jpeg" ) !== -1 ) {
+                this.data = new Image();
+    	        this.data.scope = this;
+        	    this.data.onload = this.onLoadImage;
+        	    this.data.src = originalURL;
+            } else {
+                if( this.autoUpdate === undefined ) {
+                    this.autoUpdate = true;
+                }
+                this.data = document.createElement( "video" );
+    	        this.data.scope = this;
+        		this.data.addEventListener( "loadeddata", this.onLoadVideo, false );
+        	    this.data.src = originalURL;
+            }
+    	} else if( this.data instanceof HTMLImageElement ||
+    	           this.data instanceof HTMLVideoElement ||
+    	           this.data instanceof HTMLCanvasElement ||
+    	           this.data instanceof Uint8Array ) {
+            this.textureType = GL.TEXTURE_2D;
+    	    this.createTexture();
+    	// cube map
+    	} else {
+    	    this.textureType = GL.TEXTURE_CUBE_MAP;
+    	    this.itemsToLoad = 0;
+    	    for( var c in cubeSideOffsets ) {
+    	        if( this.data[ c ] !== undefined ) {
+    	            if( typeof( this.data[ c ] ) === "string" ) {
+    	                this.itemsToLoad++;
+    	            }
+	            } else {
+	                console.error( "GLOW.Texture.init: data type error. Did you forget cube map " + c + "? If not, the data type is not supported" );
+	            }
+    	    }
+    	    
+    	    if( this.itemsToLoad === 0 ) {
+    	        this.createTexture();
+    	    } else {
+        	    for( var c in cubeSideOffsets ) {
+    	            if( typeof( this.data[ c ] ) === "string" ) {
+        	            var originalURL  = this.data[ c ];
+                    	var lowerCaseURL = originalURL.toLowerCase();
+                    	if( lowerCaseURL.indexOf( ".jpg" ) !== -1 || 
+                            lowerCaseURL.indexOf( ".png" ) !== -1 ||
+                            lowerCaseURL.indexOf( ".gif" ) !== -1 ||
+                            lowerCaseURL.indexOf( "jpeg" ) !== -1 ) {
+                            this.data[ c ] = new Image();
+                	        this.data[ c ].scope = this;
+                    	    this.data[ c ].onload = this.onLoadCubeImage;
+                    	    this.data[ c ].src = originalURL;
+                        } else {
+                            if( this.autoUpdate !== undefined ) {
+                                this.autoUpdate[ c ] = this.autoUpdate[ c ] !== undefined ? this.autoUpdate[ c ] : true;
+                            } else {
+                                this.autoUpdate = {};
+                                this.autoUpdate[ c ] = true;
+                            }
+                            this.data[ c ] = document.createElement( "video" );
+                	        this.data[ c ].scope = this;
+                    		this.data[ c ].addEventListener( "loadeddata", this.onLoadCubeVideo, false );
+                    	    this.data[ c ].src = originalURL;
+                        }
+    	            }
+        	    }
+    	    }
+    	}
+    };
+    
+    GLOWTexture.prototype.createTexture = function() {
+       	this.texture = GL.createTexture();
+    	GL.bindTexture( this.textureType, this.texture );
+
+    	if( this.textureType === GL.TEXTURE_2D ) {
+        	if( this.data instanceof Uint8Array ) {
+        	    if( this.width !== undefined && this.height !== undefined ) {
+                	GL.texImage2D( this.textureType, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data );
+        	    } else {
+        	        console.error( "GLOW.Texture.createTexture: Textures of type Uint8Array requires width and height parameters. Quitting." );
+        	        return;
+        	    }
+        	} else {
+            	GL.texImage2D( this.textureType, 0, this.internalFormat, this.format, this.type, this.data );
+        	}
+    	} else {
+    	    for( var c in cubeSideOffsets ) {
+    	        if( this.data[ c ] instanceof Uint8Array ) {
+            	    if( this.width !== undefined && this.height !== undefined ) {
+                    	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data[ c ] );
+            	    } else {
+            	        console.error( "GLOW.Texture.createTexture: Textures of type Uint8Array requires width and height parameters. Quitting." );
+            	        return;
+            	    }
+    	        } else {
+                	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.format, this.type, this.data[ c ] );
+    	        }
+    	    }
+    	}
+
+    	GL.texParameteri( this.textureType, GL.TEXTURE_WRAP_S, this.wrapS );
+    	GL.texParameteri( this.textureType, GL.TEXTURE_WRAP_T, this.wrapT );
+	    GL.texParameteri( this.textureType, GL.TEXTURE_MIN_FILTER, this.minFilter );
+    	GL.texParameteri( this.textureType, GL.TEXTURE_MAG_FILTER, this.magFilter );
+
+    	if( this.minFilter !== GL.NEAREST && this.minFilter !== GL.LINEAR ) {
+    	    GL.generateMipmap( this.textureType );
+	    }
+    };
+    
+    GLOWTexture.prototype.updateTexture = function( parameters ) {
+        parameters = parameters !== undefined ? parameters : {};
+        
+        var level = parameters.level !== undefined ? parameters.level : 0;
+        var xOffset = parameters.xOffset !== undefined ? parameters.xOffset : 0;
+        var yOffset = parameters.yOffset !== undefined ? parameters.yOffset : 0;
+        var updateMipmap = parameters.updateMipmap !== undefined ? parameters.updateMipmap : true;
+        
+        if( !GLOW.currentContext.cache.textureCached( this )) {
+            GL.bindTexture( this.textureType, this.texture );
+        }
+
+        if( this.textureType == GL.TEXTURE_2D ) {
+            if( this.data instanceof Uint8Array ) {
+                GL.texSubImage2D( this.textureType, level, xOffset, yOffset, this.width, this.height, this.format, this.type, this.data );
+            } else {
+                GL.texSubImage2D( this.textureType, level, xOffset, yOffset, this.format, this.type, this.data );
+            }
+        } else {
+            for( var c in parameters ) {
+                if( cubeSideOffsets[ c ] !== undefined ) {
+    	            if( this.data[ c ] instanceof Uint8Array ) {
+                    	GL.texSubImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], level, xOffset, yOffset, this.width, this.height, this.format, this.type, this.data[ c ] );
+        	        } else { 
+                	    GL.texSubImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], level, xOffset, yOffset, this.format, this.type, this.data[ c ] );
+        	        }
+                }
+            }
+        }
+
+    	if( this.minFilter !== GL.NEAREST && this.minFilter !== GL.LINEAR && updateMipmap === true ) {
+    	    GL.generateMipmap( this.textureType );
+	    }
+    }
+
+    GLOWTexture.prototype.onLoadImage = function() {
+    	this.scope.createTexture();
+    };
+    
+    GLOWTexture.prototype.onLoadCubeImage = function() {
+        this.scope.itemsToLoad--;
+        if( this.scope.itemsToLoad === 0 ) {
+            this.scope.createTexture();
+        }
+    }
+    
+    GLOWTexture.prototype.onLoadVideo = function() {
+		this.removeEventListener( "loadeddata", this.scope.onLoadVideo, false );
+        this.scope.createTexture();
+    }
+
+    GLOWTexture.prototype.onLoadCubeVideo = function() {
+		this.removeEventListener( "loadeddata", this.scope.onLoadVideo, false );
+        this.scope.itemsToLoad--;
+        if( this.scope.itemsToLoad === 0 ) {
+            this.scope.createTexture();
+        }
+    }
+    
+    GLOWTexture.prototype.play = function() {
+        if( this.textureType === GL.TEXTURE_2D ) {
+            if( this.data instanceof HTMLVideoElement ) {
+                this.data.play();
+            }
+        } else {
+            for( var c in cubeSideOffsets ) {
+                if( this.data[ c ] instanceof HTMLVideoElement ) {
+                    this.data[ c ].play();
+                }
+            }
+        }
+    }
+    
+	return GLOWTexture;
+})();
+/*
+* Shader.js
+* Parameters:
+* use: GLOW.ShaderCompiledData
+* except: object, holding data that should be overwritten in GLOW.ShaderCompiledData
+* vertexShader: string, vertex shader code
+* fragmentShader: string, fragment shader code
+* data: attributes and uniforms
+* elements: elements (array or UInt16Array)
+*/
+
+GLOW.Shader = (function() {
+    
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+
+    // constructor
+    function GLOWShader( parameters ) {
+        this.id = GLOW.uniqueId();
+        this.compiledData = parameters.use ? parameters.use.clone( parameters.except ) : GLOW.Compiler.compile( parameters );
+        this.attachData();
+    }
+
+    // methods
+    GLOWShader.prototype.attachData = function() {
+        var u, a, i;
+
+        this.uniforms = this.compiledData.uniforms;
+        this.elements = this.compiledData.elements;
+        this.program = this.compiledData.program;
+
+        for( u in this.compiledData.uniforms ) {
+            if( this[ u ] === undefined) {
+                this[ u ] = this.compiledData.uniforms[ u ].data;
+            } else {
+                console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data." );
+            }
+        }
+
+        for( a in this.compiledData.attributes ) {
+            if( this.attributes === undefined ) {
+                this.attributes = this.compiledData.attributes;
+            }
+            if( this[ a ] === undefined ) {
+                this[ a ] = this.compiledData.attributes[ a ];
+            } else {
+                console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data." );
+            }
+        }
+        
+        for( i in this.compiledData.interleavedAttributes ) {
+            if( this.interleavedAttributes === undefined ) {
+                this.interleavedAttributes = this.compiledData.interleavedAttributes;
+            }
+            if( this[ i ] === undefined ) {
+                this[ i ] = this.compiledData.interleavedAttributes[ i ];
+            } else {
+                console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on interleavedAttribute " + a + ", not attaching for easy access. Please use Shader.interleavedAttributes." + a + ".data to access data." )
+            }
+        }
+    };
+
+    GLOWShader.prototype.draw = function() {
+        var compiledData = this.compiledData;
+        var cache = GLOW.currentContext.cache;
+
+        if( !cache.programCached( compiledData.program )) {
+            GL.useProgram( compiledData.program );
+            var diff = cache.setProgramHighestAttributeNumber( compiledData.program );
+            if( diff ) {
+                // enable / disable attribute streams
+                var highestAttrib = compiledData.program.highestAttributeNumber;
+                var current = highestAttrib - diff + 1;
+
+                if( diff > 0 ) {
+                    for( ; current <= highestAttrib; current++ ) {
+                        GL.enableVertexAttribArray( current );
+                    }
+                } else {
+                    for( ; current > highestAttrib; current-- ) {
+                        GL.disableVertexAttribArray( current ); 
+                    }
+                }
+            }
+        }
+
+        for( var u in compiledData.uniforms ) {
+            if( !cache.uniformCached( compiledData.uniforms[ u ] )) {
+                compiledData.uniforms[ u ].load();
+            }
+        }
+        
+        for( var a in compiledData.attributes ) {
+            if( compiledData.attributes[ a ].interleaved === false ) {
+                if( !cache.attributeCached( compiledData.attributes[ a ] )) {
+                    compiledData.attributes[ a ].bind();
+                }
+            }
+        }
+
+        for( var a in compiledData.interleavedAttributes ) {
+            compiledData.interleavedAttributes[ a ].bind();
+        }
+        
+        if( compiledData.preDrawCallback ) compiledData.preDrawCallback( this );
+        
+        compiledData.elements.draw();
+
+        if( compiledData.postDrawCallback ) compiledData.postDrawCallback( this );
+    };
+
+    GLOWShader.prototype.clone = function(except) {
+        return new GLOW.Shader( { use: this.compiledData, except: except } );
+    };
+
+    GLOWShader.prototype.dispose = function() {
+        // TODO
+    };
+
+    return GLOWShader;
+})();
+
+
+
+/*
+* GLOW.Elements
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Elements = (function() {
+    
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+
+    // constructor
+    function GLOWElements( data, type, usage ) {
+        this.id = GLOW.uniqueId();
+        this.elements = GL.createBuffer();
+        this.length = data.length;
+        this.type = type !== undefined ? type : GL.TRIANGLES;
+
+        GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, this.elements );
+        GL.bufferData( GL.ELEMENT_ARRAY_BUFFER, data, usage ? usage : GL.STATIC_DRAW );
+    }
+
+    // methods
+    GLOWElements.prototype.draw = function() {
+        if( !GLOW.currentContext.cache.elementsCached( this )) {
+             GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements );
+        }
+        GL.drawElements( this.type, this.length, GL.UNSIGNED_SHORT, 0 );
+    };
+    
+    GLOWElements.prototype.dispose = function() {
+        // TODO
+    };
+    
+
+    return GLOWElements;
+})();
+GLOW.Uniform = (function() {
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+    var once = false;
+    var setFunctions = [];
+
+    function lazyInit() {
+        setFunctions[ GL.INT ] = function() { GL.uniform1iv( this.location, this.getNativeValue()); };
+        setFunctions[ GL.FLOAT ] = function() { GL.uniform1fv( this.location, this.getNativeValue()); };
+        setFunctions[ GL.INT_VEC2 ] = function() { GL.uniform2iv( this.location, this.getNativeValue()); };
+        setFunctions[ GL.INT_VEC3 ] = function() { GL.uniform3iv( this.location, this.getNativeValue()); };
+        setFunctions[ GL.INT_VEC4 ] = function() { GL.uniform4iv( this.location, this.getNativeValue()); };
+        setFunctions[ GL.FLOAT_VEC2 ] = function() { GL.uniform2fv( this.location, this.getNativeValue()); };
+        setFunctions[ GL.FLOAT_VEC3 ] = function() { GL.uniform3fv( this.location, this.getNativeValue()); };
+        setFunctions[ GL.FLOAT_VEC4 ] = function() { GL.uniform4fv( this.location, this.getNativeValue()); };
+        setFunctions[ GL.FLOAT_MAT2 ] = function() { GL.uniformMatrix2fv( this.location, false, this.getNativeValue()); };
+        setFunctions[ GL.FLOAT_MAT3 ] = function() { GL.uniformMatrix3fv( this.location, false, this.getNativeValue()); };
+        setFunctions[ GL.FLOAT_MAT4 ] = function() { GL.uniformMatrix4fv( this.location, false, this.getNativeValue()); };
+        setFunctions[ GL.SAMPLER_2D ] = function() {
+            if( this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.data )) {
+                GL.uniform1i( this.location, this.data.textureUnit );
+                GL.activeTexture( GL.TEXTURE0 + this.data.textureUnit );
+                GL.bindTexture( GL.TEXTURE_2D, this.data.texture );
+                if( this.data.autoUpdate ) {
+                    this.data.updateTexture( this.data.autoUpdate );
+                }
+            }
+        };
+        setFunctions[ GL.SAMPLER_CUBE ] = function() {
+            if( this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.data )) {
+                GL.uniform1i( this.location, this.data.textureUnit );
+                GL.activeTexture( GL.TEXTURE0 + this.data.textureUnit );
+                GL.bindTexture( GL.TEXTURE_CUBE_MAP, this.data.texture );
+                if( this.data.autoUpdate ) {
+                    this.data.updateTexture( this.data.autoUpdate );
+                }
+            }
+        };
+    }
+
+    // constructor
+    function GLOWUniform( parameters, data ) {
+        if( !once ) {
+            once = true;
+            lazyInit();
+        }
+
+        this.id = GLOW.uniqueId();
+        this.data = data;
+        this.name = parameters.name;
+        this.length = parameters.length;
+        this.type = parameters.type;
+        this.location = parameters.location;
+        this.locationNumber = parameters.locationNumber;
+        this.load = parameters.loadFunction || setFunctions[ this.type ];
+    }
+
+    // methods
+    // default data converter
+    GLOWUniform.prototype.getNativeValue = function() {
+        return this.data.value;
+    };
+
+    return GLOWUniform;
+})();
+GLOW.Attribute = (function() {
+    "use strict"; "use restrict";
+
+    // private data, functions and initializations here
+    var once = false;
+    var sizes = [];
+    function lazyInit() {
+        // lazy initialization so we know we got GL bound to a context
+        sizes[GL.INT] = 1;
+        sizes[GL.INT_VEC2] = 2;
+        sizes[GL.INT_VEC3] = 3;
+        sizes[GL.INT_VEC4] = 4;
+        sizes[GL.FLOAT] = 1;
+        sizes[GL.FLOAT_VEC2] = 2;
+        sizes[GL.FLOAT_VEC3] = 3;
+        sizes[GL.FLOAT_VEC4] = 4;
+        sizes[GL.FLOAT_MAT2] = 4;
+        sizes[GL.FLOAT_MAT3] = 9;
+        sizes[GL.FLOAT_MAT4] = 16;
+    }
+
+    // constructor
+    function GLOWAttribute( parameters, data, usage, interleaved ) {
+        if( !once ) {
+            once = true;
+            lazyInit();
+        }
+
+        this.id = GLOW.uniqueId();
+        this.data = data;
+        this.location = parameters.location;
+        this.locationNumber = parameters.locationNumber;
+        this.stride = 0;
+        this.offset = 0;
+        this.usage = usage !== undefined ? usage : GL.STATIC_DRAW;
+        this.interleaved = interleaved !== undefined ? interleaved : false;
+        this.size = sizes[ parameters.type ];
+        this.name = parameters.name;
+        this.type = parameters.type;
+
+        if( this.interleaved === false ) {
+            if( this.data instanceof Float32Array ) {
+                this.bufferData( this.data, this.usage );
+            } else {
+                console.error( "GLOW.Attribute.constructor: Data for attribute " + this.name + " not in Float32Array format. Please fix. Quitting." );
+            }
+        }
+    }
+
+    // methods
+    GLOWAttribute.prototype.setupInterleave = function( offset, stride ) {
+        this.interleaved = true;
+        this.offset = offset;
+        this.stride = stride;
+    };
+
+    GLOWAttribute.prototype.bufferData = function( data, usage ) {
+        if( data !== undefined && this.data !== data ) this.data = data;
+        if( usage !== undefined && this.usage !== usage ) this.usage = usage;
+        if( this.buffer === undefined ) this.buffer = GL.createBuffer();
+        
+        GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+        GL.bufferData( GL.ARRAY_BUFFER, this.data, this.usage );
+    };
+
+    GLOWAttribute.prototype.bind = function() {
+        if( this.interleaved === false ) {
+            GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+        }
+        GL.vertexAttribPointer( this.location, this.size, GL.FLOAT, false, this.stride, this.offset );
+    };
+    
+    GLOWAttribute.prototype.clone = function( except ) {
+        if( this.interleaved ) {
+            console.error( "GLOW.Attribute.clone: Cannot clone interleaved attribute. Please check your interleave setup." );
+            return;
+        }
+        
+        var clone = new GLOW.Attribute( this, this.data, this.usage, this.interleaved )
+    }
+    
+    GLOWAttribute.prototype.dispose = function() {
+        // TODO
+    }
+
+    return GLOWAttribute;
+})();
+GLOW.InterleavedAttributes = (function() {
+    "use strict"; "use restrict";
+
+    // constructor
+    function GLOWInterleavedAttributes( attributes ) {
+        this.id = GLOW.uniqueId();
+        this.attributes = attributes;
+        
+        // interleave data from the attributes
+        var l, ll = attributes[ 0 ].data.length / attributes[ 0 ].size;
+        var a, al = attributes.length;
+        var b, bl;
+        var i, indices = [];
+        var attributeData, interleavedData = [];
+        
+        for( a = 0; a < al; a++ ) {
+            indices[ a ] = 0;
+        }
+        
+        for( l = 0; l < ll; l++ ) {
+            for( a = 0; a < al; a++ ) {
+                attributeData = attributes[ a ].data;
+                i = indices[ a ];
+                for( b = 0, bl = attributes[ a ].size; b < bl; b++ ) {
+                    interleavedData.push( attributeData[ i++ ] );
+                }
+                indices[ a ] = i;
+            }
+        }
+        this.data = new Float32Array( interleavedData );
+
+        // match usage from the attributes
+        this.usage = attributes[ 0 ].usage;
+        for( a = 0; a < al; a++ ) {
+            if( this.usage !== attributes[ a ].usage ) {
+                console.warn( "GLOW.InterleavedAttributes.construct: Attribute " + attributes[ a ].name + " has different usage, defaulting to STATIC_DRAW." );
+                this.usage = GL.STATIC_DRAW;
+                break;
+            }
+        }
+ 
+        this.bufferData( this.data, this.usage );
+        
+        
+        // setup stride and offset for each attribute
+        var stride = 0;
+        for( a = 0; a < al; a++ ) {
+            stride += attributes[ a ].size * 4;
+        }
+        
+        var currentOffset = 0;
+        for( a = 0; a < al; a++ ) {
+            attributes[ a ].setupInterleave( currentOffset, stride );
+            currentOffset += attributes[ a ].size * 4;
+        }
+    }
+    
+    // methods
+    GLOWInterleavedAttributes.prototype.bufferData = function( data, usage ) {
+        if( data !== undefined && this.data !== data ) this.data = data;
+        if( this.buffer === undefined ) this.buffer = GL.createBuffer();
+
+        GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+        GL.bufferData( GL.ARRAY_BUFFER, this.data, usage ? usage : GL.STATIC_DRAW );
+    };
+
+    GLOWInterleavedAttributes.prototype.bind = function() {
+        GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+        
+        var a, al = this.attributes.length;
+        for( a = 0; a < al; a++ ) {
+            this.attributes[ a ].bind();
+        }
+    };
+    
+    
+    return GLOWInterleavedAttributes;
+})();/*
+* GLOW.Float
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Float = (function() {
+	
+	"use strict";
+	
+    // constructor
+	function float( value ) {
+    	this.value = new Float32Array( 1 );
+    	this.value[ 0 ] = value !== undefined ? value : 0;
+	}
+
+    // methods
+    float.prototype.set = function( value ) {
+        this.value[ 0 ] = value;
+        return this;
+    }
+
+    float.prototype.add = function( value ) {
+        this.value[ 0 ] += value;
+        return this;
+    }
+
+    float.prototype.sub = function( value ) {
+        this.value[ 0 ] -= value;
+        return this;
+    }
+
+    float.prototype.multiply = function( value ) {
+        this.value[ 0 ] *= value;
+        return this;
+    }
+
+    float.prototype.divide = function( value ) {
+        this.value[ 0 ] /= value;
+        return this;
+    }
+
+    float.prototype.modulo = function( value ) {
+        this.value[ 0 ] %= value;
+        return this;
+    }
+    
+	return float;
+})();
+/*
+* GLOW.Int
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Int = function( value ) {
+
+	"use strict";
+	
+    // constructor
+	function int( value ) {
+    	this.value = new int32Array( 1 );
+    	this.value[ 0 ] = value !== undefined ? value : 0;
+	}
+
+    // methods
+    int.prototype.set = function( value ) {
+        this.value[ 0 ] = value;
+        return this;
+    }
+
+    int.prototype.add = function( value ) {
+        this.value[ 0 ] += value;
+        return this;
+    }
+
+    int.prototype.sub = function( value ) {
+        this.value[ 0 ] -= value;
+        return this;
+    }
+
+    int.prototype.multiply = function( value ) {
+        this.value[ 0 ] *= value;
+        return this;
+    }
+
+    int.prototype.divide = function( value ) {
+        this.value[ 0 ] /= value;
+        return this;
+    }
+
+    int.prototype.modulo = function( value ) {
+        this.value[ 0 ] %= value;
+        return this;
+    }
+    	
+	return int;
+}
+/**
+ * GLOW.Vector2 Based upon THREE.Vector2 by
+ * @author mr.doob / http://mrdoob.com/
+ * @author philogb / http://blog.thejit.org/
+ */
+
+GLOW.Vector2 = (function() {
+
+    "use strict"; "use restrict";
+
+    // constructor
+    function vector2( x, y ) {
+        this.value = new Float32Array( 2 );
+        this.value[ 0 ] = x !== undefined ? x : 0;
+        this.value[ 1 ] = y !== undefined ? y : 0;
+    }
+
+
+    // methods
+	vector2.prototype.set = function ( x, y ) {
+		this.value[ 0 ] = x;
+		this.value[ 1 ] = y;
+		return this;
+	};
+
+	vector2.prototype.copy = function ( v ) {
+		this.value[ 0 ] = v.value[ 0 ];
+		this.value[ 1 ] = v.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.addSelf = function ( v ) {
+	    this.value[ 0 ] += v.value[ 0 ];
+	    this.value[ 1 ] += v.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.add = function ( v1, v2 ) {
+	    this.value[ 0 ] = v1.value[ 0 ] + v2.value[ 0 ];
+	    this.value[ 1 ] = v1.value[ 1 ] + v2.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.subSelf = function ( v ) {
+		this.value[ 0 ] -= v.x,
+		this.value[ 1 ] -= v.y
+		return this;
+	};
+
+	vector2.prototype.sub = function ( v1, v2 ) {
+	    this.value[ 0 ] = v1.value[ 0 ] - v2.value[ 0 ];
+	    this.value[ 1 ] = v1.value[ 1 ] - v2.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.multiplySelf = function ( v ) {
+	    this.value[ 0 ] *= v.value[ 0 ];
+	    this.value[ 1 ] *= v.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.multiply = function ( v1, v2 ) {
+	    this.value[ 0 ] = v1.value[ 0 ] * v2.value[ 0 ];
+	    this.value[ 1 ] = v1.value[ 1 ] * v2.value[ 1 ];
+		return this;
+	};
+
+	vector2.prototype.multiplyScalar = function ( s ) {
+		this.value[ 0 ] *= s;
+		this.value[ 1 ] *= s;
+		return this;
+	},
+
+	vector2.prototype.negate = function() {
+		this.value[ 0 ] = -this.value[ 0 ];
+		this.value[ 1 ] = -this.value[ 1 ];
+		return this;
+	},
+
+	vector2.prototype.normalize = function () {
+		this.multiplyScalar( 1 / this.length() );
+		return this;
+	};
+
+	vector2.prototype.length = function () {
+		return Math.sqrt( this.lengthSq() );
+	};
+
+	vector2.prototype.lengthSq = function () {
+		return this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ];
+	};
+
+	vector2.prototype.clone = function () {
+		return new GLOW.Vector2( this.value[ 0 ], this.value[ 1 ] );
+	};
+
+    return vector2;
+})();
+
+/**
+ * GLOW.Vector3 Based upon THREE.Vector3 by
+ * @author mr.doob / http://mrdoob.com/
+ * @author kile / http://kile.stravaganza.org/
+ * @author philogb / http://blog.thejit.org/
+ * @author mikael emtinger / http://gomo.se/
+ */
+
+GLOW.Vector3 = (function( x, y, z ) {
+
+	"use strict"; "use restrict";
+
+    // constructor
+    function vector3( x, y, z ) {
+    	this.value = new Float32Array( 3 );
+    	this.value[ 0 ] = x !== undefined ? x : 0;
+    	this.value[ 1 ] = y !== undefined ? y : 0;
+    	this.value[ 2 ] = z !== undefined ? z : 0;
+    }
+
+    // methods
+    vector3.prototype.set = function( x, y, z ) {
+    	this.value[ 0 ] = x;
+    	this.value[ 1 ] = y;
+    	this.value[ 2 ] = z;
+    	return this;
+    }
+
+    vector3.prototype.copy = function ( v ) {
+    	this.set( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+    	return this;
+    }
+
+    vector3.prototype.add = function ( a, b ) {
+    	a = a.value;
+    	b = b.value;
+    	this.value[ 0 ] = a[ 0 ] + b[ 0 ];
+    	this.value[ 1 ] = a[ 1 ] + b[ 1 ];
+    	this.value[ 2 ] = a[ 2 ] + b[ 2 ];
+    	return this;
+    }
+
+    vector3.prototype.addSelf = function ( a ) {
+    	a = a.value;
+    	this.value[ 0 ] = this.value[ 0 ] + a[ 0 ];
+    	this.value[ 1 ] = this.value[ 1 ] + a[ 1 ];
+    	this.value[ 2 ] = this.value[ 2 ] + a[ 2 ];
+    	return this;
+    }
+
+    vector3.prototype.addScalar = function ( s ) {
+    	this.value[ 0 ] += s;
+    	this.value[ 1 ] += s;
+    	this.value[ 2 ] += s;
+    	return this;
+    }
+
+
+    vector3.prototype.sub = function ( a, b ) {
+    	a = a.value;
+    	b = b.value;
+    	this.value[ 0 ] = a[ 0 ] - b[ 0 ];
+    	this.value[ 1 ] = a[ 1 ] - b[ 1 ];
+    	this.value[ 2 ] = a[ 2 ] - b[ 2 ];
+    	return this;
+    }
+
+    vector3.prototype.subSelf = function ( a ) {
+    	a = a.value;
+    	this.value[ 0 ] -= a[ 0 ];
+    	this.value[ 1 ] -= a[ 1 ];
+    	this.value[ 2 ] -= a[ 2 ];
+    	return this;
+    }
+
+    vector3.prototype.cross = function ( a, b ) {
+    	a = a.value;
+    	b = b.value;
+    	this.value[ 0 ] = a[ 1 ] * b[ 2 ] - a[ 2 ] * b[ 1 ];
+    	this.value[ 1 ] = a[ 2 ] * b[ 0 ] - a[ 0 ] * b[ 2 ];
+    	this.value[ 2 ] = a[ 0 ] * b[ 1 ] - a[ 1 ] * b[ 0 ];
+    	return this;
+    }
+
+    vector3.prototype.crossSelf = function ( a ) {
+    	a = a.value;
+    	var ax = a[ 0 ], ay = a[ 1 ], az = a[ 2 ];
+    	var vx = this.value[ 0 ], vy = this.value[ 1 ], vz = this.value[ 2 ];
+    	this.value[ 0 ] = ay * vz - az * vy;
+    	this.value[ 1 ] = az * vx - ax * vz;
+    	this.value[ 2 ] = ax * vy - ay * vx;
+    	return this;
+    }
+
+    vector3.prototype.multiply = function( a, b ) {
+    	a = a.value;
+    	b = b.value;
+    	this.value[ 0 ] = a[ 0 ] * b[ 0 ];
+    	this.value[ 1 ] = a[ 1 ] * b[ 1 ];
+    	this.value[ 2 ] = a[ 2 ] * b[ 2 ];
+    	return this;
+    }
+
+    vector3.prototype.multiplySelf = function( a ) {
+    	a = a.value;
+    	this.value[ 0 ] *= a[ 0 ];
+    	this.value[ 1 ] *= a[ 1 ];
+    	this.value[ 2 ] *= a[ 2 ];
+    	return this;
+    }
+
+    vector3.prototype.multiplyScalar = function( s ) {
+    	this.value[ 0 ] *= s;
+    	this.value[ 1 ] *= s;
+    	this.value[ 2 ] *= s;
+    	return this;
+    }
+
+    vector3.prototype.divideSelf = function( a ) {
+    	a = a.value;
+    	this.value[ 0 ] /= a[ 0 ];
+    	this.value[ 1 ] /= a[ 1 ];
+    	this.value[ 2 ] /= a[ 2 ];
+    	return this;
+    }
+
+    vector3.prototype.divideScalar = function( s ) {
+    	this.value[ 0 ] /= s;
+    	this.value[ 1 ] /= s;
+    	this.value[ 2 ] /= s;
+    	return this;
+    }
+
+    vector3.prototype.negate = function() {
+    	this.value[ 0 ] = -this.value[ 0 ];
+    	this.value[ 1 ] = -this.value[ 1 ];
+    	this.value[ 2 ] = -this.value[ 2 ];
+    	return this;
+    }
+
+    vector3.prototype.dot = function( a ) {
+    	a = a.value;
+    	return this.value[ 0 ] * a[ 0 ] + this.value[ 1 ] * a[ 1 ] + this.value[ 2 ] * a[ 2 ];
+    }
+
+    vector3.prototype.distanceTo = function ( a ) {
+    	return Math.sqrt( this.distanceToSquared( a ) );
+    }
+
+    vector3.prototype.distanceToSquared = function( a ) {
+    	a = a.value;
+    	var dx = this.value[ 0 ] - a[ 0 ], dy = this.value[ 1 ] - a[ 1 ], dz = this.value[ 2 ] - a[ 2 ];
+    	return dx * dx + dy * dy + dz * dz;
+    }
+
+    vector3.prototype.length = function() {
+    	return Math.sqrt( this.lengthSq() );
+    }
+
+    vector3.prototype.lengthSq = function() {
+    	return this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ];
+    }
+
+    vector3.prototype.lengthManhattan = function() {
+    	return this.value[ 0 ] + this.value[ 1 ] + this.value[ 2 ];
+    }
+
+    vector3.prototype.normalize = function() {
+    	var l = Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
+    	l > 0 ? this.multiplyScalar( 1 / l ) : this.set( 0, 0, 0 );
+    	return this;
+    }
+
+    vector3.prototype.setPositionFromMatrix = function( m ) {
+    	m = m.value;
+    	this.value[ 0 ] = m[ 12 ];
+    	this.value[ 1 ] = m[ 13 ];
+    	this.value[ 2 ] = m[ 14 ];
+    }
+
+    vector3.prototype.setLength = function( l ) {
+    	return this.normalize().multiplyScalar( l );
+    }
+
+    vector3.prototype.isZero = function() {
+    	var almostZero = 0.0001;
+    	return ( Math.abs( this.value[ 0 ] ) < almostZero ) && ( Math.abs( this.value[ 1 ] ) < almostZero ) && ( Math.abs( this.value[ 2 ] ) < almostZero );
+    }
+
+    vector3.prototype.clone = function() {
+    	return GLOW.Vector3( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+    }
+
+    return vector3;
+})();
+/**
+ * GLOW.Vector3 Based upon THREE.Vector3 by
+ * @author supereggbert / http://www.paulbrunt.co.uk/
+ * @author philogb / http://blog.thejit.org/
+ * @author mikael emtinger / http://gomo.se/
+ */
+
+GLOW.Vector4 = (function() {
+
+    "use strict"; "use restrict";
+    
+    // constructor
+    function vector4( x, y, z, w ) {
+        this.value = new Float32Array( 4 );
+        this.value[ 0 ] = x !== undefined ? x : 0;
+        this.value[ 1 ] = y !== undefined ? y : 0;
+        this.value[ 2 ] = z !== undefined ? z : 0;
+        this.value[ 3 ] = w !== undefined ? w : 0;
+    }
+    
+    // methods
+	vector4.prototype.set = function ( x, y, z, w ) {
+		this.value[ 0 ] = x;
+		this.value[ 1 ] = y;
+		this.value[ 2 ] = z;
+		this.value[ 3 ] = w;
+		return this;
+	};
+
+	vector4.prototype.copy = function ( v ) {
+		this.value[ 0 ] = v.value[ 0 ];
+		this.value[ 1 ] = v.value[ 1 ];
+		this.value[ 2 ] = v.value[ 2 ];
+		this.value[ 3 ] = v.value[ 3 ];
+		return this;
+	};
+
+	vector4.prototype.add = function ( v1, v2 ) {
+		this.value[ 0 ] = v1.value[ 0 ] + v2.value[ 0 ];
+		this.value[ 1 ] = v1.value[ 1 ] + v2.value[ 1 ];
+		this.value[ 2 ] = v1.value[ 2 ] + v2.value[ 2 ];
+		this.value[ 3 ] = v1.value[ 3 ] + v2.value[ 3 ];
+		return this;
+	};
+
+	vector4.prototype.addSelf = function ( v ) {
+		this.value[ 0 ] += v.value[ 0 ];
+		this.value[ 1 ] += v.value[ 1 ];
+		this.value[ 2 ] += v.value[ 2 ];
+		this.value[ 3 ] += v.value[ 3 ];
+		return this;
+	};
+
+	vector4.prototype.sub = function ( v1, v2 ) {
+		this.value[ 0 ] = v1.value[ 0 ] - v2.value[ 0 ];
+		this.value[ 1 ] = v1.value[ 1 ] - v2.value[ 1 ];
+		this.value[ 2 ] = v1.value[ 2 ] - v2.value[ 2 ];
+		this.value[ 3 ] = v1.value[ 3 ] - v2.value[ 3 ];
+		return this;
+	};
+
+	vector4.prototype.subSelf = function ( v ) {
+		this.value[ 0 ] -= v.value[ 0 ];
+		this.value[ 1 ] -= v.value[ 1 ];
+		this.value[ 2 ] -= v.value[ 2 ];
+		this.value[ 3 ] -= v.value[ 3 ];
+		return this;
+	};
+
+	vector4.prototype.multiplyScalar = function ( s ) {
+		this.value[ 0 ] *= s;
+		this.value[ 1 ] *= s;
+		this.value[ 2 ] *= s;
+		this.value[ 3 ] *= s;
+		return this;
+	};
+
+	vector4.prototype.divideScalar = function ( s ) {
+		this.value[ 0 ] /= s;
+		this.value[ 1 ] /= s;
+		this.value[ 2 ] /= s;
+		this.value[ 3 ] /= s;
+		return this;
+	};
+
+	vector4.prototype.lerpSelf = function ( v, alpha ) {
+		this.value[ 0 ] += (v.x - this.value[ 0 ]) * alpha;
+		this.value[ 1 ] += (v.y - this.value[ 1 ]) * alpha;
+		this.value[ 2 ] += (v.z - this.value[ 2 ]) * alpha;
+		this.value[ 3 ] += (v.w - this.value[ 3 ]) * alpha;
+	    return this;
+	};
+
+	vector4.prototype.clone = function () {
+		return new GLOW.Vector4( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
+	};
+
+    return vector4;
+})();
+/*
+* GLOW.Matrix3
+* Based upon THREE.Matrix3 by @mr.doob
+*/
+
+GLOW.Matrix3 = (function() {
+
+	"use strict"; "use restrict";
+
+    // constructor
+    function matrix3() {
+    	this.value = new Float32Array( 9 );
+    	this.identity();
+    }
+
+    // methods
+    matrix3.prototype.set = function( m11, m12, m13, m21, m22, m23, m31, m32, m33 ) {
+    	this.value[ 0 ] = m11; this.value[ 4 ] = m12; this.value[ 8 ] = m13;
+    	this.value[ 1 ] = m21; this.value[ 5 ] = m22; this.value[ 9 ] = m23;
+    	this.value[ 2 ] = m31; this.value[ 6 ] = m32; this.value[ 10 ] = m33;
+    	return this;
+    }
+
+    matrix3.prototype.identity = function () {
+    	this.set( 1, 0, 0, 0, 1, 0, 0, 0, 1	);
+    	return this;
+    }
+    
+    matrix3.prototype.getValueAsFloat32Array = function() {
+        this.float32Array[ 0 ] = this.value[ 0 ];
+        this.float32Array[ 1 ] = this.value[ 1 ];
+        this.float32Array[ 2 ] = this.value[ 2 ];
+        this.float32Array[ 3 ] = this.value[ 3 ];
+        this.float32Array[ 4 ] = this.value[ 4 ];
+        this.float32Array[ 5 ] = this.value[ 5 ];
+        this.float32Array[ 6 ] = this.value[ 6 ];
+        this.float32Array[ 7 ] = this.value[ 7 ];
+        this.float32Array[ 8 ] = this.value[ 8 ];
+        return this.float32Array;
+    }
+
+    return matrix3;
+})();
+
+
+/**
+ * GLOW.Matrix4. Based upon THREE.Matrix4 by:
+ * @author mr.doob / http://mrdoob.com/
+ * @author supereggbert / http://www.paulbrunt.co.uk/
+ * @author philogb / http://blog.thejit.org/
+ * @author jordi_ros / http://plattsoft.com
+ * @author D1plo1d / http://github.com/D1plo1d
+ * @author alteredq / http://alteredqualia.com/
+ * @author mikael emtinger / http://gomo.se/
+ */
+
+GLOW.Matrix4 = (function() {
+
+	"use strict"; "use restrict"
+
+    //constructor
+    function matrix4() {
+    	this.value = new Float32Array( 16 );
+    	this.rotation = new GLOW.Vector3();
+    	this.position = new GLOW.Vector3();
+    	this.columnX  = new GLOW.Vector3();
+    	this.columnY  = new GLOW.Vector3();
+    	this.columnZ  = new GLOW.Vector3();
+    	this.identity();
+    }
+
+
+    // methods
+    matrix4.prototype.set = function( m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 ) {
+    	this.value[ 0 ] = m11; this.value[ 4 ] = m12; this.value[ 8 ] = m13; this.value[ 12 ] = m14;
+    	this.value[ 1 ] = m21; this.value[ 5 ] = m22; this.value[ 9 ] = m23; this.value[ 13 ] = m24;
+    	this.value[ 2 ] = m31; this.value[ 6 ] = m32; this.value[ 10 ] = m33; this.value[ 14 ] = m34;
+    	this.value[ 3 ] = m41; this.value[ 7 ] = m42; this.value[ 11 ] = m43; this.value[ 15 ] = m44;
+    	return this;
+    }
+
+    matrix4.prototype.identity = function () {
+    	this.set( 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 );
+    	return this;
+    }
+
+    matrix4.prototype.copy = function( a ) {
+    	a = a.value;
+    	this.set(
+    		a[ 0 ], a[ 4 ], a[ 8  ], a[ 12 ],
+    		a[ 1 ], a[ 5 ], a[ 9  ], a[ 13 ],
+    		a[ 2 ], a[ 6 ], a[ 10 ], a[ 14 ],
+    		a[ 3 ], a[ 7 ], a[ 11 ], a[ 15 ]
+    	);
+    	return this;
+    }
+
+    matrix4.prototype.lookAt = function( focus, up ) {
+    	var x = GLOW.Matrix4.tempVector3A, 
+    	    y = GLOW.Matrix4.tempVector3B, 
+    	    z = GLOW.Matrix4.tempVector3C;
+    	var eye = this.getPosition();	
+
+    	eye.value[ 0 ] = this.value[ 12 ];
+    	eye.value[ 1 ] = this.value[ 13 ];
+    	eye.value[ 2 ] = this.value[ 14 ];
+
+    	z.sub( eye, focus ).normalize();
+
+    	if( z.length() === 0 ) {
+    		z.value[ 3 ] = 1;
+    	}
+
+    	x.cross( up, z ).normalize();
+
+    	if( x.length() === 0 ) {
+    		z.value[ 0 ] += 0.0001;
+    		x.cross( up, z ).normalize();
+    	}
+
+    	y.cross( z, x ).normalize();
+
+    	x = x.value;
+    	y = y.value;
+    	z = z.value;
+
+    	this.value[ 0 ] = x[ 0 ]; this.value[ 4 ] = y[ 0 ]; this.value[  8 ] = z[ 0 ];
+    	this.value[ 1 ] = x[ 1 ]; this.value[ 5 ] = y[ 1 ]; this.value[  9 ] = z[ 1 ];
+    	this.value[ 2 ] = x[ 2 ]; this.value[ 6 ] = y[ 2 ]; this.value[ 10 ] = z[ 2 ];
+
+    	return this;
+    }
+
+    matrix4.prototype.multiplyVector3 = function ( v ) {
+  	    var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ],
+    	d = 1 / ( this.value[ 3 ] * vx + this.value[ 7 ] * vy + this.value[ 11 ] * vz + this.value[ 15 ] );
+
+    	v.value[ 0 ] = ( this.value[ 0 ] * vx + this.value[ 4 ] * vy + this.value[ 8 ] * vz + this.value[ 12 ] ) * d;
+    	v.value[ 1 ] = ( this.value[ 1 ] * vx + this.value[ 5 ] * vy + this.value[ 9 ] * vz + this.value[ 13 ] ) * d;
+    	v.value[ 2 ] = ( this.value[ 2 ] * vx + this.value[ 6 ] * vy + this.value[ 10 ] * vz + this.value[ 14 ] ) * d;
+    	return v;
+    }
+
+    matrix4.prototype.multiplyVector4 = function ( v ) {
+    	var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ], vw = v.value[ 3 ];
+    	v.value[ 0 ] = this.value[ 0 ] * vx + this.value[ 4 ] * vy + this.value[ 8 ] * vz + this.value[ 12 ] * vw;
+    	v.value[ 1 ] = this.value[ 1 ] * vx + this.value[ 5 ] * vy + this.value[ 9 ] * vz + this.value[ 13 ] * vw;
+    	v.value[ 2 ] = this.value[ 2 ] * vx + this.value[ 6 ] * vy + this.value[ 10 ] * vz + this.value[ 14 ] * vw;
+    	v.value[ 3 ] = this.value[ 3 ] * vx + this.value[ 7 ] * vy + this.value[ 11 ] * vz + this.value[ 15 ] * vw;
+
+    	return v;
+    }
+
+    matrix4.prototype.rotateAxis = function ( v ) {
+    	var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ];
+    	v.value[ 0 ] = vx * this.value[ 0 ] + vy * this.value[ 4 ] + vz * this.value[ 8 ];
+    	v.value[ 1 ] = vx * this.value[ 1 ] + vy * this.value[ 5 ] + vz * this.value[ 9 ];
+    	v.value[ 2 ] = vx * this.value[ 2 ] + vy * this.value[ 6 ] + vz * this.value[ 10 ];
+    	v.normalize();
+    	return v;
+    }
+
+    matrix4.prototype.crossVector = function ( a ) {
+    	var v = GLOW.Vector4();
+    	var ax = a.value[ 0 ], ay = a.value[ 1 ], az = a.value[ 2 ], aw = a.value[ 3 ];
+    	v.value[ 0 ] = this.value[ 0 ] * ax + this.value[ 4 ] * ay + this.value[ 8 ] * az + this.value[ 12 ] * aw;
+    	v.value[ 1 ] = this.value[ 1 ] * ax + this.value[ 5 ] * ay + this.value[ 9 ] * az + this.value[ 13 ] * aw;
+    	v.value[ 2 ] = this.value[ 2 ] * ax + this.value[ 6 ] * ay + this.value[ 10 ] * az + this.value[ 14 ] * aw;
+    	v.value[ 3 ] = ( aw ) ? this.value[ 3 ] * ax + this.value[ 7 ] * ay + this.value[ 11 ] * az + this.value[ 15 ] * aw : 1;
+    	return v;
+    }
+
+    matrix4.prototype.multiply = function ( a, b ) {
+    	a = a.value;
+    	b = b.value;
+    	var a11 = a[ 0 ], a12 = a[ 4 ], a13 = a[ 8 ], a14 = a[ 12 ],
+    	    a21 = a[ 1 ], a22 = a[ 5 ], a23 = a[ 9 ], a24 = a[ 13 ],
+    	    a31 = a[ 2 ], a32 = a[ 6 ], a33 = a[ 10 ], a34 = a[ 14 ],
+    	    a41 = a[ 3 ], a42 = a[ 7 ], a43 = a[ 11 ], a44 = a[ 15 ],
+    	b11 = b[ 0 ], b12 = b[ 4 ], b13 = b[ 8 ], b14 = b[ 12 ],
+    	b21 = b[ 1 ], b22 = b[ 5 ], b23 = b[ 9 ], b24 = b[ 13 ],
+    	b31 = b[ 2 ], b32 = b[ 6 ], b33 = b[ 10 ], b34 = b[ 14 ],
+    	b41 = b[ 3 ], b42 = b[ 7 ], b43 = b[ 11 ], b44 = b[ 15 ];
+    	this.value[ 0 ] = a11 * b11 + a12 * b21 + a13 * b31;
+    	this.value[ 4 ] = a11 * b12 + a12 * b22 + a13 * b32;
+    	this.value[ 8 ] = a11 * b13 + a12 * b23 + a13 * b33;
+    	this.value[ 12 ] = a11 * b14 + a12 * b24 + a13 * b34 + a14;
+    	this.value[ 1 ] = a21 * b11 + a22 * b21 + a23 * b31;
+    	this.value[ 5 ] = a21 * b12 + a22 * b22 + a23 * b32;
+    	this.value[ 9 ] = a21 * b13 + a22 * b23 + a23 * b33;
+    	this.value[ 13 ] = a21 * b14 + a22 * b24 + a23 * b34 + a24;
+    	this.value[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
+    	this.value[ 6 ] = a31 * b12 + a32 * b22 + a33 * b32;
+    	this.value[ 10 ] = a31 * b13 + a32 * b23 + a33 * b33;
+    	this.value[ 14 ] = a31 * b14 + a32 * b24 + a33 * b34 + a34;
+    	this.value[ 3 ] = a41 * b11 + a42 * b21 + a43 * b31;
+    	this.value[ 7 ] = a41 * b12 + a42 * b22 + a43 * b32;
+    	this.value[ 11 ] = a41 * b13 + a42 * b23 + a43 * b33;
+    	this.value[ 15 ] = a41 * b14 + a42 * b24 + a43 * b34 + a44;
+    	return this;
+    }
+
+    matrix4.prototype.multiplySelf = function ( a ) {
+    	this.multiply( m, a );
+    	return this;
+    }
+
+    matrix4.prototype.multiplyScalar = function ( s ) {
+    	this.value[ 0 ] *= s; this.value[ 4 ] *= s; this.value[ 8 ] *= s; this.value[ 12 ] *= s;
+    	this.value[ 1 ] *= s; this.value[ 5 ] *= s; this.value[ 9 ] *= s; this.value[ 13 ] *= s;
+    	this.value[ 2 ] *= s; this.value[ 6 ] *= s; this.value[ 10 ] *= s; this.value[ 14 ] *= s;
+    	this.value[ 3 ] *= s; this.value[ 7 ] *= s; this.value[ 11 ] *= s; this.value[ 15 ] *= s;
+    	return this;
+    }
+
+    matrix4.prototype.determinant = function () {
+    	var n11 = this.value[ 0 ], n12 = this.value[ 4 ], n13 = this.value[ 8 ], n14 = this.value[ 12 ],
+    	n21 = this.value[ 1 ], n22 = this.value[ 5 ], n23 = this.value[ 9 ], n24 = this.value[ 13 ],
+    	n31 = this.value[ 2 ], n32 = this.value[ 6 ], n33 = this.value[ 10 ], n34 = this.value[ 14 ],
+    	n41 = this.value[ 3 ], n42 = this.value[ 7 ], n43 = this.value[ 11 ], n44 = this.value[ 15 ];
+    	return (
+    		n14 * n23 * n32 * n41-
+    		n13 * n24 * n32 * n41-
+    		n14 * n22 * n33 * n41+
+    		n12 * n24 * n33 * n41+
+    		n13 * n22 * n34 * n41-
+    		n12 * n23 * n34 * n41-
+    		n14 * n23 * n31 * n42+
+    		n13 * n24 * n31 * n42+
+    		n14 * n21 * n33 * n42-
+    		n11 * n24 * n33 * n42-
+    		n13 * n21 * n34 * n42+
+    		n11 * n23 * n34 * n42+
+    		n14 * n22 * n31 * n43-
+    		n12 * n24 * n31 * n43-
+    		n14 * n21 * n32 * n43+
+    		n11 * n24 * n32 * n43+
+    		n12 * n21 * n34 * n43-
+    		n11 * n22 * n34 * n43-
+    		n13 * n22 * n31 * n44+
+    		n12 * n23 * n31 * n44+
+    		n13 * n21 * n32 * n44-
+    		n11 * n23 * n32 * n44-
+    		n12 * n21 * n33 * n44+
+    		n11 * n22 * n33 * n44
+    	);
+    }
+
+    matrix4.prototype.transpose = function () {
+    	var tmp;
+    	tmp = this.value[ 1 ]; this.value[ 1 ] = this.value[ 4 ]; this.value[ 4 ] = tmp;
+    	tmp = this.value[ 2 ]; this.value[ 2 ] = this.value[ 8 ]; this.value[ 8 ] = tmp;
+    	tmp = this.value[ 6 ]; this.value[ 6 ] = this.value[ 9 ]; this.value[ 9 ] = tmp;
+    	tmp = this.value[ 3 ]; this.value[ 3 ] = this.value[ 12 ]; this.value[ 12 ] = tmp;
+    	tmp = this.value[ 7 ]; this.value[ 7 ] = this.value[ 13 ]; this.value[ 13 ] = tmp;
+    	tmp = this.value[ 11 ]; this.value[ 11 ] = this.value[ 14 ]; this.value[ 11 ] = tmp;
+    	return this;
+    }
+
+    matrix4.prototype.clone = function () {
+    	var clone = new GLOW.Matrix4();
+    	clone.value = new Float32Array( m );
+    	return clone;
+    }
+
+
+    matrix4.prototype.setPosition = function( x, y, z ) {
+    	this.value[ 12 ] = x;
+    	this.value[ 13 ] = y;
+    	this.value[ 14 ] = z;
+    	return this;
+    }
+
+    matrix4.prototype.addPosition = function( x, y, z ) {
+    	this.value[ 12 ] += x;
+    	this.value[ 13 ] += y;
+    	this.value[ 14 ] += z;
+    }
+
+    matrix4.prototype.setRotation = function( x, y, z ) {
+    	this.rotation.set( x, y, z );
+    	var a = Math.cos( x ), b = Math.sin( x ),
+    	    c = Math.cos( y ), d = Math.sin( y ),
+    	    e = Math.cos( z ), f = Math.sin( z ),
+    	    ad = a * d, bd = b * d;
+    	this.value[ 0 ] = c * e;
+    	this.value[ 4 ] = - c * f;
+    	this.value[ 8 ] = d;
+    	this.value[ 1 ] = bd * e + a * f;
+    	this.value[ 5 ] = - bd * f + a * e;
+    	this.value[ 9 ] = - b * c;
+    	this.value[ 2 ] = - ad * e + b * f;
+    	this.value[ 6 ] = ad * f + b * e;
+    	this.value[ 10 ] = a * c;
+    	return this;
+    }
+
+    matrix4.prototype.addRotation = function( x, y, z ) {
+    	this.rotation.value[ 0 ] += x;
+    	this.rotation.value[ 1 ] += y;
+    	this.rotation.value[ 2 ] += z;
+    	this.setRotation( this.rotation.value[ 0 ], this.rotation.value[ 1 ], this.rotation.value[ 2 ] );
+    }
+
+    matrix4.prototype.getPosition = function() {
+    	this.position.set( this.value[ 12 ], this.value[ 13 ], this.value[ 14 ] );
+    	return this.position;
+    }
+
+    matrix4.prototype.getColumnX = function() {
+    	this.columnX.set( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+    	return this.columnX;
+    }
+
+    matrix4.prototype.getColumnY = function() {
+    	this.columnY.set( this.value[ 4 ], this.value[ 5 ], this.value[ 6 ] );
+    	return this.columnY;
+    }
+
+    matrix4.prototype.getColumnZ = function() {
+    	this.columnZ.set( this.value[ 8 ], this.value[ 9 ], this.value[ 10 ] );
+    	return this.columnZ;
+    }
+
+    matrix4.prototype.scale = function( v, y, z ) {
+    	var x;
+    	if( y !== undefined && z !== undefined ) {
+    		x = v;
+    	} else {
+    		x = v.value[ 0 ];
+    		y = v.value[ 1 ];
+    		z = v.value[ 2 ];
+    	}
+
+    	this.value[ 0 ] *= x; this.value[ 4 ] *= y; this.value[ 8 ] *= z;
+    	this.value[ 1 ] *= x; this.value[ 5 ] *= y; this.value[ 9 ] *= z;
+    	this.value[ 2 ] *= x; this.value[ 6 ] *= y; this.value[ 10 ] *= z;
+    	this.value[ 3 ] *= x; this.value[ 7 ] *= y; this.value[ 11 ] *= z;
+    	return this;
+    }
+
+    return matrix4;
+})();
+
+
+
+
+
+/*
+* Helpers
+*/
+
+GLOW.Matrix4.makeInverse = function ( m1, m2 ) {
+
+	// based on http://www.euclideanspace.com/maths/algebra/matrix/functions/inverse/fourD/index.htm
+
+	if( m2 === undefined ) m2 = new GLOW.Matrix4();
+
+	var m1v = m1.value;
+	var m2v = m2.value;
+
+	var n11 = m1v[ 0 ], n12 = m1v[ 4 ], n13 = m1v[ 8  ], n14 = m1v[ 12 ],
+	    n21 = m1v[ 1 ], n22 = m1v[ 5 ], n23 = m1v[ 9  ], n24 = m1v[ 13 ],
+	    n31 = m1v[ 2 ], n32 = m1v[ 6 ], n33 = m1v[ 10 ], n34 = m1v[ 14 ],
+	    n41 = m1v[ 3 ], n42 = m1v[ 7 ], n43 = m1v[ 11 ], n44 = m1v[ 15 ];
+
+	m2v[ 0  ] = n23*n34*n42 - n24*n33*n42 + n24*n32*n43 - n22*n34*n43 - n23*n32*n44 + n22*n33*n44;
+	m2v[ 1  ] = n24*n33*n41 - n23*n34*n41 - n24*n31*n43 + n21*n34*n43 + n23*n31*n44 - n21*n33*n44;
+	m2v[ 2  ] = n22*n34*n41 - n24*n32*n41 + n24*n31*n42 - n21*n34*n42 - n22*n31*n44 + n21*n32*n44;
+	m2v[ 3  ] = n23*n32*n41 - n22*n33*n41 - n23*n31*n42 + n21*n33*n42 + n22*n31*n43 - n21*n32*n43;
+	m2v[ 4  ] = n14*n33*n42 - n13*n34*n42 - n14*n32*n43 + n12*n34*n43 + n13*n32*n44 - n12*n33*n44;
+	m2v[ 5  ] = n13*n34*n41 - n14*n33*n41 + n14*n31*n43 - n11*n34*n43 - n13*n31*n44 + n11*n33*n44;
+	m2v[ 6  ] = n14*n32*n41 - n12*n34*n41 - n14*n31*n42 + n11*n34*n42 + n12*n31*n44 - n11*n32*n44;
+	m2v[ 7  ] = n12*n33*n41 - n13*n32*n41 + n13*n31*n42 - n11*n33*n42 - n12*n31*n43 + n11*n32*n43;
+	m2v[ 8  ] = n13*n24*n42 - n14*n23*n42 + n14*n22*n43 - n12*n24*n43 - n13*n22*n44 + n12*n23*n44;
+	m2v[ 9  ] = n14*n23*n41 - n13*n24*n41 - n14*n21*n43 + n11*n24*n43 + n13*n21*n44 - n11*n23*n44;
+	m2v[ 10 ] = n13*n24*n41 - n14*n22*n41 + n14*n21*n42 - n11*n24*n42 - n12*n21*n44 + n11*n22*n44;
+	m2v[ 11 ] = n13*n22*n41 - n12*n23*n41 - n13*n21*n42 + n11*n23*n42 + n12*n21*n43 - n11*n22*n43;
+	m2v[ 12 ] = n14*n23*n32 - n13*n24*n32 - n14*n22*n33 + n12*n24*n33 + n13*n22*n34 - n12*n23*n34;
+	m2v[ 13 ] = n13*n24*n31 - n14*n23*n31 + n14*n21*n33 - n11*n24*n33 - n13*n21*n34 + n11*n23*n34;
+	m2v[ 14 ] = n14*n22*n31 - n12*n24*n31 - n14*n21*n32 + n11*n24*n32 + n12*n21*n34 - n11*n22*n34;
+	m2v[ 15 ] = n12*n23*n31 - n13*n22*n31 + n13*n21*n32 - n11*n23*n32 - n12*n21*n33 + n11*n22*n33;
+	
+	m2.multiplyScalar( 1 / m1.determinant());
+
+	return m2;
+
+};
+
+/*THREE.Matrix4.makeInvert3x3 = function ( m1 ) {
+
+	// input:  THREE.Matrix4, output: THREE.Matrix3
+	// ( based on http://code.google.com/p/webgl-mjs/ )
+
+	var m33 = m1.m33, m33m = m33.m,
+	a11 =   m1.n33 * m1.n22 - m1.n32 * m1.n23,
+	a21 = - m1.n33 * m1.n21 + m1.n31 * m1.n23,
+	a31 =   m1.n32 * m1.n21 - m1.n31 * m1.n22,
+	a12 = - m1.n33 * m1.n12 + m1.n32 * m1.n13,
+	a22 =   m1.n33 * m1.n11 - m1.n31 * m1.n13,
+	a32 = - m1.n32 * m1.n11 + m1.n31 * m1.n12,
+	a13 =   m1.n23 * m1.n12 - m1.n22 * m1.n13,
+	a23 = - m1.n23 * m1.n11 + m1.n21 * m1.n13,
+	a33 =   m1.n22 * m1.n11 - m1.n21 * m1.n12,
+
+	det = m1.n11 * a11 + m1.n21 * a12 + m1.n31 * a13,
+
+	idet;
+
+	// no inverse
+	if (det == 0) {
+		throw "matrix not invertible";
+	}
+	
+	idet = 1.0 / det;
+
+	m33this.value[ 0 ] = idet * a11; m33this.value[ 1 ] = idet * a21; m33this.value[ 2 ] = idet * a31;
+	m33this.value[ 3 ] = idet * a12; m33this.value[ 4 ] = idet * a22; m33this.value[ 5 ] = idet * a32;
+	m33this.value[ 6 ] = idet * a13; m33this.value[ 7 ] = idet * a23; m33this.value[ 8 ] = idet * a33;
+
+	return m33;
+
+}
+*/
+
+GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
+
+	var m, mv, x, y, a, b, c, d;
+
+	m = new GLOW.Matrix4();
+	x = 2 * near / ( right - left );
+	y = 2 * near / ( top - bottom );
+	a = ( right + left ) / ( right - left );
+	b = ( top + bottom ) / ( top - bottom );
+	c = - ( far + near ) / ( far - near );
+	d = - 2 * far * near / ( far - near );
+
+	mv = m.value;
+	mv[ 0 ] = x;  mv[ 4 ] = 0;  mv[ 8  ] = a;   mv[ 12 ] = 0;
+	mv[ 1 ] = 0;  mv[ 5 ] = y;  mv[ 9  ] = b;   mv[ 13 ] = 0;
+	mv[ 2 ] = 0;  mv[ 6 ] = 0;  mv[ 10 ] = c;   mv[ 14 ] = d;
+	mv[ 3 ] = 0;  mv[ 7 ] = 0;  mv[ 11 ] = - 1; mv[ 15 ] = 0;
+
+	return m;
+
+};
+
+GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
+
+	var ymax, ymin, xmin, xmax;
+
+	ymax = near * Math.tan( fov * Math.PI / 360 );
+	ymin = - ymax;
+	xmin = ymin * aspect;
+	xmax = ymax * aspect;
+
+	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far );
+
+};
+
+GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far ) {
+
+	var m, mv, x, y, z, w, h, p;
+
+	m = GLOW.Matrix4();
+	w = right - left;
+	h = top - bottom;
+	p = far - near;
+	x = ( right + left ) / w;
+	y = ( top + bottom ) / h;
+	z = ( far + near ) / p;
+
+	mv = m.value;
+
+	mv[ 0 ] = 2 / w; mv[ 4 ] = 0;     mv[ 8  ] = 0;      mv[ 12 ] = -x;
+	mv[ 1 ] = 0;     mv[ 5 ] = 2 / h; mv[ 9  ] = 0;      mv[ 13 ] = -y;
+	mv[ 2 ] = 0;     mv[ 6 ] = 0;     mv[ 10 ] = -2 / p; mv[ 14 ] = -z;
+	mv[ 3 ] = 0;     mv[ 7 ] = 0;     mv[ 11 ] = 0;      mv[ 15 ] = 1;
+
+	return m;
+
+};
+
+
+GLOW.Matrix4.tempVector3A = new GLOW.Vector3();
+GLOW.Matrix4.tempVector3B = new GLOW.Vector3();
+GLOW.Matrix4.tempVector3C = new GLOW.Vector3();
+GLOW.Matrix4.tempVector3D = new GLOW.Vector3();
+GLOW.Geometry = {
+	
+	randomVector3Array: function( amount, factor ) {
+		
+		factor = factor !== undefined ? factor : 1;
+		
+		var a, array = [];
+		var doubleFactor = factor * 2;
+		
+		for( a = 0; a < amount; a++ ) {
+			
+			array.push( GLOW.Vector3( Math.random() * doubleFactor - factor, 
+									  Math.random() * doubleFactor - factor, 
+									  Math.random() * doubleFactor - factor ));
+		}
+
+		return array;
+	},
+	
+	elements: function( amount ) {
+		
+		var i = 0, a, array = new Uint16Array( amount * 3 );
+		
+		for( a = 0; a < amount; a++ ) {
+			
+			array[ i ] = i++;
+			array[ i ] = i++;
+			array[ i ] = i++;
+		}
+		
+		return array;
+	},
+	
+	faceNormals: function( vertices, elements ) {
+	
+		var normals = new Float32Array( vertices.length );
+		var e, el = elements.length;
+		var a, b, c;
+		var av = new GLOW.Vector3();
+		var bv = new GLOW.Vector3();
+		var cv = new GLOW.Vector3();
+		var nv = new GLOW.Vector3();
+	
+		for( e = 0; e < el; ) {
+			
+			a = elements[ e++ ] * 3;
+			b = elements[ e++ ] * 3;
+			c = elements[ e++ ] * 3;
+			
+			av.set( vertices[ a + 0 ], vertices[ a + 1 ], vertices[ a + 2 ] );
+			bv.set( vertices[ b + 0 ], vertices[ b + 1 ], vertices[ b + 2 ] );
+			cv.set( vertices[ c + 0 ], vertices[ c + 1 ], vertices[ c + 2 ] );
+			
+			bv.subSelf( av );
+			cv.subSelf( av );
+			
+			nv.cross( cv, bv ).normalize();
+			
+			normals[ a + 0 ] = nv.value[ 0 ]; normals[ a + 1 ] = nv.value[ 1 ]; normals[ a + 2 ] = nv.value[ 2 ];
+			normals[ b + 0 ] = nv.value[ 0 ]; normals[ b + 1 ] = nv.value[ 1 ]; normals[ b + 2 ] = nv.value[ 2 ];
+			normals[ c + 0 ] = nv.value[ 0 ]; normals[ c + 1 ] = nv.value[ 1 ]; normals[ c + 2 ] = nv.value[ 2 ];
+		}
+
+		return normals;
+	}
+}
+
+GLOW.Geometry.Cube = {
+	
+	vertices: function( size ) {
+
+		var a = new Float32Array( 6 * 4 * 3 );
+		var i = 0;
+
+		size = size !== undefined ? size * 0.5 : 5;
+
+		// front
+
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
+
+		// back
+
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+
+		// left
+
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
+
+		// right
+
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+
+		// up
+
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = -size; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = +size; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = +size; 
+
+		// down
+
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = -size; 
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = +size; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = +size; 
+
+		return a;
+	},
+
+	elements: function() {
+
+		var a = new Uint16Array( 6 * 2 * 3 );
+		var i = 0;
+
+		a[ i++ ] = 0; a[ i++ ] = 1; a[ i++ ] = 2;
+		a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 3;
+
+		a[ i++ ] = 4; a[ i++ ] = 5; a[ i++ ] = 6;
+		a[ i++ ] = 4; a[ i++ ] = 6; a[ i++ ] = 7;
+
+		a[ i++ ] = 8; a[ i++ ] = 9; a[ i++ ] = 10;
+		a[ i++ ] = 8; a[ i++ ] = 10; a[ i++ ] = 11;
+
+		a[ i++ ] = 12; a[ i++ ] = 13; a[ i++ ] = 14;
+		a[ i++ ] = 12; a[ i++ ] = 14; a[ i++ ] = 15;
+
+		a[ i++ ] = 16; a[ i++ ] = 17; a[ i++ ] = 18;
+		a[ i++ ] = 16; a[ i++ ] = 18; a[ i++ ] = 19;
+
+		a[ i++ ] = 20; a[ i++ ] = 21; a[ i++ ] = 22;
+		a[ i++ ] = 20; a[ i++ ] = 22; a[ i++ ] = 23;
+
+		return a;
+	},
+	
+	uvs: function() {
+		
+		var a = new Float32Array( 6 * 4 * 2 );
+		var i = 0;
+		
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 0; a[ i++ ] = 0;
+
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 0; a[ i++ ] = 0;
+
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 0; a[ i++ ] = 0;
+
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 0; a[ i++ ] = 0;
+
+		return a;
+	}
+}
+
+
+GLOW.Geometry.Plane = {
+	
+	vertices: function( size ) {
+
+		var a = new Float32Array( 4 * 3 );
+		var i = 0;
+
+		size = size !== undefined ? size * 0.5 : 1.0;
+
+		// front
+
+		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = 0; 
+		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = 0; 
+		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = 0; 
+		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = 0; 
+
+		return a;
+	},
+
+	elements: function() {
+
+		var a = new Uint16Array( 2 * 3 );
+		var i = 0;
+
+		a[ i++ ] = 0; a[ i++ ] = 1; a[ i++ ] = 2;
+		a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 3;
+
+		return a;
+	},
+	
+	uvs: function() {
+		
+		var a = new Float32Array( 4 * 2 );
+		var i = 0;
+		
+		a[ i++ ] = 1; a[ i++ ] = 0;
+		a[ i++ ] = 1; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 0;
+		
+		return a;
+	}
+}/*
+* GLOW.Node
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Node = function( shader ) {
+	
+	"use strict";
+	
+	this.localMatrix  = new GLOW.Matrix4();
+	this.globalMatrix = new GLOW.Matrix4();
+	this.viewMatrix   = new GLOW.Matrix4();
+	
+	this.useXYZStyleTransform = false;
+	this.position = { x: 0, y: 0, z: 0 };
+	this.rotation = { x: 0, y: 0, z: 0 };
+	this.scale    = { x: 1, y: 1, z: 1 };
+
+	this.children = [];
+	this.parent   = undefined;
+	
+	if( shader ) {
+		this.shader = shader;
+		this.draw = shader.draw;
+	}
+}
+
+/* 
+* Prototype
+*/ 
+
+GLOW.Node.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix ) {
+	
+	if( this.useXYZStyleTransform ) {
+		
+		this.localMatrix.setPosition( this.position.x, this.position.y, this.position.z );
+		this.localMatrix.setRotation( this.rotation.x, this.rotation.y, this.rotation.z );
+		this.localMatrix.scale( this.scale.x, this.scale.y, this.scale.z );
+	}
+	
+	if( parentGlobalMatrix ) {
+
+		this.globalMatrix.multiply( parentGlobalMatrix, this.localMatrix );
+
+	} else {
+
+		this.globalMatrix.copy( this.localMatrix );
+	}
+	
+	
+	if( cameraInverseMatrix ) {
+		
+		this.viewMatrix.multiply( cameraInverseMatrix, this.globalMatrix );
+	}
+	
+
+	var c, cl = this.children.length;
+
+	for( c = 0; c < cl; c++ ) {
+		
+		this.children[ c ].update( this.globalMatrix, cameraInverseMatrix );
+	}
+	
+	return this;
+}
+
+GLOW.Node.prototype.addChild = function( child ) {
+	
+	if( this.children.indexOf( child ) === -1 ) {
+		
+		this.children.push( child );
+		
+		if( child.parent ) {
+			
+			child.parent.removeChild( child );
+		}
+		
+		child.parent = this;
+	}
+	
+	return this;
+}
+
+
+GLOW.Node.prototype.removeChild = function( child ) {
+	
+	var index = this.children.indexOf( child );
+	
+	if( index !== -1 ) {
+		
+		this.children.splice( 1, index );
+		child.parent = undefined;
+	}
+	
+	return this;
+}
+
+/*
+* GLOW.Camera
+* @author: Mikael Emtinger, gomo.se
+*/
+
+GLOW.Camera = function( parameters ) {
+
+	"use strict";
+	GLOW.Node.call( this );
+
+	parameters = parameters !== undefined ? parameters : {};
+
+	var fov    = parameters.fov    !== undefined ? parameters.fov    : 40;
+	var aspect = parameters.aspect !== undefined ? parameters.aspect : window.innerWidth / window.innerHeight;
+	var near   = parameters.near   !== undefined ? parameters.near   : 0.1;
+	var far    = parameters.far    !== undefined ? parameters.far    : 10000;
+
+	this.useTarget  = parameters.useTarget !== undefined ? parameters.useTarget : true;
+	this.projection = GLOW.Matrix4.makeProjection( fov, aspect, near, far );
+	this.inverse    = new GLOW.Matrix4();
+	this.target     = new GLOW.Vector3( 0, 0, -100 );
+	this.up         = new GLOW.Vector3( 0, 1, 0 );
+	
+	this.update();
+}
+
+/*
+* Prototype
+*/
+
+GLOW.Camera.prototype = new GLOW.Node();
+GLOW.Camera.prototype.constructor = GLOW.Camera;
+GLOW.Camera.prototype.supr = GLOW.Node.prototype;
+
+GLOW.Camera.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix ) {
+
+	if( this.useXYZStyleTransform ) {
+		
+		this.localMatrix.setPosition( this.position.x, this.position.y, this.position.z );
+
+		if( this.useTarget ) {
+			this.localMatrix.lookAt( this.target, this.up );
+		} else {
+			this.localMatrix.setRotation( this.rotation.x, this.rotation.y, this.rotation.z );
+		}
+		
+		this.localMatrix.scale( this.scale.x, this.scale.y, this.scale.z );
+	
+	} else if( this.useTarget ) {
+
+		this.localMatrix.lookAt( this.target, this.up );
+
+	}
+	
+	
+	if( parentGlobalMatrix ) {
+		this.globalMatrix.multiply( parentGlobalMatrix, this.localMatrix );
+	} else {
+		this.globalMatrix.copy( this.localMatrix );
+	}
+	
+	GLOW.Matrix4.makeInverse( this.globalMatrix, this.inverse );
+
+
+	var c, cl = this.children.length;
+
+	for( c = 0; c < cl; c++ ) {
+		this.children[ c ].update( this.globalMatrix, cameraInverseMatrix );
+	}
+}
+
+
+
+/*
+* Create default camera
+*/
+
+GLOW.defaultCamera = new GLOW.Camera();
+

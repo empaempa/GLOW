@@ -194,8 +194,9 @@ def main(argv=None):
 	['GLOWCoreMath', 'includes_extras', MATH_FILES, args.math]
 	]
 
+
 	for fname_lib, fname_inc, files, enabled in config:
-		if enabled or args.all:
+		if enabled or args.all or unminified:
 			buildLib(files, debug, unminified, fname_lib)
 
 if __name__ == "__main__":
