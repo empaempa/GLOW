@@ -22,9 +22,16 @@ GLOW.FBO = (function() {
     	var depth          = parameters.depth          !== undefined ? parameters.depth          : true;
     	var stencil        = parameters.stencil        !== undefined ? parameters.stencil        : false;
 
-    	this.textureUnit  = -1;
-        this.textureType  = parameters.cube !== true ? GL.TEXTURE_2D : GL.TEXTURE_CUBE_MAP;
-    	this.viewport     = { x: 0, y: 0, width: this.width, height: this.height };
+        this.isBound       = false;
+    	this.textureUnit   = -1;
+        this.textureType   = parameters.cube !== true ? GL.TEXTURE_2D : GL.TEXTURE_CUBE_MAP;
+    	this.viewport      = { x: 0, y: 0, width: this.width, height: this.height };
+    	this.clearSettings = { r: 0, g: 0, b: 0, a: 1, depth: 1, clearBits: 0 };
+    	
+    	this.clearSettings.clearBits  = GL.COLOR_BUFFER_BIT;
+    	this.clearSettings.clearBits |= depth   ? GL.DEPTH_BUFFER_BIT   : 0;
+        this.clearSettings.clearBits |= stencil ? GL.STENCIL_BUFFER_BIT : 0;
+        this.setupClear( parameters );
 
     	// setup texture
     	this.texture = GL.createTexture();
@@ -98,32 +105,66 @@ GLOW.FBO = (function() {
     };
 
     GLOWFBO.prototype.bind = function( side ) {
-    	// TODO: add cache
-        if( this.textureType === GL.TEXTURE_2D ) {
-        	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
-        } else {
-            side = side !== undefined ? side : "posX";
-        	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffers[ side ] );
+        if( !this.isBound ) {
+            this.isBound = true;
+            if( this.textureType === GL.TEXTURE_2D ) {
+            	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+            } else {
+                side = side !== undefined ? side : "posX";
+            	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffers[ side ] );
+            }
         }
-    	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
     	return this;
     };
 
     GLOWFBO.prototype.unbind = function() {
     	// TODO: add cache
-    	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
-    	GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
+    	if( this.isBound ) {
+    	    this.isBound = false;
+        	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
+        	GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
+    	}
     	return this;
+    };
+
+    GLOWFBO.prototype.setViewport = function() {
+        this.setupViewport();
     };
 
     GLOWFBO.prototype.setupViewport = function( setup ) {
-    	this.viewport.x = setup.x !== undefined ? setup.x : 0;
-    	this.viewport.y = setup.y !== undefined ? setup.y : 0;
-    	this.viewport.width = setup.width !== undefined ? setup.width : window.innerWidth;
-    	this.viewport.height = setup.height !== undefined ? setup.height : window.innerHeight;
+        if( setup ) {
+        	this.viewport.x      = setup.x      !== undefined ? setup.x      : this.viewport.x;
+        	this.viewport.y      = setup.y      !== undefined ? setup.y      : this.viewport.y;
+        	this.viewport.width  = setup.width  !== undefined ? setup.width  : this.viewport.width;
+        	this.viewport.height = setup.height !== undefined ? setup.height : this.viewport.height;
+        }
+    	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
     	return this;
     };
 
+    GLOWFBO.prototype.setupClear = function( setup ) {
+    	if( setup !== undefined ) {
+        	this.clearSettings.r         = setup.red       !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : this.clearSettings.r; 
+        	this.clearSettings.g         = setup.green     !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : this.clearSettings.g; 
+        	this.clearSettings.b         = setup.blue      !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : this.clearSettings.b; 
+        	this.clearSettings.a         = setup.alpha     !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : this.clearSettings.a;
+        	this.clearSettings.depth     = setup.depth     !== undefined ? Math.min( 1, Math.max( 0, setup.depth )) : this.clearSettings.depth;
+        	this.clearSettings.clearBits = setup.clearBits !== undefined ? setup.clearBits : this.clearSettings.clearBits;
+    	}
+
+    	GL.clearColor( this.clearSettings.r, this.clearSettings.g, this.clearSettings.b, this.clearSettings.a );
+    	GL.clearDepth( this.clearSettings.depth );
+    	return this;
+    };
+
+    GLOWFBO.prototype.clear = function( setup ) {
+        if( this.isBound ) {
+            this.setupClear( setup );
+        	GL.clear( this.clearSettings.clearBits );
+        }
+    	return this;
+    };
+    
     GLOWFBO.prototype.resize = function() {
     	// TODO
     	return this;
