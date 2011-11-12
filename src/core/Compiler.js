@@ -19,14 +19,10 @@ GLOW.Compiler = (function() {
 	//  elements = array or UInt16Array with elements
 	
 	compiler.compile = function( parameters ) {
-		var c, cl = compiledCode.length;
-		var code;
 		var program = GLOW.currentContext.cache.codeCompiled( parameters.vertexShader, parameters.fragmentShader );
-		
 		if( program === undefined ) {
 			program = compiler.linkProgram( compiler.compileVertexShader  ( parameters.vertexShader   ),
 			                                compiler.compileFragmentShader( parameters.fragmentShader ));
-			
 			GLOW.currentContext.cache.addCompiledProgram( program );
 		}
 		
