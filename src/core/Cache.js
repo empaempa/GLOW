@@ -61,25 +61,37 @@ GLOW.Cache = (function() {
     GLOWCache.prototype.uniformCached = function( uniform ) {
         if( this.active ) {
             if( this.uniformByLocation[ uniform.locationNumber ] === uniform.id ) return true;
-            this.uniformByLocation[ uniform.locationNumber ] = uniform.id
+            this.uniformByLocation[ uniform.locationNumber ] = uniform.id;
         }
         return false;
     };
+    
+    GLOWCache.prototype.invalidateUniform = function( uniform ) {
+        this.uniformByLocation[ uniform.locationNumber ] = undefined;
+    }
 
     GLOWCache.prototype.attributeCached = function( attribute ) {
         if( this.active ) {
             if( this.attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
-            this.attributeByLocation[ attribute.locationNumber ] = attribute.id
+            this.attributeByLocation[ attribute.locationNumber ] = attribute.id;
         }
         return false;
     };
 
+    GLOWCache.prototype.invalidateAttribute = function( attribute ) {
+        this.attributeByLocation[ attribute.locationNumber ] = undefined;
+    }
+
     GLOWCache.prototype.textureCached = function( texture ) {
         if( this.active ) {
             if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
-            this.textureByLocation[ texture.textureUnit ] = texture.id
+            this.textureByLocation[ texture.textureUnit ] = texture.id;
         }
         return false;
+    };
+
+    GLOWCache.prototype.invalidateTexture = function( texture ) {
+        this.textureByLocation[ texture.textureUnit ] = undefined;
     };
 
     GLOWCache.prototype.elementsCached = function( elements ) {
@@ -88,6 +100,10 @@ GLOW.Cache = (function() {
             this.elementId = elements.id;
         }
         return false;
+    };
+
+    GLOWCache.prototype.invalidateElements = function() {
+        this.elementId = -1;
     };
 
     GLOWCache.prototype.clear = function() {
