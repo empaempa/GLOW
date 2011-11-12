@@ -20,6 +20,7 @@ GLOW.Context = (function() {
     	this.width                  = parameters.width                 !== undefined ? parameters.width                 : window.innerWidth;
     	this.height                 = parameters.height                !== undefined ? parameters.height                : window.innerHeight;
     	this.cache                  = new GLOW.Cache();
+        this.viewport               = { x: 0, y: 0, width: 0, height: 0 };
 
     	if( parameters.context ) {
     	    this.GL = parameters.context;
@@ -185,14 +186,37 @@ GLOW.Context = (function() {
     	return this;
     };
 
+    GLOWContext.prototype.setViewport = function() {
+        this.setupViewport();
+    };
+
     GLOWContext.prototype.setupViewport = function( setup ) {
-        setup = setup !== undefined ? setup : {};
-        var x = setup.x !== undefined ? setup.x : 0;
-        var y = setup.y !== undefined ? setup.y : 0;
-        var w = this.width = setup.width !== undefined ? setup.width : window.innerWidth;
-        var h = this.height = setup.height !== undefined ? setup.height : window.innerHeight;
-		this.GL.viewport( x, y, w, h );	
+        if( setup ) {
+        	this.viewport.x      = setup.x      !== undefined ? setup.x      : this.viewport.x;
+        	this.viewport.y      = setup.y      !== undefined ? setup.y      : this.viewport.y;
+        	this.viewport.width  = setup.width  !== undefined ? setup.width  : this.viewport.width;
+        	this.viewport.height = setup.height !== undefined ? setup.height : this.viewport.height;
+        }
+    	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
     	return this;
+    };
+
+    GLOWContext.prototype.availableExtensions = function() {
+        return GL.getSupportedExtensions();
+    };
+	
+    GLOWContext.prototype.enableExtension = function( extensionName ) {
+        var availableExtensions = GL.getSupportedExtensions();
+        for( var a = 0, al = availableExtensions.length; a < al; a++ ) {
+            if( extensionName.toLowerCase() === availableExtensions[ a ].toLowerCase())
+                break;
+        }
+                
+        if( a !== al ) {
+            return GL.getExtension( availableExtensions[ a ] );
+        } else {
+            return undefined;
+        }
     };
 	
 	return GLOWContext;
