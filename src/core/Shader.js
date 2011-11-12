@@ -78,7 +78,7 @@ GLOW.Shader = (function() {
                         GL.enableVertexAttribArray( current );
                     }
                 } else {
-                    for( ; current >= highestAttrib; current-- ) {
+                    for( ; current > highestAttrib; current-- ) {
                         GL.disableVertexAttribArray( current ); 
                     }
                 }
