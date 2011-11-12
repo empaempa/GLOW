@@ -16,7 +16,7 @@ uniform float power;
 void main(void) {
 	gl_Position = mvpMatrix() * vec4(aVertexPosition, 1.0);
 	vNormal = normalize(nMatrix * aVertexNormal);	
-	vec3 incident = normalize( (vec4(aVertexPosition, 1.0) * mMatrix).xyz - uEyePosition);
+	vec3 incident = normalize((vec4(aVertexPosition, 1.0) * mMatrix).xyz - uEyePosition);
 	
 	t = reflect(incident, vNormal);	
 	tr = refract(incident, vNormal, chromaticDispertion.x);
@@ -26,6 +26,7 @@ void main(void) {
 	// bias, scale, 1, power
 	rfac = bias + scale * pow(1.0 + dot(incident, vNormal), power);
 }
+
 
 //# GlassFragment
 
