@@ -51,6 +51,7 @@
 		<script type="text/javascript" src="src/extras/geometry/Plane.js"></script>
 
 		<script type="text/javascript" src="src/extras/io/Load.js"></script>
+
 		<script type="text/javascript">
 		
 			// Create a GLOW.Context
@@ -61,9 +62,9 @@
 			var container = document.getElementById( "container" );
 			container.appendChild( context.domElement );
 
-			new GLOW.Load( { img: "examples/textures/clouds.jpg", 
-			                 video: "examples/videos/test.webm",
-							 shader: "examples/shaders/glass.glsl",
+			new GLOW.Load( { sdfsdf: "examples/videos/test.webm",
+							 shader: "examples/shaders/texture.glsl",
+							 model: "examples/models/skull.js",
 							 onLoadItem: onItem,
 							 onLoadComplete: init } );
 			
@@ -72,7 +73,7 @@
 			}
 			
 			function init( data ) {
-				var a = data;
+				
 			}
 
 		</script>
