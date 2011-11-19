@@ -472,7 +472,8 @@ GLOW.Compiler = (function() {
 			} else {
 				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
 				if( uniforms[ name ].type === GL.SAMPLER_2D || uniforms[ name ].type === GL.SAMPLER_CUBE ) {
-					uniforms[ name ].data.init( textureUnit++ );
+					uniforms[ name ].textureUnit = textureUnit++;
+					uniforms[ name ].data.init();
 				}
 			}
 		}
@@ -797,16 +798,16 @@ GLOW.Cache = (function() {
         this.attributeByLocation[ attribute.locationNumber ] = undefined;
     }
 
-    GLOWCache.prototype.textureCached = function( texture ) {
+    GLOWCache.prototype.textureCached = function( textureUnit, texture ) {
         if( this.active ) {
-            if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
-            this.textureByLocation[ texture.textureUnit ] = texture.id;
+            if( this.textureByLocation[ textureUnit ] === texture.id ) return true;
+            this.textureByLocation[ textureUnit ] = texture.id;
         }
         return false;
     };
 
-    GLOWCache.prototype.invalidateTexture = function( texture ) {
-        this.textureByLocation[ texture.textureUnit ] = undefined;
+    GLOWCache.prototype.invalidateTexture = function( textureUnit ) {
+        this.textureByLocation[ textureUnit ] = undefined;
     };
 
     GLOWCache.prototype.elementsCached = function( elements ) {
@@ -935,8 +936,8 @@ GLOW.FBO = (function() {
 	}
 
     // methods
-    GLOWFBO.prototype.init = function( textureUnit ) {
-    	this.textureUnit = textureUnit;
+    GLOWFBO.prototype.init = function() {
+        // called from compiler but there's really nothing to do here
     };
 
     GLOWFBO.prototype.bind = function( setViewport, side ) {
@@ -1042,14 +1043,11 @@ GLOW.Texture = (function() {
     	this.minFilter = parameters.minFilter !== undefined ? parameters.minFilter : GL.LINEAR_MIPMAP_LINEAR;
 	    this.width  = parameters.width;
 	    this.height = parameters.height;
-    	this.textureUnit = -1;
     	this.texture = undefined;
 	}
 
 	// methods
-    GLOWTexture.prototype.init = function( textureUnit ) {
-    	this.textureUnit = textureUnit;
-    	
+    GLOWTexture.prototype.init = function() {
     	if( typeof( this.data ) === "string" ) {
         	this.textureType = GL.TEXTURE_2D;
             var originalURL  = this.data;
@@ -1421,9 +1419,9 @@ GLOW.Uniform = (function() {
         setFunctions[ GL.FLOAT_MAT3 ] = function() { GL.uniformMatrix3fv( this.location, false, this.getNativeValue()); };
         setFunctions[ GL.FLOAT_MAT4 ] = function() { GL.uniformMatrix4fv( this.location, false, this.getNativeValue()); };
         setFunctions[ GL.SAMPLER_2D ] = function() {
-            if( this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.data )) {
-                GL.uniform1i( this.location, this.data.textureUnit );
-                GL.activeTexture( GL.TEXTURE0 + this.data.textureUnit );
+            if( this.data.texture !== undefined && this.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.textureUnit, this.data )) {
+                GL.uniform1i( this.location, this.textureUnit );
+                GL.activeTexture( GL.TEXTURE0 + this.textureUnit );
                 GL.bindTexture( GL.TEXTURE_2D, this.data.texture );
                 if( this.data.autoUpdate ) {
                     this.data.updateTexture( this.data.autoUpdate );
@@ -1431,9 +1429,9 @@ GLOW.Uniform = (function() {
             }
         };
         setFunctions[ GL.SAMPLER_CUBE ] = function() {
-            if( this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.data )) {
-                GL.uniform1i( this.location, this.data.textureUnit );
-                GL.activeTexture( GL.TEXTURE0 + this.data.textureUnit );
+            if( this.data.texture !== undefined && this.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.textureUnit, this.data )) {
+                GL.uniform1i( this.location, this.textureUnit );
+                GL.activeTexture( GL.TEXTURE0 + this.textureUnit );
                 GL.bindTexture( GL.TEXTURE_CUBE_MAP, this.data.texture );
                 if( this.data.autoUpdate ) {
                     this.data.updateTexture( this.data.autoUpdate );
@@ -1456,6 +1454,7 @@ GLOW.Uniform = (function() {
         this.type = parameters.type;
         this.location = parameters.location;
         this.locationNumber = parameters.locationNumber;
+        this.textureUnit = -1;
         this.load = parameters.loadFunction || setFunctions[ this.type ];
     }
 
