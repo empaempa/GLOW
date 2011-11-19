@@ -433,9 +433,11 @@ var Complicated = (function() {
         // we draw back of volume to the left and the front
         // of the volume to the right
 
+        context.enableDepthTest( true );
+        
         depthFBO.bind( { x: 0, width: depthFBO.width * 0.5 } );
         depthFBO.clear();
-        context.enableCulling( true, { cullFace: GL.FRONT } );
+        context.setupCulling( { cullFace: GL.FRONT } );
 
         depthShader.draw();
 
@@ -443,9 +445,11 @@ var Complicated = (function() {
         context.setupCulling( { cullFace: GL.BACK } );
 
         depthShader.draw();
-        depthFBO.unbind();
+        depthFBO.unbind( false );
 
         // update particle system and render
+        
+        context.enableDepthTest( false );
         
         particlesFBO.bind();
         particleSimulationShader.draw();
@@ -455,7 +459,6 @@ var Complicated = (function() {
 
         // draw to screen (temp)
 
-        context.enableCulling( false );
         depthToScreenShader.draw();
 
         stats.update();
