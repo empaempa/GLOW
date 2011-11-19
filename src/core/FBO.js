@@ -21,6 +21,7 @@ GLOW.FBO = (function() {
     	var type           = parameters.type           !== undefined ? parameters.type           : GL.UNSIGNED_BYTE;
     	var depth          = parameters.depth          !== undefined ? parameters.depth          : true;
     	var stencil        = parameters.stencil        !== undefined ? parameters.stencil        : false;
+        var data           = parameters.data           !== undefined ? parameters.data           : null;
 
         this.isBound       = false;
     	this.textureUnit   = -1;
@@ -42,10 +43,10 @@ GLOW.FBO = (function() {
     	GL.texParameteri( this.textureType, GL.TEXTURE_MIN_FILTER, minFilter );
 
         if( this.textureType === GL.TEXTURE_2D ) {
-        	GL.texImage2D( this.textureType, 0, internalFormat, this.width, this.height, 0, format, type, null );
+        	GL.texImage2D( this.textureType, 0, internalFormat, this.width, this.height, 0, format, type, data );
         } else {
-            for( var t = 0; t < 6; t++ ) {
-            	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + t, 0, internalFormat, this.width, this.height, 0, format, type, null );
+            for( var c in cubeSideOffsets ) {
+            	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, internalFormat, this.width, this.height, 0, format, type, data[ c ] );
             }
         }
 
@@ -104,9 +105,13 @@ GLOW.FBO = (function() {
     	this.textureUnit = textureUnit;
     };
 
-    GLOWFBO.prototype.bind = function( side ) {
+    GLOWFBO.prototype.bind = function( setViewport, side ) {
         if( !this.isBound ) {
             this.isBound = true;
+            
+            if( setViewport || setViewport === undefined ) 
+                this.setupViewport( setViewport );
+                
             if( this.textureType === GL.TEXTURE_2D ) {
             	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
             } else {
@@ -122,7 +127,7 @@ GLOW.FBO = (function() {
     	if( this.isBound ) {
     	    this.isBound = false;
         	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
-        	GL.viewport( 0, 0, GLOW.currentContext.width, GLOW.currentContext.height );
+        	GL.viewport( GLOW.currentContext.viewport.x, GLOW.currentContext.viewport.y, GLOW.currentContext.viewport.width, GLOW.currentContext.viewport.height );
     	}
     	return this;
     };
