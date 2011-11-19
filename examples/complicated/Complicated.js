@@ -125,7 +125,7 @@ var Complicated = (function() {
                 // we need to do this first as the frames creation
                 // uses the global GL to create buffers
               
-                context = new GLOW.Context( { width: 256, height: 256 } );
+                context = new GLOW.Context( { width: 256, height: 256 } );
                 context.setupClear( { red: 1, green: 1, blue: 1 } );
                 context.domElement.style.position = 'absolute';
                 context.domElement.style.left = '100px';
@@ -252,15 +252,19 @@ var Complicated = (function() {
                     // The simulation data XYUV is for sampling and writing
                     // For sampling the data, we need UV (0->1) and for 
                     // writing the data, we need XY (0->squareParticles). We 
-                    // cram both XY and UV into a vec4
-                    
+                    // cram both XY and UV into a vec4. Note the weird 
+                    // numbers in the formula for write position X - I can't
+                    // really explain why it needs to be like this to work, 
+                    // it might have to do with  128 * 1.001 = 128.128 ... 
+                    // but I don't know, it's just weird :)
+
                     u = i % squareParticles;
                     v = Math.floor( i / squareParticles );
                     
                     simulationDataXYUVs.push( u * 1.001 / squareParticles * 2 - 0.999 );    // write position X (-1 -> 1)
-                    simulationDataXYUVs.push( v * 1 / squareParticles * 2 - 1 );    // write position Y (-1 -> 1)
-                    simulationDataXYUVs.push( u /= squareParticles );           // read position U (0 -> 1)
-                    simulationDataXYUVs.push( v /= squareParticles );           // read position V (0 -> 1)
+                    simulationDataXYUVs.push( v * 1.001 / squareParticles * 2 - 0.999 );    // write position Y (-1 -> 1)
+                    simulationDataXYUVs.push( u /= squareParticles );                       // read position U (0 -> 1)
+                    simulationDataXYUVs.push( v /= squareParticles );                       // read position V (0 -> 1)
 
                     // This is the particle YZ. We calculate the X using the time
                     // stored in the FBO. As the amount of elements for the simulation
@@ -275,11 +279,11 @@ var Complicated = (function() {
 
                     // This is the data sent to the particleFBO at start
 
-//                    simulationData.push( Math.random());                            // time (0->1)
-                    simulationData.push( 1.0 );                                     // size 
-                    simulationData.push( 0.0 );                                     // size 
-                    simulationData.push( 0.0 );                                     // size 
-//                    simulationData.push(( 255 << 16 ) & ( 255 << 8 ) & ( 0 << 0 )); // color (r<<16 & g<<8 & b )
+//                    simulationData.push( Math.random());                            // x = time (0->1)
+                    simulationData.push( 0.0 );                                     // y = size 
+                    simulationData.push( 0.0 );                                     // y = size 
+                    simulationData.push( 0.0 );                                     // z = color 
+//                    simulationData.push(( 255 << 16 ) & ( 255 << 8 ) & ( 0 << 0 )); // z = color (r<<16 & g<<8 & b )
                     simulationData.push( 1.0 );                                       // unused ATM
                     
                     // And now the render specfic stuff...
@@ -342,18 +346,18 @@ var Complicated = (function() {
                     return;
                 }
 
-                depthFBO = new GLOW.FBO( { width: squareParticles * 2, 
-                                           height: squareParticles, 
+                depthFBO = new GLOW.FBO( { width: 256, 
+                                           height: 128, 
                                            type: GL.FLOAT,
                                            magFilter: GL.NEAREST, 
                                            minFilter: GL.NEAREST } ); 
 
                 particlesFBO = new GLOW.FBO( { width: squareParticles,     
-                                              height: squareParticles, 
-                                              type: GL.FLOAT, 
-                                              magFilter: GL.NEAREST, 
-                                              minFilter: GL.NEAREST, 
-                                              data: new Float32Array( simulationData ) } );
+                                               height: squareParticles, 
+                                               type: GL.FLOAT, 
+                                               magFilter: GL.NEAREST, 
+                                               minFilter: GL.NEAREST, 
+                                               data: new Float32Array( simulationData ) } );
 
                 // Setup the config and create the particle simulation shader
 
@@ -428,7 +432,7 @@ var Complicated = (function() {
         // we draw back of volume to the left and the front
         // of the volume to the right
 
- /*       depthFBO.bind( { x: 0, width: depthFBO.width * 0.5 } );
+        depthFBO.bind( { x: 0, width: depthFBO.width * 0.5 } );
         depthFBO.clear();
         context.enableCulling( true, { cullFace: GL.FRONT } );
 
@@ -439,12 +443,9 @@ var Complicated = (function() {
 
         depthShader.draw();
         depthFBO.unbind();
-*/
+
         // update particle system and render
         
-  /*    particleSimulationShader.uTime.sub( animationSpeed );
-        particleRenderShader    .uTime.sub( animationSpeed );
-    */    
         particlesFBO.bind();
         particleSimulationShader.draw();
         particlesFBO.unbind();
