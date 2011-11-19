@@ -69,7 +69,7 @@ GLOW.Load = (function() {
 
     load.prototype.onLoadJSON = function() {
         if( this.readyState === 4 ) {
-            var originalData;
+   /*         var originalData;
             var data = {};
             
             // Three.js
@@ -92,9 +92,9 @@ GLOW.Load = (function() {
                 }
             } else {
                 data = JSON.parse( this.responseText );
-            }
+            }*/
 
-            this.scope.parameters[ this.parametersProperty ] = data;
+            this.scope.parameters[ this.parametersProperty ] = JSON.parse( this.responseText );;
             this.scope.handleLoadedItem();
         }
     };
