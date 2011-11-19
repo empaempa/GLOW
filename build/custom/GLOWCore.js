@@ -957,12 +957,14 @@ GLOW.FBO = (function() {
     	return this;
     };
 
-    GLOWFBO.prototype.unbind = function() {
+    GLOWFBO.prototype.unbind = function( setViewport ) {
     	// TODO: add cache
     	if( this.isBound ) {
     	    this.isBound = false;
         	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
-        	GL.viewport( GLOW.currentContext.viewport.x, GLOW.currentContext.viewport.y, GLOW.currentContext.viewport.width, GLOW.currentContext.viewport.height );
+        	
+        	if( setViewport === undefined || setViewport === true )
+        	    GL.viewport( GLOW.currentContext.viewport.x, GLOW.currentContext.viewport.y, GLOW.currentContext.viewport.width, GLOW.currentContext.viewport.height );
     	}
     	return this;
     };
