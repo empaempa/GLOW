@@ -19,7 +19,7 @@ void main(void)
 	rotatedDirection.y = ( sinRot * aParticleDirections.x + cosRot * aParticleDirections.y );
 	rotatedDirection.z = aParticleDirections.z;
 
-	particlePosition += rotatedDirection * 10.0;// * ( 10.0 + particleInfo.z * 30.0 );
+	particlePosition += rotatedDirection * particleData.y;//10.0;// * ( 10.0 + particleInfo.z * 30.0 );
 	
 	gl_Position = uPerspectiveMatrix * uViewMatrix * vec4( particlePosition, 1.0 );
 }
