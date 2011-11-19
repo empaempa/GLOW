@@ -3,15 +3,16 @@ var Complicated = (function() {
     // general variables 
     
     var context;
-    var squareParticles = 128;
+    var squareParticles = 256;
     var numParticles = squareParticles * squareParticles;
 
     // cameras, nodes and FBOs (will be created later)
  
-    var cameraFBO    = new GLOW.Camera( { width: squareParticles, height: squareParticles, near: 0.1, far: 8000, aspect: 1 } );
-    var camera       = new GLOW.Camera( { near: 0.1, far: 8000 } );
-    var animalNode   = new GLOW.Node();
-    var particleNode = new GLOW.Node();
+    var cameraFBO              = new GLOW.Camera( { near: 0.1, far: 8000, aspect: 1 } );
+    var camera                 = new GLOW.Camera( { near: 0.1, far: 8000 } );
+    var animalNode             = new GLOW.Node();
+    var particleSimulationNode = new GLOW.Node();
+    var particleRenderNode     = new GLOW.Node();
     var depthFBO;
     var particlesFBO;
     
@@ -68,8 +69,8 @@ var Complicated = (function() {
         fragmentShader:     undefined,
         points:             undefined, 
         data: {
-            uPerspectiveMatrix:         cameraFBO.projection,   // this one is used for sampling the depth FBO at the right place
-            uViewMatrix:                animalNode.viewMatrix,  // this one is used for sampling the depth FBO at the right place
+            uPerspectiveMatrix:         cameraFBO.projection,
+            uViewMatrix:                particleSimulationNode.viewMatrix,
             uDepthFBO:                  undefined,
             uParticlesFBO:              undefined,
             aSimulationDataPositions:   undefined,
@@ -84,7 +85,7 @@ var Complicated = (function() {
         triangles:          undefined,
         data: {
             uPerspectiveMatrix:     camera.projection,
-            uViewMatrix:            particleNode.viewMatrix,
+            uViewMatrix:            particleRenderNode.viewMatrix,
             uParticlesFBO:          undefined,
             aParticlePositions:     undefined,
             aParticleDirections:    undefined,
@@ -125,11 +126,11 @@ var Complicated = (function() {
                 // we need to do this first as the frames creation
                 // uses the global GL to create buffers
               
-                context = new GLOW.Context( { width: 256, height: 256 } );
+                context = new GLOW.Context();
                 context.setupClear( { red: 1, green: 1, blue: 1 } );
-                context.domElement.style.position = 'absolute';
-                context.domElement.style.left = '100px';
-                context.domElement.style.top = '100px';
+//                context.domElement.style.position = 'absolute';
+//                context.domElement.style.left = '100px';
+//                context.domElement.style.top = '100px';
                 
                 document.getElementById( "container" ).appendChild( context.domElement );
 
@@ -271,20 +272,20 @@ var Complicated = (function() {
                     // and render missmatch we need to store them once for the simulation
                     // and once for the render (further down below) 
 
-                    y = Math.random() * 1000 - 500;
-                    z = Math.random() * 1000 - 500;
+                    y = Math.random() * 2000 - 1000;
+                    z = Math.random() * 2000 - 1000;
                     
                     simulationPositions.push( y );
                     simulationPositions.push( z );
 
                     // This is the data sent to the particleFBO at start
 
-                    simulationData.push( Math.random());                            // x = time (0->1)
+                    simulationData.push( Math.random());                            // x = translation time (0->1)
 //                    simulationData.push( 0.0 );                                     // y = size 
-                    simulationData.push( 0.0 );                                     // y = size 
-                    simulationData.push( 0.0 );                                     // z = color 
-//                    simulationData.push(( 255 << 16 ) & ( 255 << 8 ) & ( 0 << 0 )); // z = color (r<<16 & g<<8 & b )
-                    simulationData.push( 1.0 );                                       // unused ATM
+                    simulationData.push( Math.random() * 2 * 3.1415 );              // y = rotation
+                    simulationData.push( 0.0 );                                     // z = size 
+//                    simulationData.push(( 255 << 16 ) & ( 255 << 8 ) & ( 0 << 0 )); // w = color (r<<16 & g<<8 & b )
+                    simulationData.push( 1.0 );
                     
                     // And now the render specfic stuff...
                     // This is the elements array, containing
@@ -396,27 +397,39 @@ var Complicated = (function() {
                 // start render
 
                 setInterval( render, 1000 / 60 );
+                
+                particleSimulationNode.localMatrix.setPosition( 0, 0, -4000 );
+                particleSimulationNode.update( undefined, cameraFBO.inverse );
+                
+                var vec4 = new GLOW.Vector4( 2000, 500, 500, 1 );
+                particleSimulationNode.viewMatrix.multiplyVector4( vec4 );
+                cameraFBO.projection.multiplyVector4( vec4 );
+                
+                console.log( vec4.value[ 0 ], vec4.value[ 1 ], vec4.value[ 2 ], vec4.value[ 3 ] );
             }
         } );
     };
     
     var render = function() {
         
-        // update animal and particle nodes
+        // update animal, particle simulation and render nodes
         
         animalNode.localMatrix.setPosition( 0, -1050, -4000 );
-        //animalNode.localMatrix.addRotation( 0, 0.01, 0 );
+        animalNode.localMatrix.addRotation( 0, 0.01, 0 );
         animalNode.update( undefined, cameraFBO.inverse );
         
-        particleNode.localMatrix.setPosition( 0, 0, -4000 );
-        particleNode.update( undefined, camera.inverse );
+        particleSimulationNode.localMatrix.setPosition( 0, 0, -4000 );
+        particleSimulationNode.update( undefined, cameraFBO.inverse );
+
+        particleRenderNode.localMatrix.setPosition( 0, 0, -4000 );
+        particleRenderNode.update( undefined, camera.inverse );
     
         // update animal animation
 		
         updateAnimaion( currentAnimal );
         updateAnimaion( nextAnimal );
         
-        depthShader.uAnimalMorph.set( 1 );
+        depthShader.uAnimalMorph.set( 0 );
         depthShader.uFrameMorphA.set( framesByAnimal[ currentAnimal ].morph );
         depthShader.uFrameMorphB.set( framesByAnimal[ nextAnimal    ].morph );
         depthShader.aVertexAnimalAFrame0.buffer = framesByAnimal[ currentAnimal ][ framesByAnimal[ currentAnimal ].frame0 ];
@@ -427,17 +440,17 @@ var Complicated = (function() {
         // clear cache and we're ready to go rendering
         
 		context.cache.clear();
-		context.clear();
+        context.clear();
 
         // draw back and front animal to depth FBO
         // we draw back of volume to the left and the front
         // of the volume to the right
 
         context.enableDepthTest( true );
+        context.setupCulling( { cullFace: GL.FRONT } );
         
         depthFBO.bind( { x: 0, width: depthFBO.width * 0.5 } );
         depthFBO.clear();
-        context.setupCulling( { cullFace: GL.FRONT } );
 
         depthShader.draw();
 
@@ -454,12 +467,11 @@ var Complicated = (function() {
         particlesFBO.bind();
         particleSimulationShader.draw();
         particlesFBO.unbind();
-//        particleSimulationShader.draw();
-//        particleRenderShader.draw();
+        particleRenderShader.draw();
 
         // draw to screen (temp)
 
-        depthToScreenShader.draw();
+//        depthToScreenShader.draw();
 
         stats.update();
     }

@@ -25,24 +25,23 @@ varying		vec2	vSimulationPositions;
 void main( void ) {
 	
 	vec4 particleData = texture2D( uParticlesFBO, vSimulationDataUV );
-	vec4 particleSpace = vec4( particleData.x * 4000.0 - 2000.0, vSimulationPositions.x, vSimulationPositions.y, 1.0 );
-	vec4 particleProjected = uPerspectiveMatrix * uViewMatrix * particleSpace;
+	vec4 particlePosition = vec4( particleData.x * 2000.0 - 1000.0, vSimulationPositions.x, vSimulationPositions.y, 1.0 );
+	vec4 particleProjected = uPerspectiveMatrix * uViewMatrix * particlePosition;
+	vec2 particleUV = ( particleProjected.xy / particleProjected.w ) * 0.5 + 0.5;
+	//particleProjected.z /= particleProjected.w;
 	
-	particleProjected.x  = ( particleProjected.x / 128.0 ) * 0.5 + 0.5;
-	particleProjected.y  = ( particleProjected.y / 128.0 ) * 0.5 + 0.5;
-	particleProjected.z /= particleProjected.w;
-
-	float backDepth  = texture2D( uDepthFBO, vec2( vSimulationDataUV.x * 0.5, vSimulationDataUV.y )).r;
-//	float backDepth  = texture2D( uDepthFBO, vec2( particleProjected.x * 0.5,       particleProjected.y )).r;
-	float frontDepth = texture2D( uDepthFBO, vec2( vSimulationDataUV.x * 0.5 + 0.5, vSimulationDataUV.y )).r;
-//	float frontDepth = texture2D( uDepthFBO, vec2( particleProjected.x * 0.5 + 0.5, particleProjected.y )).r;
+	float backDepth  = texture2D( uDepthFBO, vec2( particleUV.x * 0.5,       particleUV.y )).r;// vec2( particleUV.x * 0.5,       particleUV.y )).r;
+	float frontDepth = texture2D( uDepthFBO, vec2( particleUV.x * 0.5 + 0.5, particleUV.y )).r;//vec2( particleUV.x * 0.5 + 0.5, particleUV.y )).r;
 	
 	// update data
 	
-//	particleData.x = mod( particleData.x + 0.01, 1.0 );
-//	if( backDepth < 0.0 ) particleData.y = 20.0;
-//	else                particleData.y = 5.0;
+	particleData.x  = mod( particleData.x - 0.001, 1.0 );
+	particleData.y += 0.1;
+	
+	if( particleProjected.z > frontDepth && particleProjected.z < backDepth ) particleData.z = 20.0;
+	else                   particleData.z = max( 5.0, particleData.z - 1.0 );
 
-    gl_FragColor = vec4( 1.0, frontDepth, backDepth, 1.0 );;
+	particleData.w = 1.0;
+    gl_FragColor = particleData;
 }
 
