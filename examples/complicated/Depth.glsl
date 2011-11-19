@@ -23,6 +23,7 @@ void main(void) {
 //# DepthFragment
 
 void main(void) {
-	gl_FragColor = vec4( gl_FragCoord.z / gl_FragCoord.w );
+	float dist = smoothstep( 0.0, 6000.0, gl_FragCoord.z / gl_FragCoord.w );
+	gl_FragColor = vec4( dist, dist, dist, 1.0 );
 }
 

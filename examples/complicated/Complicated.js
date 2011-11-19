@@ -279,8 +279,8 @@ var Complicated = (function() {
 
                     // This is the data sent to the particleFBO at start
 
-//                    simulationData.push( Math.random());                            // x = time (0->1)
-                    simulationData.push( 0.0 );                                     // y = size 
+                    simulationData.push( Math.random());                            // x = time (0->1)
+//                    simulationData.push( 0.0 );                                     // y = size 
                     simulationData.push( 0.0 );                                     // y = size 
                     simulationData.push( 0.0 );                                     // z = color 
 //                    simulationData.push(( 255 << 16 ) & ( 255 << 8 ) & ( 0 << 0 )); // z = color (r<<16 & g<<8 & b )

@@ -32,15 +32,17 @@ void main( void ) {
 	particleProjected.y  = particleProjected.y * 0.5 + 0.5;
 	particleProjected.z /= particleProjected.w;
 
+//	float backDepth  = texture2D( uDepthFBO, vec2( vSimulationDataUV.x * 0.5, vSimulationDataUV.y )).r;
 	float backDepth  = texture2D( uDepthFBO, vec2( particleProjected.x * 0.5,       particleProjected.y )).r;
+//	float frontDepth = texture2D( uDepthFBO, vec2( vSimulationDataUV.x * 0.5 + 0.5, vSimulationDataUV.y )).r;
 	float frontDepth = texture2D( uDepthFBO, vec2( particleProjected.x * 0.5 + 0.5, particleProjected.y )).r;
 	
 	// update data
 	
-	particleData.x = mod( particleData.x + 0.01, 1.0 );
-	if( backDepth > 0.0 ) particleData.y = 10.0;
-	else                particleData.y = 5.0;
+//	particleData.x = mod( particleData.x + 0.01, 1.0 );
+//	if( backDepth < 0.0 ) particleData.y = 20.0;
+//	else                particleData.y = 5.0;
 
-    gl_FragColor = vec4( particleData.x, particleData.x, particleData.x, 1.0 );
+    gl_FragColor = vec4( frontDepth, frontDepth, 0.0, 1.0 );;
 }
 
