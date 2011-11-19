@@ -20,6 +20,7 @@
 
 		</style>
 	
+		<script type="text/javascript" src="../external/Stats.js"></script>
 		<script type="text/javascript" src="../../build/GLOW.js"></script>
 		<script type="text/javascript" src="../../src/extras/io/Load.js"></script>
 		<script type="text/javascript" src="Complicated.js"></script>
@@ -27,7 +28,15 @@
 	    <script>window.onload=Complicated.load</script>
 	</head>
 	<body>
-		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">COMPLICATED</span></div>
+	    <script>
+            var stats = new Stats();
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.left = '0px';
+            stats.domElement.style.top = '0px';
+//            document.body.appendChild( stats.domElement );
+	    </script>
+
+<!--		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">COMPLICATED</span></div> -->
 		<div id="container"></div>
 	</body>
 </html>

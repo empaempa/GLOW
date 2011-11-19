@@ -1,28 +1,47 @@
 var Complicated = (function() {
 
-    // variables 
+    // general variables 
     
     var context;
+    var squareParticles = 128;
+    var numParticles = squareParticles * squareParticles;
 
-    var speed = 0.2;
+    // cameras, nodes and FBOs (will be created later)
+ 
+    var cameraFBO    = new GLOW.Camera( { width: squareParticles, height: squareParticles, near: 0.1, far: 8000, aspect: 1 } );
+    var camera       = new GLOW.Camera( { near: 0.1, far: 8000 } );
+    var animalNode   = new GLOW.Node();
+    var particleNode = new GLOW.Node();
+    var depthFBO;
+    var particlesFBO;
+    
+    // animation variables
+    
+    var animationSpeed = 0.2;
     var morph = 0;
     var frames;
     var framesByAnimal;
-    var animals = [ "horse", "bearbrownRun", "mountainlionRun", "deerLeap", "goldenretreiver", "foxRun", "seal", "chowRun", "bunnyScurry", "frogLeap", "raccoonRun" ];
+    var animals       = [ "horse", "bearbrownRun", "mountainlionRun", "deerLeap", "goldenretreiver", "foxRun", "seal", "chowRun", "bunnyScurry", "frogLeap", "raccoonRun" ];
     var currentAnimal = animals[ 0 ];
-    var nextAnimal = animals[ 1 ];
+    var nextAnimal    = animals[ 1 ];
 
-    var camera = new GLOW.Camera( { near: 2000, far: 6000 } );
-    var node = new GLOW.Node();
-    var depthFBO;
+    // Shaders and shader configuration objects
+    // The undefines in the configs will be set
+    // later, before creation of shader
+    
+    // The depth shader renders the animal into
+    // the depth FBO. Note that we don't interleave
+    // the aVertexAnimalXFrameY as we like to switch
+    // these to create an animation
+    
     var depthShader;
-    var depthShaderConfig = {                           // all undefines will be set before creating the shader
+    var depthShaderConfig = {
         vertexShader:       undefined,
         fragmentShader:     undefined,
         elements:           undefined,
         data: {
-            uPerspectiveMatrix:     camera.projection,
-            uViewMatrix:            node.viewMatrix,
+            uPerspectiveMatrix:     cameraFBO.projection,
+            uViewMatrix:            animalNode.viewMatrix,
             aVertexAnimalAFrame0:   undefined,
             aVertexAnimalAFrame1:   undefined,
             aVertexAnimalBFrame0:   undefined,
@@ -38,8 +57,43 @@ var Complicated = (function() {
             aVertexAnimalBFrame1:   false   
         }
     };
+    
+    // The particle simulation shader updates each and
+    // every particle's data by sampling and writing to 
+    // the particle FBO (one pixel = one particle)
+    
+    var particleSimulationShader;
+    var particleSimulationShaderConfig = {
+        vertexShader:       undefined,
+        fragmentShader:     undefined,
+        points:             undefined, 
+        data: {
+            uPerspectiveMatrix:         cameraFBO.projection,   // this one is used for sampling the depth FBO at the right place
+            uViewMatrix:                animalNode.viewMatrix,  // this one is used for sampling the depth FBO at the right place
+            uDepthFBO:                  undefined,
+            uParticlesFBO:              undefined,
+            aSimulationDataPositions:   undefined,
+            aParticlePositions:         undefined,
+        }
+    };
+    
+    var particleRenderShader;
+    var particleRenderShaderConfig = {
+        vertexShader:       undefined,
+        fragmentShader:     undefined,
+        triangles:          undefined,
+        data: {
+            uPerspectiveMatrix:     camera.projection,
+            uViewMatrix:            particleNode.viewMatrix,
+            uParticlesFBO:          undefined,
+            aParticlePositions:     undefined,
+            aParticleDirections:    undefined,
+            aParticleColors:        undefined
+        }
+    };
+    
     var depthToScreenShader;
-    var depthToScreenShaderConfig = {                   // all undefines will be set before creating the shader
+    var depthToScreenShaderConfig = {
         vertexShader:   undefined,
         fragmentShader: undefined,
 		elements:       GLOW.Geometry.Plane.elements(),
@@ -55,27 +109,36 @@ var Complicated = (function() {
     var load = function() {
         new GLOW.Load( {
             
-            animal: "animals_A_life.js",
-            depthShader: "Depth.glsl",
-            depthToScreenShader: "DepthToScreen.glsl",
-            dontParseJS: true,
+            // the things we want to load...
+            
+            animal:                     "animals_A_life.js",
+            depthShader:                "Depth.glsl",
+            particleSimulationShader:   "ParticleSimulation.glsl",
+            particleRenderShader:       "ParticleRender.glsl",
+            depthToScreenShader:        "DepthToScreen.glsl",
+
+            // ...and what we do when they are loaded.
+
             onLoadComplete: function( result ) {
                 
                 // setup context
                 // we need to do this first as the frames creation
                 // uses the global GL to create buffers
               
-                context = new GLOW.Context();
+                context = new GLOW.Context( { width: 256, height: 256 } );
                 context.setupClear( { red: 1, green: 1, blue: 1 } );
+                context.domElement.style.position = 'absolute';
+                context.domElement.style.left = '100px';
+                context.domElement.style.top = '100px';
+                
                 document.getElementById( "container" ).appendChild( context.domElement );
 
                 // parse animal faces (Three.js format)
-                // we're really just interested in face so we're skipping
-                // uvs and materals. Code snatched from Three.js by
-                // @mrdoob and @alteredq
+                // we're really just interested in faces so we're skipping the rest 
+                // Code snatched from Three.js by @mrdoob and @alteredq
                   
                 var f, t, fl, i, n;
-                var triangles = [];
+                var animalTriangles = [];
                 var threeJsFaces = result.animal.faces;
         		var type, isQuad, hasMaterial,
         		    hasFaceUv, hasFaceVertexUv,
@@ -94,19 +157,19 @@ var Complicated = (function() {
                     hasFaceVertexColor  = type & ( 1 << 7 );
 
                     if( isQuad ) {
-                        triangles[ t++ ] = threeJsFaces[ f + 0 ];
-                        triangles[ t++ ] = threeJsFaces[ f + 1 ];
-                        triangles[ t++ ] = threeJsFaces[ f + 2 ];
+                        animalTriangles[ t++ ] = threeJsFaces[ f + 0 ];
+                        animalTriangles[ t++ ] = threeJsFaces[ f + 1 ];
+                        animalTriangles[ t++ ] = threeJsFaces[ f + 2 ];
 
-                        triangles[ t++ ] = threeJsFaces[ f + 0 ];
-                        triangles[ t++ ] = threeJsFaces[ f + 2 ];
-                        triangles[ t++ ] = threeJsFaces[ f + 3 ];
+                        animalTriangles[ t++ ] = threeJsFaces[ f + 0 ];
+                        animalTriangles[ t++ ] = threeJsFaces[ f + 2 ];
+                        animalTriangles[ t++ ] = threeJsFaces[ f + 3 ];
 
                         f += 4;
                     } else {
-                        triangles[ t++ ] = threeJsFaces[ f++ ];
-                        triangles[ t++ ] = threeJsFaces[ f++ ];
-                        triangles[ t++ ] = threeJsFaces[ f++ ];
+                        animalTriangles[ t++ ] = threeJsFaces[ f++ ];
+                        animalTriangles[ t++ ] = threeJsFaces[ f++ ];
+                        animalTriangles[ t++ ] = threeJsFaces[ f++ ];
                     }
                     
                     if( hasMaterial         ) f++;
@@ -119,7 +182,7 @@ var Complicated = (function() {
                 } 
                 
                 // create frames
-                // we're just interested in having the buffers (GLOW.Attribute.buffer)
+                // we're just interested in having the WebGL buffers (GLOW.Attribute.buffer)
                 // for each frame so we're creating them using the global GL
                 
                 frames = [];
@@ -128,7 +191,7 @@ var Complicated = (function() {
                 var threeJsMorphTargets = result.animal.morphTargets;
                 for( f = 0, fl = threeJsMorphTargets.length; f < fl; f++ ) {
                     frames[ f ]        = {};
-                    frames[ f ].name   = threeJsMorphTargets[ f ].name.slice( 0, threeJsMorphTargets[ f ].name.indexOf( "_" ));
+                    frames[ f ].name   =           threeJsMorphTargets[ f ].name.slice( 0, threeJsMorphTargets[ f ].name.indexOf( "_" ));
                     frames[ f ].frame  = parseInt( threeJsMorphTargets[ f ].name.slice( threeJsMorphTargets[ f ].name.lastIndexOf( "_" ) + 1 ) - 1, 10 );
                     frames[ f ].buffer = GL.createBuffer();
                     
@@ -149,36 +212,180 @@ var Complicated = (function() {
                     framesByAnimal[ frames[ f ].name ].morph  = 0;
                 }
 
-                // now the fun part, setting up the shaders and FBOs
-                // first we enable floating point textures
+                // Now to the fun part, setting up the shaders and FBOs...
                 
-                if( !context.enableExtension( "OES_texture_float" )) {
-                    alert( "Your graphics card doesn't support floating point textures. Sorry!" );
-                    return;
-                }
-                
-                // set data, shaders and elements and create depth shader
-                // we set dummy vertex data as we're overwriting the buffer
+                // First we create the depth shader, which renders the animal
+                // into the deopth FBO
+                // We set dummy vertex data as we're overwriting the buffer
                 // later with the frames create above
                 
                 depthShaderConfig.vertexShader              = result.depthShader.vertexShader;
                 depthShaderConfig.fragmentShader            = result.depthShader.fragmentShader;
-                depthShaderConfig.elements                  = new Uint16Array( triangles );
-                depthShaderConfig.data.aVertexAnimalAFrame0 = new Float32Array( 3 );
-                depthShaderConfig.data.aVertexAnimalAFrame1 = new Float32Array( 3 );
-                depthShaderConfig.data.aVertexAnimalBFrame0 = new Float32Array( 3 );
-                depthShaderConfig.data.aVertexAnimalBFrame1 = new Float32Array( 3 );
-
-                depthShader = new GLOW.Shader( depthShaderConfig );
-                depthFBO    = new GLOW.FBO( { width: 256, height: 256, type: GL.FLOAT } );
+                depthShaderConfig.triangles                 = new Uint16Array( animalTriangles );
+                depthShaderConfig.data.aVertexAnimalAFrame0 = new Float32Array( 1 );
+                depthShaderConfig.data.aVertexAnimalAFrame1 = new Float32Array( 1 );
+                depthShaderConfig.data.aVertexAnimalBFrame0 = new Float32Array( 1 );
+                depthShaderConfig.data.aVertexAnimalBFrame1 = new Float32Array( 1 );
                 
+                depthShader = new GLOW.Shader( depthShaderConfig );
+
+                // now it's time to create particle simulation and render shader
+                // first generate the particle data that we need for the simulation
+                
+                var particlePositions = [];
+                var particleDirections = [];
+                var particleTriangles = [];
+                var particleUVs = [];
+                var simulationPoints = [];
+                var simulationPositions = [];
+                var simulationDataXYUVs = [];
+                var simulationData = [];
+                var y, z, u, v, s;
+                for( var i = 0; i < numParticles; i++ ) {
+
+                    // First simulation specific stuff...
+                    // This is the elements array, containing
+                    // offsets to the data created below (simulationDataXYUV)
+                    
+                    simulationPoints.push( i );
+                    
+                    // The simulation data XYUV is for sampling and writing
+                    // For sampling the data, we need UV (0->1) and for 
+                    // writing the data, we need XY (0->squareParticles). We 
+                    // cram both XY and UV into a vec4
+                    
+                    u = i % squareParticles;
+                    v = Math.floor( i / squareParticles );
+                    
+                    simulationDataXYUVs.push( u * 1.001 / squareParticles * 2 - 0.999 );    // write position X (-1 -> 1)
+                    simulationDataXYUVs.push( v * 1 / squareParticles * 2 - 1 );    // write position Y (-1 -> 1)
+                    simulationDataXYUVs.push( u /= squareParticles );           // read position U (0 -> 1)
+                    simulationDataXYUVs.push( v /= squareParticles );           // read position V (0 -> 1)
+
+                    // This is the particle YZ. We calculate the X using the time
+                    // stored in the FBO. As the amount of elements for the simulation
+                    // and render missmatch we need to store them once for the simulation
+                    // and once for the render (further down below) 
+
+                    y = Math.random() * 1000 - 500;
+                    z = Math.random() * 1000 - 500;
+                    
+                    simulationPositions.push( y );
+                    simulationPositions.push( z );
+
+                    // This is the data sent to the particleFBO at start
+
+//                    simulationData.push( Math.random());                            // time (0->1)
+                    simulationData.push( 1.0 );                                     // size 
+                    simulationData.push( 0.0 );                                     // size 
+                    simulationData.push( 0.0 );                                     // size 
+//                    simulationData.push(( 255 << 16 ) & ( 255 << 8 ) & ( 0 << 0 )); // color (r<<16 & g<<8 & b )
+                    simulationData.push( 1.0 );                                       // unused ATM
+                    
+                    // And now the render specfic stuff...
+                    // This is the elements array, containing
+                    // offset to the data created below. We create
+                    // three triangles per particle to get a nice
+                    // 3D thingy instead of a simple 2D sprite/point
+
+                    particleTriangles.push( i * 4 + 0 ); particleTriangles.push( i * 4 + 1 ); particleTriangles.push( i * 4 + 2 );
+                    particleTriangles.push( i * 4 + 0 ); particleTriangles.push( i * 4 + 2 ); particleTriangles.push( i * 4 + 3 );
+                    particleTriangles.push( i * 4 + 0 ); particleTriangles.push( i * 4 + 3 ); particleTriangles.push( i * 4 + 1 );
+                    particleTriangles.push( i * 4 + 3 ); particleTriangles.push( i * 4 + 2 ); particleTriangles.push( i * 4 + 1 );
+                    
+                    // Save the positions for each particle (we created y and z above) 
+                    
+                    particlePositions.push( y ); particlePositions.push( z ); 
+                    particlePositions.push( y ); particlePositions.push( z ); 
+                    particlePositions.push( y ); particlePositions.push( z ); 
+                    particlePositions.push( y ); particlePositions.push( z ); 
+                    
+                    // because the amount of elements in the renderer and the 
+                    // simulation missmatch, we need to store the UVs again
+                    // for the render (we created u and v above)
+                    
+                    particleUVs.push( u ); particleUVs.push( v );
+                    particleUVs.push( u ); particleUVs.push( v );
+                    particleUVs.push( u ); particleUVs.push( v );
+                    particleUVs.push( u ); particleUVs.push( v );
+                    
+                    // This is the data to expand each position to create 
+                    // a 3D-particle. We store this separately to be able
+                    // to rotate and scale the particle in the shader
+                    
+                    particleDirections.push( 0.0 + Math.random() * 0.2 );
+                    particleDirections.push( 0.7 + Math.random() * 0.2 );
+                    particleDirections.push( 1.3 + Math.random() * 0.2 );
+                    
+                    particleDirections.push( -1.0 + Math.random() * 0.2 );
+                    particleDirections.push(  0.7 + Math.random() * 0.2 );
+                    particleDirections.push( -0.7 + Math.random() * 0.2 );
+    				
+    				particleDirections.push(  1.0 + Math.random() * 0.2 );
+    				particleDirections.push(  0.7 + Math.random() * 0.2 );
+    				particleDirections.push( -0.7 + Math.random() * 0.2 );
+    				
+    				particleDirections.push(  0.0 + Math.random() * 0.2 );
+    				particleDirections.push( -1.3 + Math.random() * 0.2 );
+    				particleDirections.push(  0.0 + Math.random() * 0.2 );
+                }
+
+                // Now let's enable floating point textures and setup 
+                // the depth and particle FBOs. Note that we're using
+                // type FLOAT and send in an Float32Array with the inital
+                // simulation data. The depthFBO has to be twice as wide as high
+                // as we're rendering the back to the left and the front to 
+                // the right
+
+                if( !context.enableExtension( "OES_texture_float" )) {
+                    alert( "Your graphics card doesn't support floating point textures. Sorry!" );
+                    return;
+                }
+
+                depthFBO = new GLOW.FBO( { width: squareParticles * 2, 
+                                           height: squareParticles, 
+                                           type: GL.FLOAT,
+                                           magFilter: GL.NEAREST, 
+                                           minFilter: GL.NEAREST } ); 
+
+                particlesFBO = new GLOW.FBO( { width: squareParticles,     
+                                              height: squareParticles, 
+                                              type: GL.FLOAT, 
+                                              magFilter: GL.NEAREST, 
+                                              minFilter: GL.NEAREST, 
+                                              data: new Float32Array( simulationData ) } );
+
+                // Setup the config and create the particle simulation shader
+
+                particleSimulationShaderConfig.vertexShader              = result.particleSimulationShader.vertexShader;
+                particleSimulationShaderConfig.fragmentShader            = result.particleSimulationShader.fragmentShader;
+                particleSimulationShaderConfig.points                    = new Uint16Array( simulationPoints );
+                particleSimulationShaderConfig.data.aSimulationDataXYUVs = new Float32Array( simulationDataXYUVs );
+                particleSimulationShaderConfig.data.aSimulationPositions = new Float32Array( simulationPositions );
+                particleSimulationShaderConfig.data.uDepthFBO            = depthFBO;
+                particleSimulationShaderConfig.data.uParticlesFBO        = particlesFBO;
+                
+                particleSimulationShader = new GLOW.Shader( particleSimulationShaderConfig );
+
+                // Setup the config and create particle render shader 
+
+                particleRenderShaderConfig.vertexShader             = result.particleRenderShader.vertexShader;
+                particleRenderShaderConfig.fragmentShader           = result.particleRenderShader.fragmentShader;
+                particleRenderShaderConfig.triangles                = new Uint16Array( particleTriangles );
+                particleRenderShaderConfig.data.aParticleUVs        = new Float32Array( particleUVs );
+                particleRenderShaderConfig.data.aParticlePositions  = new Float32Array( particlePositions );
+                particleRenderShaderConfig.data.aParticleDirections = new Float32Array( particleDirections );
+                particleRenderShaderConfig.data.uParticlesFBO       = particlesFBO;
+
+                particleRenderShader = new GLOW.Shader( particleRenderShaderConfig );
+
 
                 // create depth to screen shader
                 // use the FBO as texture
                 
                 depthToScreenShaderConfig.vertexShader   = result.depthToScreenShader.vertexShader;
                 depthToScreenShaderConfig.fragmentShader = result.depthToScreenShader.fragmentShader;
-                depthToScreenShaderConfig.data.uFBO      = depthFBO;
+                depthToScreenShaderConfig.data.uFBO      = particlesFBO;
                 depthToScreenShader                      = new GLOW.Shader( depthToScreenShaderConfig );
 
                 // start render
@@ -190,12 +397,15 @@ var Complicated = (function() {
     
     var render = function() {
         
-        // rotate animal
+        // update animal and particle nodes
         
-        node.localMatrix.setPosition( 0, -1050, -3500 );
-        node.localMatrix.addRotation( 0, 0.01, 0 );
-        node.update( undefined, camera.inverse );
+        animalNode.localMatrix.setPosition( 0, -1050, -4000 );
+        //animalNode.localMatrix.addRotation( 0, 0.01, 0 );
+        animalNode.update( undefined, cameraFBO.inverse );
         
+        particleNode.localMatrix.setPosition( 0, 0, -4000 );
+        particleNode.update( undefined, camera.inverse );
+    
         // update animal animation
 		
         updateAnimaion( currentAnimal );
@@ -209,57 +419,48 @@ var Complicated = (function() {
         depthShader.aVertexAnimalBFrame0.buffer = framesByAnimal[ nextAnimal    ][ framesByAnimal[ nextAnimal    ].frame0 ];
         depthShader.aVertexAnimalBFrame1.buffer = framesByAnimal[ nextAnimal    ][ framesByAnimal[ nextAnimal    ].frame1 ];
         
-        // clear cache, bind depth FBO and clear it
+        // clear cache and we're ready to go rendering
         
 		context.cache.clear();
+		context.clear();
 
-        depthFBO.bind();
-        depthFBO.clear();
-
-        // draw back and front to depth FBO, then unbind it
+        // draw back and front animal to depth FBO
         // we draw back of volume to the left and the front
         // of the volume to the right
 
-        depthFBO.setupViewport( { x: 0, width: depthFBO.width * 0.5, height: depthFBO.height * 0.5 } );
-        context.setupCulling( { cullFace: GL.FRONT } );
+ /*       depthFBO.bind( { x: 0, width: depthFBO.width * 0.5 } );
+        depthFBO.clear();
+        context.enableCulling( true, { cullFace: GL.FRONT } );
+
         depthShader.draw();
 
-        depthFBO.setupViewport( { x: depthFBO.width * 0.5, width: depthFBO.width * 0.5, height: depthFBO.height * 0.5 } );
+        depthFBO.setupViewport( { x: depthFBO.width * 0.5, width: depthFBO.width * 0.5 } );
         context.setupCulling( { cullFace: GL.BACK } );
-        depthShader.draw();
 
+        depthShader.draw();
         depthFBO.unbind();
-
-        // do something...
+*/
+        // update particle system and render
         
-        
+  /*    particleSimulationShader.uTime.sub( animationSpeed );
+        particleRenderShader    .uTime.sub( animationSpeed );
+    */    
+        particlesFBO.bind();
+        particleSimulationShader.draw();
+        particlesFBO.unbind();
+//        particleSimulationShader.draw();
+//        particleRenderShader.draw();
 
+        // draw to screen (temp)
 
-
-        context.setupCulling( { cullFace: GL.BACK } );
-        context.setupViewport( {} );
+        context.enableCulling( false );
         depthToScreenShader.draw();
-        
 
-        // draw back
-        // we need to invalidate the color uniform in the cache as
-        // it's already set by the previous draw call
-        // note that you need to invalidate depthShader.uniforms.uColor as
-        // depthShader.uColor is only the data for the uniform
-
-        // temp
-      /*  node.localMatrix.addPosition( 100, 0, 0 );
-        node.update( undefined, camera.inverse );
-        context.cache.invalidateUniform( depthShader.uniforms.uViewMatrix );
-        */
-/*        depthShader.uColor.set( 0.0, 1.0, 0.0 );
-        context.cache.invalidateUniform( depthShader.uniforms.uColor );
-        context.setupCulling( { cullFace: GL.BACK } );
-        depthShader.draw();*/
+        stats.update();
     }
     
     var updateAnimaion = function( animal ) {
-        framesByAnimal[ animal ].time  += speed;
+        framesByAnimal[ animal ].time  += animationSpeed;
         framesByAnimal[ animal ].frame0 = Math.floor( framesByAnimal[ animal ].time ) % framesByAnimal[ animal ].length;
         framesByAnimal[ animal ].frame1 = Math.ceil ( framesByAnimal[ animal ].time ) % framesByAnimal[ animal ].length;
         framesByAnimal[ animal ].time  %= framesByAnimal[ animal ].length;
