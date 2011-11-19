@@ -749,7 +749,7 @@ GLOW.Matrix4 = (function() {
 
     matrix4.prototype.clone = function () {
     	var clone = new GLOW.Matrix4();
-    	clone.value = new Float32Array( m );
+    	clone.value = new Float32Array( this.value );
     	return clone;
     }
 
