@@ -121,11 +121,11 @@ GLOW.Texture = (function() {
         	}
     	} else {
     	    for( var c in cubeSideOffsets ) {
-    	        if( this.data[ c ] instanceof Uint8Array ) {
+    	        if( this.data[ c ] instanceof Uint8Array || this.data[ c ] instanceof Float32Array ) {
             	    if( this.width !== undefined && this.height !== undefined ) {
                     	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data[ c ] );
             	    } else {
-            	        console.error( "GLOW.Texture.createTexture: Textures of type Uint8Array requires width and height parameters. Quitting." );
+            	        console.error( "GLOW.Texture.createTexture: Textures of type Uint8Array/Float32Array requires width and height parameters. Quitting." );
             	        return;
             	    }
     	        } else {
