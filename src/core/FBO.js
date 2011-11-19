@@ -101,8 +101,8 @@ GLOW.FBO = (function() {
 	}
 
     // methods
-    GLOWFBO.prototype.init = function( textureUnit ) {
-    	this.textureUnit = textureUnit;
+    GLOWFBO.prototype.init = function() {
+        // called from compiler but there's really nothing to do here
     };
 
     GLOWFBO.prototype.bind = function( setViewport, side ) {

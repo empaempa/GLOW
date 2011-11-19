@@ -22,14 +22,11 @@ GLOW.Texture = (function() {
     	this.minFilter = parameters.minFilter !== undefined ? parameters.minFilter : GL.LINEAR_MIPMAP_LINEAR;
 	    this.width  = parameters.width;
 	    this.height = parameters.height;
-    	this.textureUnit = -1;
     	this.texture = undefined;
 	}
 
 	// methods
-    GLOWTexture.prototype.init = function( textureUnit ) {
-    	this.textureUnit = textureUnit;
-    	
+    GLOWTexture.prototype.init = function() {
     	if( typeof( this.data ) === "string" ) {
         	this.textureType = GL.TEXTURE_2D;
             var originalURL  = this.data;

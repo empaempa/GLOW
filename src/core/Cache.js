@@ -82,16 +82,16 @@ GLOW.Cache = (function() {
         this.attributeByLocation[ attribute.locationNumber ] = undefined;
     }
 
-    GLOWCache.prototype.textureCached = function( texture ) {
+    GLOWCache.prototype.textureCached = function( textureUnit, texture ) {
         if( this.active ) {
-            if( this.textureByLocation[ texture.textureUnit ] === texture.id ) return true;
-            this.textureByLocation[ texture.textureUnit ] = texture.id;
+            if( this.textureByLocation[ textureUnit ] === texture.id ) return true;
+            this.textureByLocation[ textureUnit ] = texture.id;
         }
         return false;
     };
 
-    GLOWCache.prototype.invalidateTexture = function( texture ) {
-        this.textureByLocation[ texture.textureUnit ] = undefined;
+    GLOWCache.prototype.invalidateTexture = function( textureUnit ) {
+        this.textureByLocation[ textureUnit ] = undefined;
     };
 
     GLOWCache.prototype.elementsCached = function( elements ) {

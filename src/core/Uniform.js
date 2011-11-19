@@ -18,9 +18,9 @@ GLOW.Uniform = (function() {
         setFunctions[ GL.FLOAT_MAT3 ] = function() { GL.uniformMatrix3fv( this.location, false, this.getNativeValue()); };
         setFunctions[ GL.FLOAT_MAT4 ] = function() { GL.uniformMatrix4fv( this.location, false, this.getNativeValue()); };
         setFunctions[ GL.SAMPLER_2D ] = function() {
-            if( this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.data )) {
-                GL.uniform1i( this.location, this.data.textureUnit );
-                GL.activeTexture( GL.TEXTURE0 + this.data.textureUnit );
+            if( this.data.texture !== undefined && this.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.textureUnit, this.data )) {
+                GL.uniform1i( this.location, this.textureUnit );
+                GL.activeTexture( GL.TEXTURE0 + this.textureUnit );
                 GL.bindTexture( GL.TEXTURE_2D, this.data.texture );
                 if( this.data.autoUpdate ) {
                     this.data.updateTexture( this.data.autoUpdate );
@@ -28,9 +28,9 @@ GLOW.Uniform = (function() {
             }
         };
         setFunctions[ GL.SAMPLER_CUBE ] = function() {
-            if( this.data.texture !== undefined && this.data.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.data )) {
-                GL.uniform1i( this.location, this.data.textureUnit );
-                GL.activeTexture( GL.TEXTURE0 + this.data.textureUnit );
+            if( this.data.texture !== undefined && this.textureUnit !== -1 && !GLOW.currentContext.cache.textureCached( this.textureUnit, this.data )) {
+                GL.uniform1i( this.location, this.textureUnit );
+                GL.activeTexture( GL.TEXTURE0 + this.textureUnit );
                 GL.bindTexture( GL.TEXTURE_CUBE_MAP, this.data.texture );
                 if( this.data.autoUpdate ) {
                     this.data.updateTexture( this.data.autoUpdate );
@@ -53,6 +53,7 @@ GLOW.Uniform = (function() {
         this.type = parameters.type;
         this.location = parameters.location;
         this.locationNumber = parameters.locationNumber;
+        this.textureUnit = -1;
         this.load = parameters.loadFunction || setFunctions[ this.type ];
     }
 

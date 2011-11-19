@@ -200,7 +200,8 @@ GLOW.Compiler = (function() {
 			} else {
 				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
 				if( uniforms[ name ].type === GL.SAMPLER_2D || uniforms[ name ].type === GL.SAMPLER_CUBE ) {
-					uniforms[ name ].data.init( textureUnit++ );
+					uniforms[ name ].textureUnit = textureUnit++;
+					uniforms[ name ].data.init();
 				}
 			}
 		}
