@@ -78,16 +78,10 @@ GLOW.Shader = (function() {
                         GL.enableVertexAttribArray( current );
                     }
                 } else {
-                    for( ; current > highestAttrib; current-- ) {
+                    for( current--; current > highestAttrib; current-- ) {
                         GL.disableVertexAttribArray( current ); 
                     }
                 }
-            }
-        }
-
-        for( var u in compiledData.uniforms ) {
-            if( !cache.uniformCached( compiledData.uniforms[ u ] )) {
-                compiledData.uniforms[ u ].load();
             }
         }
         
@@ -103,6 +97,12 @@ GLOW.Shader = (function() {
             compiledData.interleavedAttributes[ a ].bind();
         }
         
+        for( var u in compiledData.uniforms ) {
+            if( !cache.uniformCached( compiledData.uniforms[ u ] )) {
+                compiledData.uniforms[ u ].load();
+            }
+        }
+
         if( compiledData.preDrawCallback ) compiledData.preDrawCallback( this );
         
         compiledData.elements.draw();
