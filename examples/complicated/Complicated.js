@@ -357,6 +357,7 @@ var Complicated = (function() {
                                                type: GL.FLOAT, 
                                                magFilter: GL.NEAREST, 
                                                minFilter: GL.NEAREST, 
+                                               depth: false,
                                                data: new Float32Array( simulationData ) } );
 
                 // Setup the config and create the particle simulation shader

@@ -28,14 +28,14 @@ void main( void ) {
 	vec4 particleSpace = vec4( particleData.x * 4000.0 - 2000.0, vSimulationPositions.x, vSimulationPositions.y, 1.0 );
 	vec4 particleProjected = uPerspectiveMatrix * uViewMatrix * particleSpace;
 	
-	particleProjected.x  = particleProjected.x * 0.5 + 0.5;
-	particleProjected.y  = particleProjected.y * 0.5 + 0.5;
+	particleProjected.x  = ( particleProjected.x / 128.0 ) * 0.5 + 0.5;
+	particleProjected.y  = ( particleProjected.y / 128.0 ) * 0.5 + 0.5;
 	particleProjected.z /= particleProjected.w;
 
-//	float backDepth  = texture2D( uDepthFBO, vec2( vSimulationDataUV.x * 0.5, vSimulationDataUV.y )).r;
-	float backDepth  = texture2D( uDepthFBO, vec2( particleProjected.x * 0.5,       particleProjected.y )).r;
-//	float frontDepth = texture2D( uDepthFBO, vec2( vSimulationDataUV.x * 0.5 + 0.5, vSimulationDataUV.y )).r;
-	float frontDepth = texture2D( uDepthFBO, vec2( particleProjected.x * 0.5 + 0.5, particleProjected.y )).r;
+	float backDepth  = texture2D( uDepthFBO, vec2( vSimulationDataUV.x * 0.5, vSimulationDataUV.y )).r;
+//	float backDepth  = texture2D( uDepthFBO, vec2( particleProjected.x * 0.5,       particleProjected.y )).r;
+	float frontDepth = texture2D( uDepthFBO, vec2( vSimulationDataUV.x * 0.5 + 0.5, vSimulationDataUV.y )).r;
+//	float frontDepth = texture2D( uDepthFBO, vec2( particleProjected.x * 0.5 + 0.5, particleProjected.y )).r;
 	
 	// update data
 	
@@ -43,6 +43,6 @@ void main( void ) {
 //	if( backDepth < 0.0 ) particleData.y = 20.0;
 //	else                particleData.y = 5.0;
 
-    gl_FragColor = vec4( frontDepth, frontDepth, 0.0, 1.0 );;
+    gl_FragColor = vec4( 1.0, frontDepth, backDepth, 1.0 );;
 }
 
