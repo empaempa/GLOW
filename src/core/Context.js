@@ -20,7 +20,6 @@ GLOW.Context = (function() {
     	this.width                  = parameters.width                 !== undefined ? parameters.width                 : window.innerWidth;
     	this.height                 = parameters.height                !== undefined ? parameters.height                : window.innerHeight;
     	this.cache                  = new GLOW.Cache();
-        this.viewport               = { x: 0, y: 0, width: 0, height: 0 };
 
     	if( parameters.context ) {
     	    this.GL = parameters.context;
@@ -34,44 +33,84 @@ GLOW.Context = (function() {
                                                                                       stencil:               this.stencil,
                                                                                       premultipliedAlpha:    this.premultipliedAlpha,
                                                                                       preserveDrawingBuffer: this.preserveDrawingBuffer } );
-        		this.domElement.width  = this.width;
-        		this.domElement.height = this.height;
         	} catch( error ) {
         		console.error( "GLOW.Context.construct: " + error );
         	}
 
-        	GLOW.registerContext( this );
+            if( this.GL !== null ) {
+            	GLOW.registerContext( this );
 
-        	this.enableCulling( true, { frontFace: GL.CCW, cullFace: GL.BACK } );
-        	this.enableDepthTest( true, { func: GL.LEQUAL, write: true, zNear: 0, zFar: 1 } );
-        	this.enableBlend( false );
-        	this.setupClear( { clearBits: GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT } );
-        	this.setupViewport( { x: 0, y: 0, width: this.width, height: this.height } );
-        	this.clear();
+        		this.domElement.width  = this.width;
+        		this.domElement.height = this.height;
+
+            	if( parameters.viewport ) {
+            	    this.viewport = {
+            	        x:      parameters.viewport.x      !== undefined ? parameters.viewport.x      : 0,
+            	        y:      parameters.viewport.y      !== undefined ? parameters.viewport.y      : 0,
+            	        width:  parameters.viewport.width  !== undefined ? parameters.viewport.width  : this.width,
+            	        height: parameters.viewport.height !== undefined ? parameters.viewport.height : this.height
+            	    }
+            	} else {
+                	this.viewport = { x: 0, y: 0, width: this.width, height: this.height };
+            	}
+
+            	if( parameters.clear ) {
+            	    this.clearSettings = {
+            	        r:     parameters.clear.red   !== undefined ? parameters.clear.red   : 0,
+            	        g:     parameters.clear.green !== undefined ? parameters.clear.green : 0,
+            	        b:     parameters.clear.blue  !== undefined ? parameters.clear.blue  : 0,
+            	        a:     parameters.clear.alpha !== undefined ? parameters.clear.alpha : 1,
+            	        depth: parameters.clear.depth !== undefined ? parameters.clear.depth : 1,
+            	        bits:  parameters.clear.bits  !== undefined ? parameters.clear.bits  : -1
+        	        }
+
+        	        if( this.clearSettings.bits === -1 ) {
+                    	this.clearSettings.bits  = GL.COLOR_BUFFER_BIT;
+                    	this.clearSettings.bits |= this.depth   ? GL.DEPTH_BUFFER_BIT   : 0;
+                        this.clearSettings.bits |= this.stencil ? GL.STENCIL_BUFFER_BIT : 0;
+        	        }
+            	} else {
+                	this.clearSettings = { r: 0, g: 0, b: 0, a: 1, depth: 1, bits: 0 };
+                	this.clearSettings.bits  = GL.COLOR_BUFFER_BIT;
+                	this.clearSettings.bits |= this.depth   ? GL.DEPTH_BUFFER_BIT   : 0;
+                    this.clearSettings.bits |= this.stencil ? GL.STENCIL_BUFFER_BIT : 0;
+            	}
+
+            	this.enableCulling( true, { frontFace: GL.CCW, cullFace: GL.BACK } );
+            	this.enableDepthTest( true, { func: GL.LEQUAL, write: true, zNear: 0, zFar: 1 } );
+            	this.enableBlend( false );
+            	this.setViewport();
+            	this.clear();
+            } else {
+                console.error( "GLOW.Context.construct: unable to initialize WebGL" );
+            }
     	}
     }
 	
 	
 	// methods
+	
     GLOWContext.prototype.setupClear = function( setup ) {
-    	var r = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : 0; 
-    	var g = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : 0; 
-    	var b = setup.blue  !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : 0; 
-    	var a = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : 1;
-    	var d = setup.depth !== undefined ? Math.min( 1, Math.max( 0, setup.depth )) : 1;
+    	if( setup !== undefined ) {
+        	this.clearSettings.r     = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : this.clearSettings.r; 
+        	this.clearSettings.g     = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : this.clearSettings.g; 
+        	this.clearSettings.b     = setup.blue  !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : this.clearSettings.b; 
+        	this.clearSettings.a     = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : this.clearSettings.a;
+        	this.clearSettings.depth = setup.depth !== undefined ? Math.min( 1, Math.max( 0, setup.depth )) : this.clearSettings.depth;
+        	this.clearSettings.bits  = setup.bits  !== undefined ? setup.bits : this.clearSettings.bits;
+    	}
 
-    	GL.clearColor( r, g, b, a );
-    	GL.clearDepth( d );
-    	this.clearBits = setup.clearBits !== undefined ? setup.clearBits : this.clearBits;
+    	GL.clearColor( this.clearSettings.r, this.clearSettings.g, this.clearSettings.b, this.clearSettings.a );
+    	GL.clearDepth( this.clearSettings.depth );
     	return this;
     };
 
-    GLOWContext.prototype.clear = function( bits ) {
-    	if( bits === undefined ) { bits = this.clearBits };
-    	GL.clear( bits );
+    GLOWContext.prototype.clear = function( setup ) {
+        this.setupClear( setup );
+        GL.clear( this.clearSettings.bits );
     	return this;
     };
-
+	
     GLOWContext.prototype.enableBlend = function( flag, setup ) {
     	if( flag ) {
     		GL.enable( GL.BLEND );

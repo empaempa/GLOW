@@ -1339,7 +1339,6 @@ GLOW.Camera.prototype.supr = GLOW.Node.prototype;
 GLOW.Camera.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix ) {
 
 	if( this.useXYZStyleTransform ) {
-		
 		this.localMatrix.setPosition( this.position.x, this.position.y, this.position.z );
 
 		if( this.useTarget ) {
@@ -1349,13 +1348,9 @@ GLOW.Camera.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix
 		}
 		
 		this.localMatrix.scale( this.scale.x, this.scale.y, this.scale.z );
-	
 	} else if( this.useTarget ) {
-
 		this.localMatrix.lookAt( this.target, this.up );
-
 	}
-	
 	
 	if( parentGlobalMatrix ) {
 		this.globalMatrix.multiply( parentGlobalMatrix, this.localMatrix );
@@ -1364,7 +1359,6 @@ GLOW.Camera.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix
 	}
 	
 	GLOW.Matrix4.makeInverse( this.globalMatrix, this.inverse );
-
 
 	var c, cl = this.children.length;
 
