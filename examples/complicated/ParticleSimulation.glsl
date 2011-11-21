@@ -25,23 +25,30 @@ varying		vec2	vSimulationPositions;
 void main( void ) {
 	
 	vec4 particleData = texture2D( uParticlesFBO, vSimulationDataUV );
-	vec4 particlePosition = vec4( particleData.x * 2000.0 - 1000.0, vSimulationPositions.x, vSimulationPositions.y, 1.0 );
+	vec4 particlePosition = vec4( particleData.x * 3000.0 - 1500.0, vSimulationPositions.x, vSimulationPositions.y, 1.0 );
 	vec4 particleProjected = uPerspectiveMatrix * uViewMatrix * particlePosition;
 	vec2 particleUV = ( particleProjected.xy / particleProjected.w ) * 0.5 + 0.5;
-	//particleProjected.z /= particleProjected.w;
+	particleProjected.z = smoothstep( 0.0, 8000.0, particleProjected.z );
 	
-	float backDepth  = texture2D( uDepthFBO, vec2( particleUV.x * 0.5,       particleUV.y )).r;// vec2( particleUV.x * 0.5,       particleUV.y )).r;
-	float frontDepth = texture2D( uDepthFBO, vec2( particleUV.x * 0.5 + 0.5, particleUV.y )).r;//vec2( particleUV.x * 0.5 + 0.5, particleUV.y )).r;
+	vec2 backDepthLuminence  = texture2D( uDepthFBO, vec2( particleUV.x * 0.5,       particleUV.y )).xy; 
+	vec2 frontDepthLuminence = texture2D( uDepthFBO, vec2( particleUV.x * 0.5 + 0.5, particleUV.y )).xy;
 	
 	// update data
 	
-	particleData.x  = mod( particleData.x - 0.001, 1.0 );
-	particleData.y += 0.1;
+	float oldTime = particleData.x;
 	
-	if( particleProjected.z > frontDepth && particleProjected.z < backDepth ) particleData.z = 20.0;
-	else                   particleData.z = max( 5.0, particleData.z - 1.0 );
+	if( particleProjected.z > frontDepthLuminence.x && particleProjected.z < backDepthLuminence.x ) {
+		particleData.x  = mod( particleData.x + 0.005, 1.0 );	// time
+		particleData.y += 0.1;									// rotation
+		particleData.z  = min( 25.0, particleData.z + 5.0 );	// size
+	} else {
+		particleData.x  = mod( particleData.x + 0.007, 1.0 );	// time
+		particleData.y += 0.2;									// rotation
+		particleData.z  = max( 2.0, particleData.z - 1.0 );	// size
+	}
 
-	particleData.w = 1.0;
+	particleData.w = max( 0.1, particleData.w + ( frontDepthLuminence.y - particleData.w ) * 0.1 );	// luminence
+	
     gl_FragColor = particleData;
 }
 

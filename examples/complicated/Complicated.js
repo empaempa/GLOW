@@ -3,7 +3,7 @@ var Complicated = (function() {
     // general variables 
     
     var context;
-    var squareParticles = 256;
+    var squareParticles = 128;
     var numParticles = squareParticles * squareParticles;
 
     // cameras, nodes and FBOs (will be created later)
@@ -18,13 +18,16 @@ var Complicated = (function() {
     
     // animation variables
     
-    var animationSpeed = 0.2;
-    var morph = 0;
     var frames;
     var framesByAnimal;
-    var animals       = [ "horse", "bearbrownRun", "mountainlionRun", "deerLeap", "goldenretreiver", "foxRun", "seal", "chowRun", "bunnyScurry", "frogLeap", "raccoonRun" ];
-    var currentAnimal = animals[ 0 ];
-    var nextAnimal    = animals[ 1 ];
+    var animationSpeed     = 0.1;
+    var animalMorph        = 0;
+    var changeAnimal       = false;
+    var animals            = [ "horse", "bearbrown", "mountainlion", "deer", "goldenretreiver", "fox", "seal", "chow", "bunny", "frog", "raccoon" ];
+    var animalsScale       = [ 0.8,     0.8,         1.5,            1.5,    1.5,               3.0,   3.0,    3.0,    5.0,      5.0,   3.0       ];
+    var currentAnimalIndex = 0;
+    var currentAnimal      = animals[ 0 ];
+    var nextAnimal         = animals[ 1 ];
 
     // Shaders and shader configuration objects
     // The undefines in the configs will be set
@@ -32,8 +35,8 @@ var Complicated = (function() {
     
     // The depth shader renders the animal into
     // the depth FBO. Note that we don't interleave
-    // the aVertexAnimalXFrameY as we like to switch
-    // these to create an animation
+    // the aVertexAnimalXFrameY and aColorAnimalX
+    // as we like to switch these to create an animation
     
     var depthShader;
     var depthShaderConfig = {
@@ -47,15 +50,21 @@ var Complicated = (function() {
             aVertexAnimalAFrame1:   undefined,
             aVertexAnimalBFrame0:   undefined,
             aVertexAnimalBFrame1:   undefined,
+            aColorAnimalA:          undefined,
+            aColorAnimalB:          undefined,
             uFrameMorphA:           new GLOW.Float(),
             uFrameMorphB:           new GLOW.Float(),
             uAnimalMorph:           new GLOW.Float(),
+            uAnimalAScale:          new GLOW.Float(),
+            uAnimalBScale:          new GLOW.Float()
         },
         interleave: {
             aVertexAnimalAFrame0:   false,
             aVertexAnimalAFrame1:   false,
             aVertexAnimalBFrame0:   false,
-            aVertexAnimalBFrame1:   false   
+            aVertexAnimalBFrame1:   false,
+            aColorAnimalA:          false,
+            aColorAnimalB:          false,
         }
     };
     
@@ -127,6 +136,12 @@ var Complicated = (function() {
                 // uses the global GL to create buffers
               
                 context = new GLOW.Context();
+                
+                if( context.GL === null ) {
+                    alert( "Couldn't initialize WebGL" );
+                    return;
+                }
+                
                 context.setupClear( { red: 1, green: 1, blue: 1 } );
 //                context.domElement.style.position = 'absolute';
 //                context.domElement.style.left = '100px';
@@ -135,7 +150,8 @@ var Complicated = (function() {
                 document.getElementById( "container" ).appendChild( context.domElement );
 
                 // parse animal faces (Three.js format)
-                // we're really just interested in faces so we're skipping the rest 
+                // We're really just interested in faces so we're skipping the rest 
+                // Colors are taken out in a separate loop
                 // Code snatched from Three.js by @mrdoob and @alteredq
                   
                 var f, t, fl, i, n;
@@ -182,6 +198,26 @@ var Complicated = (function() {
                     if( hasFaceVertexColor  ) f += isQuad ? 4 : 3;
                 } 
                 
+                // Create colors
+                // In the next loop we're putting these next to the animation
+                // frame buffers for easy access in the update loop
+                
+                colorsByAnimal = {};
+                
+                var name, 
+                    colors, 
+                    threeJsMorphColors = result.animal.morphColors;
+                
+                for( f = 0, fl = threeJsMorphColors.length; f < fl; f++ ) {
+                    name   = threeJsMorphColors[ f ].name.slice( 0, threeJsMorphColors[ f ].name.indexOf( "_" ));
+                    colors = threeJsMorphColors[ f ].colors;
+                     
+                    colorsByAnimal[ name ] = GL.createBuffer();
+
+                    GL.bindBuffer( GL.ARRAY_BUFFER, colorsByAnimal[ name ] );
+                    GL.bufferData( GL.ARRAY_BUFFER, new Float32Array( colors ), GL.STATIC_DRAW );                
+                }
+                
                 // create frames
                 // we're just interested in having the WebGL buffers (GLOW.Attribute.buffer)
                 // for each frame so we're creating them using the global GL
@@ -191,12 +227,13 @@ var Complicated = (function() {
                 
                 var threeJsMorphTargets = result.animal.morphTargets;
                 for( f = 0, fl = threeJsMorphTargets.length; f < fl; f++ ) {
-                    frames[ f ]        = {};
-                    frames[ f ].name   =           threeJsMorphTargets[ f ].name.slice( 0, threeJsMorphTargets[ f ].name.indexOf( "_" ));
-                    frames[ f ].frame  = parseInt( threeJsMorphTargets[ f ].name.slice( threeJsMorphTargets[ f ].name.lastIndexOf( "_" ) + 1 ) - 1, 10 );
-                    frames[ f ].buffer = GL.createBuffer();
+                    frames[ f ]              = {};
+                    frames[ f ].name         =           threeJsMorphTargets[ f ].name.slice( 0, threeJsMorphTargets[ f ].name.indexOf( "_" )).toLowerCase();
+                    frames[ f ].frame        = parseInt( threeJsMorphTargets[ f ].name.slice( threeJsMorphTargets[ f ].name.lastIndexOf( "_" ) + 1 ) - 1, 10 );
+                    frames[ f ].colorBuffer  = colorsByAnimal[ frames[ f ].name ];
+                    frames[ f ].vertexBuffer = GL.createBuffer();
                     
-                    GL.bindBuffer( GL.ARRAY_BUFFER, frames[ f ].buffer );
+                    GL.bindBuffer( GL.ARRAY_BUFFER, frames[ f ].vertexBuffer );
                     GL.bufferData( GL.ARRAY_BUFFER, new Float32Array( threeJsMorphTargets[ f ].vertices ), GL.STATIC_DRAW );                
                 }
                 
@@ -206,7 +243,7 @@ var Complicated = (function() {
                     if( framesByAnimal[ frames[ f ].name ] === undefined )
                         framesByAnimal[ frames[ f ].name ] = [];
                     
-                    framesByAnimal[ frames[ f ].name ][ frames[ f ].frame ] = frames[ f ].buffer;
+                    framesByAnimal[ frames[ f ].name ][ frames[ f ].frame ] = { vertexBuffer: frames[ f ].vertexBuffer, colorBuffer: frames[ f ].colorBuffer };
                     framesByAnimal[ frames[ f ].name ].time   = 0;
                     framesByAnimal[ frames[ f ].name ].frame0 = 0;
                     framesByAnimal[ frames[ f ].name ].frame1 = 1;
@@ -217,7 +254,7 @@ var Complicated = (function() {
                 
                 // First we create the depth shader, which renders the animal
                 // into the deopth FBO
-                // We set dummy vertex data as we're overwriting the buffer
+                // We set dummy vertex and color data as we're overwriting the buffer
                 // later with the frames create above
                 
                 depthShaderConfig.vertexShader              = result.depthShader.vertexShader;
@@ -227,6 +264,8 @@ var Complicated = (function() {
                 depthShaderConfig.data.aVertexAnimalAFrame1 = new Float32Array( 1 );
                 depthShaderConfig.data.aVertexAnimalBFrame0 = new Float32Array( 1 );
                 depthShaderConfig.data.aVertexAnimalBFrame1 = new Float32Array( 1 );
+                depthShaderConfig.data.aColorAnimalA        = new Float32Array( 1 );
+                depthShaderConfig.data.aColorAnimalB        = new Float32Array( 1 );
                 
                 depthShader = new GLOW.Shader( depthShaderConfig );
 
@@ -272,7 +311,7 @@ var Complicated = (function() {
                     // and render missmatch we need to store them once for the simulation
                     // and once for the render (further down below) 
 
-                    y = Math.random() * 2000 - 1000;
+                    y = Math.random() * 1500 - 800;
                     z = Math.random() * 2000 - 1000;
                     
                     simulationPositions.push( y );
@@ -281,11 +320,9 @@ var Complicated = (function() {
                     // This is the data sent to the particleFBO at start
 
                     simulationData.push( Math.random());                            // x = translation time (0->1)
-//                    simulationData.push( 0.0 );                                     // y = size 
                     simulationData.push( Math.random() * 2 * 3.1415 );              // y = rotation
                     simulationData.push( 0.0 );                                     // z = size 
-//                    simulationData.push(( 255 << 16 ) & ( 255 << 8 ) & ( 0 << 0 )); // w = color (r<<16 & g<<8 & b )
-                    simulationData.push( 1.0 );
+                    simulationData.push( 0.1 );                                     // w = luminence
                     
                     // And now the render specfic stuff...
                     // This is the elements array, containing
@@ -351,7 +388,8 @@ var Complicated = (function() {
                                            height: 128, 
                                            type: GL.FLOAT,
                                            magFilter: GL.NEAREST, 
-                                           minFilter: GL.NEAREST } ); 
+                                           minFilter: GL.NEAREST,
+                                           clear: { alpha: 0 } } ); 
 
                 particlesFBO = new GLOW.FBO( { width: squareParticles,     
                                                height: squareParticles, 
@@ -391,21 +429,31 @@ var Complicated = (function() {
                 
                 depthToScreenShaderConfig.vertexShader   = result.depthToScreenShader.vertexShader;
                 depthToScreenShaderConfig.fragmentShader = result.depthToScreenShader.fragmentShader;
-                depthToScreenShaderConfig.data.uFBO      = particlesFBO;
+                depthToScreenShaderConfig.data.uFBO      = depthFBO;
                 depthToScreenShader                      = new GLOW.Shader( depthToScreenShaderConfig );
 
                 // start render
 
                 setInterval( render, 1000 / 60 );
                 
-                particleSimulationNode.localMatrix.setPosition( 0, 0, -4000 );
-                particleSimulationNode.update( undefined, cameraFBO.inverse );
+                document.onclick = function() {
+                    changeAnimal = true;
+                };
                 
-                var vec4 = new GLOW.Vector4( 2000, 500, 500, 1 );
-                particleSimulationNode.viewMatrix.multiplyVector4( vec4 );
+                /*
+                
+                animalNode.localMatrix.setPosition( 0, -1050, -4000 );
+                animalNode.localMatrix.addRotation( 0, 0.01, 0 );
+                animalNode.localMatrix.scale( 0.8, 0.8, 0.8 );
+                animalNode.update( undefined, cameraFBO.inverse );
+
+                var vec4 = new GLOW.Vector4( 1000, 1000, 1000, 1 );
+                
+                animalNode.viewMatrix.multiplyVector4( vec4 );
                 cameraFBO.projection.multiplyVector4( vec4 );
                 
-                console.log( vec4.value[ 0 ], vec4.value[ 1 ], vec4.value[ 2 ], vec4.value[ 3 ] );
+                console.log( vec4 );
+                */
             }
         } );
     };
@@ -416,26 +464,46 @@ var Complicated = (function() {
         
         animalNode.localMatrix.setPosition( 0, -1050, -4000 );
         animalNode.localMatrix.addRotation( 0, 0.01, 0 );
+        animalNode.localMatrix.scale( 0.8, 0.8, 0.8 );
         animalNode.update( undefined, cameraFBO.inverse );
         
         particleSimulationNode.localMatrix.setPosition( 0, 0, -4000 );
+        particleSimulationNode.localMatrix.addRotation( 0, 0.001, 0 );
         particleSimulationNode.update( undefined, cameraFBO.inverse );
 
         particleRenderNode.localMatrix.setPosition( 0, 0, -4000 );
+        particleRenderNode.localMatrix.addRotation( 0, -0.01, 0 );
         particleRenderNode.update( undefined, camera.inverse );
     
         // update animal animation
 		
+		if( changeAnimal ) {
+		    animalMorph += 0.05;
+		    
+		    if( animalMorph >= 1.0 ) {
+		        animalMorph = 0;
+		        currentAnimalIndex = ( currentAnimalIndex + 1 ) % animals.length;
+		        currentAnimal = animals[ currentAnimalIndex ];
+		        nextAnimal    = animals[ ( currentAnimalIndex + 1 ) % animals.length ];
+		        changeAnimal  = false;
+		    }
+		}
+		
         updateAnimaion( currentAnimal );
         updateAnimaion( nextAnimal );
         
-        depthShader.uAnimalMorph.set( 0 );
+        depthShader.uAnimalMorph.set( animalMorph );
         depthShader.uFrameMorphA.set( framesByAnimal[ currentAnimal ].morph );
         depthShader.uFrameMorphB.set( framesByAnimal[ nextAnimal    ].morph );
-        depthShader.aVertexAnimalAFrame0.buffer = framesByAnimal[ currentAnimal ][ framesByAnimal[ currentAnimal ].frame0 ];
-        depthShader.aVertexAnimalAFrame1.buffer = framesByAnimal[ currentAnimal ][ framesByAnimal[ currentAnimal ].frame1 ];
-        depthShader.aVertexAnimalBFrame0.buffer = framesByAnimal[ nextAnimal    ][ framesByAnimal[ nextAnimal    ].frame0 ];
-        depthShader.aVertexAnimalBFrame1.buffer = framesByAnimal[ nextAnimal    ][ framesByAnimal[ nextAnimal    ].frame1 ];
+        depthShader.uAnimalAScale.set( animalsScale[ currentAnimalIndex ] );
+        depthShader.uAnimalBScale.set( animalsScale[ ( currentAnimalIndex + 1 ) % animals.length ] );
+        
+        depthShader.aVertexAnimalAFrame0.buffer = framesByAnimal[ currentAnimal ][ framesByAnimal[ currentAnimal ].frame0 ].vertexBuffer;
+        depthShader.aVertexAnimalAFrame1.buffer = framesByAnimal[ currentAnimal ][ framesByAnimal[ currentAnimal ].frame1 ].vertexBuffer;
+        depthShader.aVertexAnimalBFrame0.buffer = framesByAnimal[ nextAnimal    ][ framesByAnimal[ nextAnimal    ].frame0 ].vertexBuffer;
+        depthShader.aVertexAnimalBFrame1.buffer = framesByAnimal[ nextAnimal    ][ framesByAnimal[ nextAnimal    ].frame1 ].vertexBuffer;
+        depthShader.aColorAnimalA.buffer        = framesByAnimal[ currentAnimal ][ framesByAnimal[ currentAnimal ].frame0 ].colorBuffer;
+        depthShader.aColorAnimalB.buffer        = framesByAnimal[ nextAnimal    ][ framesByAnimal[ nextAnimal    ].frame0 ].colorBuffer;
         
         // clear cache and we're ready to go rendering
         
@@ -467,6 +535,8 @@ var Complicated = (function() {
         particlesFBO.bind();
         particleSimulationShader.draw();
         particlesFBO.unbind();
+
+        context.enableDepthTest( true );
         particleRenderShader.draw();
 
         // draw to screen (temp)
