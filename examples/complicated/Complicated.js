@@ -464,15 +464,13 @@ var Complicated = (function() {
         
         animalNode.localMatrix.setPosition( 0, -1050, -4000 );
         animalNode.localMatrix.addRotation( 0, 0.01, 0 );
-        animalNode.localMatrix.scale( 0.8, 0.8, 0.8 );
         animalNode.update( undefined, cameraFBO.inverse );
         
         particleSimulationNode.localMatrix.setPosition( 0, 0, -4000 );
-        particleSimulationNode.localMatrix.addRotation( 0, 0.001, 0 );
+        particleSimulationNode.localMatrix.setRotation( 0.0, 3.141596 * 0.3, 0.0 );
         particleSimulationNode.update( undefined, cameraFBO.inverse );
 
-        particleRenderNode.localMatrix.setPosition( 0, 0, -4000 );
-        particleRenderNode.localMatrix.addRotation( 0, -0.01, 0 );
+        particleRenderNode.localMatrix.copy( particleSimulationNode.localMatrix );
         particleRenderNode.update( undefined, camera.inverse );
     
         // update animal animation

@@ -39,12 +39,12 @@ void main( void ) {
 	
 	if( particleProjected.z > frontDepthLuminence.x && particleProjected.z < backDepthLuminence.x ) {
 		particleData.x  = mod( particleData.x + 0.005, 1.0 );	// time
-		particleData.y += 0.1;									// rotation
-		particleData.z  = min( 25.0, particleData.z + 5.0 );	// size
-	} else {
-		particleData.x  = mod( particleData.x + 0.007, 1.0 );	// time
 		particleData.y += 0.2;									// rotation
-		particleData.z  = max( 2.0, particleData.z - 1.0 );	// size
+		particleData.z  = 25.0;//min( 20.0, particleData.z + 10.0 );	// size
+	} else {
+		particleData.x  = mod( particleData.x + 0.005, 1.0 );	// time
+		particleData.y += 0.1;									// rotation
+		particleData.z  = max( 2.0, particleData.z - 1.0 );		// size
 	}
 
 	particleData.w = max( 0.1, particleData.w + ( frontDepthLuminence.y - particleData.w ) * 0.1 );	// luminence
