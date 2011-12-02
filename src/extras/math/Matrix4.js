@@ -417,7 +417,7 @@ GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far ) {
 
 	var m, mv, x, y, z, w, h, p;
 
-	m = GLOW.Matrix4();
+	m = new GLOW.Matrix4();
 	w = right - left;
 	h = top - bottom;
 	p = far - near;
