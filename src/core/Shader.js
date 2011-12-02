@@ -65,6 +65,8 @@ GLOW.Shader = (function() {
         var compiledData = this.compiledData;
         var cache = GLOW.currentContext.cache;
 
+        if( compiledData.preDrawCallback ) compiledData.preDrawCallback( this );
+        
         if( !cache.programCached( compiledData.program )) {
             GL.useProgram( compiledData.program );
             var diff = cache.setProgramHighestAttributeNumber( compiledData.program );
@@ -103,8 +105,6 @@ GLOW.Shader = (function() {
             }
         }
 
-        if( compiledData.preDrawCallback ) compiledData.preDrawCallback( this );
-        
         compiledData.elements.draw();
 
         if( compiledData.postDrawCallback ) compiledData.postDrawCallback( this );
