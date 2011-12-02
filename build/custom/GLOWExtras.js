@@ -952,7 +952,7 @@ GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far ) {
 
 	var m, mv, x, y, z, w, h, p;
 
-	m = GLOW.Matrix4();
+	m = new GLOW.Matrix4();
 	w = right - left;
 	h = top - bottom;
 	p = far - near;
@@ -979,38 +979,46 @@ GLOW.Matrix4.tempVector3D = new GLOW.Vector3();
 GLOW.Geometry = {
 	
 	randomVector3Array: function( amount, factor ) {
-		
 		factor = factor !== undefined ? factor : 1;
 		
 		var a, array = [];
 		var doubleFactor = factor * 2;
-		
 		for( a = 0; a < amount; a++ ) {
-			
 			array.push( GLOW.Vector3( Math.random() * doubleFactor - factor, 
 									  Math.random() * doubleFactor - factor, 
 									  Math.random() * doubleFactor - factor ));
 		}
-
 		return array;
 	},
 	
+	randomArray: function( length, base, factor, repeat ) {
+	    var array = [];
+	    var value = 0;
+	    var r, l;
+	    for( l = 0; l < length / repeat; l++ ) {
+	        value = base + Math.random() * factor;
+	        for( r = 0; r < repeat; r++ ) {
+	            array.push( value );
+	        }
+	    }
+	    return array;
+	},
+	
+	triangles: function( amount ) {
+	    return this.elements( amount );
+	},
+	
 	elements: function( amount ) {
-		
 		var i = 0, a, array = new Uint16Array( amount * 3 );
-		
 		for( a = 0; a < amount; a++ ) {
-			
 			array[ i ] = i++;
 			array[ i ] = i++;
 			array[ i ] = i++;
 		}
-		
 		return array;
 	},
 	
 	faceNormals: function( vertices, elements ) {
-	
 		var normals = new Float32Array( vertices.length );
 		var e, el = elements.length;
 		var a, b, c;
@@ -1018,7 +1026,6 @@ GLOW.Geometry = {
 		var bv = new GLOW.Vector3();
 		var cv = new GLOW.Vector3();
 		var nv = new GLOW.Vector3();
-	
 		for( e = 0; e < el; ) {
 			
 			a = elements[ e++ ] * 3;
@@ -1040,6 +1047,65 @@ GLOW.Geometry = {
 		}
 
 		return normals;
+	},
+	
+	/*
+	* Flatshade a shader config object
+	* shaderConfig:
+	*   .triangles: vertex shaded triangles
+	*   .data.xyz: attribute arrays
+	* attributeSizes:
+	*   .xyz: size of attribute (2 for vec2, 3 for vec3 etc.)
+	*
+	* Please note that attribute data need to be 
+	* untyped array (ordinary Arrray, not Float32Array for example)
+	*/
+	
+	flatShade: function( shaderConfig, attributeSizes ) {
+	    
+	    if( shaderConfig.triangles === undefined || 
+	        shaderConfig.data      === undefined ) {
+	        console.error( "GLOW.Geometry.flatShade: missing .data and/or .triangles in shader config object. Quitting." );
+	        return;
+	    }
+	    
+	    if( attributeSizes === undefined ) {
+	        console.error( "GLOW.Geometry.flatShade: missing attribute data sizes. Quitting." );
+	        return;
+	    }
+	    
+	    var triangles = shaderConfig.triangles;
+	    var numTriangles =  triangles.length / 3;
+	    var vertexShadedData = shaderConfig.data;
+	    var flatShadedTriangles = [];
+	    var flatShadedData, vertexShadedAttribute, size;
+	    var d, i, il, n, nl;
+	    
+	    for( d in attributeSizes ) {
+	        if( vertexShadedData[ d ] ) {
+    	        vertexShadedAttribute = vertexShadedData[ d ];
+    	        flatShadedAttribute   = [];
+    	        size                  = attributeSizes[ d ];
+
+                for( i = 0, il = numTriangles * 3; i < il; i++ ) {
+                    for( n = 0, nl = size; n < nl; n++ ) {
+                        flatShadedAttribute.push( vertexShadedAttribute[ triangles[ i ] * size + n ] );
+                    }
+                }
+
+        	    vertexShadedAttribute.length = 0;
+        	    for( i = 0, il = flatShadedAttribute.length; i < il; i++ ) 
+        	        vertexShadedAttribute[ i ] = flatShadedAttribute[ i ];
+	        }
+	    }
+	    
+	    for( i = 0, il = numTriangles, n = 0; i < il; i++ ) {
+	        flatShadedTriangles[ n ] = n++;
+	        flatShadedTriangles[ n ] = n++;
+	        flatShadedTriangles[ n ] = n++;
+	    }
+	    
+	    shaderConfig.triangles = flatShadedTriangles;
 	}
 }
 
@@ -1320,7 +1386,13 @@ GLOW.Camera = function( parameters ) {
 	var far    = parameters.far    !== undefined ? parameters.far    : 10000;
 
 	this.useTarget  = parameters.useTarget !== undefined ? parameters.useTarget : true;
-	this.projection = GLOW.Matrix4.makeProjection( fov, aspect, near, far );
+	
+	if( parameters.ortho !== undefined )
+	    this.projection = GLOW.Matrix4.makeOrtho( parameters.ortho.left, parameters.ortho.right, parameters.ortho.top, parameters.ortho.bottom, near, far );
+	else
+	    this.projection = GLOW.Matrix4.makeProjection( fov, aspect, near, far );
+
+//	this.projection = GLOW.Matrix4.makeProjection( fov, aspect, near, far );
 	this.inverse    = new GLOW.Matrix4();
 	this.target     = new GLOW.Vector3( 0, 0, -100 );
 	this.up         = new GLOW.Vector3( 0, 1, 0 );
@@ -1374,4 +1446,101 @@ GLOW.Camera.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix
 */
 
 GLOW.defaultCamera = new GLOW.Camera();
+
+GLOW.ShaderUtils = {
+	
+	/*
+	* Creates multiple shaders if element indices exceed 65535 (Uint16Array)
+	* Note that the method used is quite stupid and just splits so each
+	* element get their own attribute - sharing of attributes is no more
+	* after this, thus potentially taking up more memory than before
+	*/
+
+	createMultiple: function( originalShaderConfig, attributeSizes ) {
+
+        if( originalShaderConfig.triangles === undefined ||
+            originalShaderConfig.data      === undefined ) {
+	        console.error( "GLOW.ShaderUtils.createMultiple: missing .data and/or .triangles in shader config object. Quitting." );
+	        return;
+        }
+
+        var triangles, originalTriangles = originalShaderConfig.triangles;
+        var data, originalData = originalShaderConfig.data;
+        var except, excepts = [];
+        var originalAttribute, newAttribute;
+        var t, s, n, nl, ii, i = 0, il = originalTriangles.length;
+        
+        
+        do {
+//            shaderConfigs.push( shaderConfig = {} );
+//            if( originalShaderConfig.interleave !== undefined ) shaderConfig.interleave = originalShaderConfig.interleave;
+//            if( originalShaderConfig.usage      !== undefined ) shaderConfig.usage      = originalShaderConfig.usage;
+
+            excepts.push( except = { elements: [] } );
+            triangles = except.elements;
+            
+            for( s in attributeSizes ) {
+                if( originalData[ s ] ) {
+                    except[ s ] = [];
+                } else {
+    	            console.error( "GLOW.ShaderUtils.createMultiple: attribute " + d + " doesn't exist in originalShaderConfig.data. Quitting." );
+    	            return;
+                }
+            }
+            
+            for( t = 0; i < il; i += 3 ) {
+                if( t > 65536 - 3 ) {
+                    i -= 3;
+                    break;
+                }
+
+                triangles[ t ] = t++;
+                triangles[ t ] = t++;
+                triangles[ t ] = t++;
+
+        	    for( s in attributeSizes ) {
+        	        originalAttribute = originalData[ s ];
+        	        newAttribute      = except[ s ];
+        	        size              = attributeSizes[ s ];
+
+                    for( ii = 0; ii < 3; ii++ ) {
+                        for( n = 0, nl = size; n < nl; n++ ) {
+                            except[ s ].push( originalAttribute[ originalTriangles[ i + ii ] * size + n ] );
+                        }
+                    }
+        	    }
+            }
+        } while( i < il );
+        
+        // create first shader...
+        
+        for( s in attributeSizes )
+            originalShaderConfig.data[ s ] = excepts[ 0 ][ s ];
+    
+        originalShaderConfig.triangles = excepts[ 0 ].elements;
+  
+        var shader  = new GLOW.Shader( originalShaderConfig );
+        var shaders = [ shader ];
+        var attributes;
+        var interleavedAttributes;
+        
+        // ...then clone it
+
+        for( i = 1; i < excepts.length; i++ ) {
+            for( s in attributeSizes )
+                originalShaderConfig.data[ s ] = excepts[ i ][ s ];
+                
+    		attributes            = GLOW.Compiler.createAttributes( GLOW.Compiler.extractAttributes( shader.compiledData.program ), originalShaderConfig.data, originalShaderConfig.usage, originalShaderConfig.interleave );
+    		interleavedAttributes = GLOW.Compiler.interleaveAttributes( attributes, originalShaderConfig.interleave );
+
+            for( n in interleavedAttributes )
+                excepts[ i ][ n ] = interleavedAttributes[ n ];
+
+            shaders[ i ] = shader.clone( excepts[ i ] );
+        }
+        
+	    return shaders;
+	}
+};
+
 

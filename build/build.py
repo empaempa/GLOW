@@ -48,7 +48,8 @@ EXTRAS_FILES = [
 'extras/geometry/Cube.js',
 'extras/geometry/Plane.js',
 'extras/graph/Node.js',
-'extras/graph/Camera.js'
+'extras/graph/Camera.js',
+'extras/shaders/ShaderUtils.js'
 ]
 
 THREE_COMPATABILITY_FILES = [

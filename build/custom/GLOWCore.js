@@ -536,7 +536,7 @@ GLOW.Compiler = (function() {
 			name      = attribute.name;
 			
 			if( data[ name ] === undefined ) {
-				console.warn( "GLOW.Compiler.createAttributes: missing declaration for attribute " + name );
+				console.warn( "GLOW.Compiler.createAttributes: missing data for attribute " + name );
 			} else if( data[ name ] instanceof GLOW.Attribute ) {
 				attributes[ name ] = data[ name ];
 			} else {
@@ -637,9 +637,6 @@ GLOW.Compiler = (function() {
 		} else if( data instanceof GLOW.Elements ) {
 			elements = data;
 		} else {
-			if( !( data instanceof Uint16Array )) {
-				data = new Uint16Array( data );
-			}
 			elements = new GLOW.Elements( data, type, usage !== undefined ? usage : GL.STATIC_DRAW );
 		}
 
@@ -705,7 +702,9 @@ GLOW.CompiledData = (function() {
     	var i;
     	for( i in this.interleavedAttributes ) {
     	    if( except[ i ] ) {
-    	        clone.interleavedAttributes[ i ] = new GLOW.InterleavedAttributes( except[ i ] );
+// This really needs some cleaning up... somehow.
+//    	        clone.interleavedAttributes[ i ] = new GLOW.InterleavedAttributes( except[ i ] );
+    	        clone.interleavedAttributes[ i ] = except[ i ];
     	    } else {
     	        clone.interleavedAttributes[ i ] = this.interleavedAttributes[ i ];
     	    }
@@ -1371,6 +1370,8 @@ GLOW.Shader = (function() {
         var compiledData = this.compiledData;
         var cache = GLOW.currentContext.cache;
 
+        if( compiledData.preDrawCallback ) compiledData.preDrawCallback( this );
+        
         if( !cache.programCached( compiledData.program )) {
             GL.useProgram( compiledData.program );
             var diff = cache.setProgramHighestAttributeNumber( compiledData.program );
@@ -1409,8 +1410,6 @@ GLOW.Shader = (function() {
             }
         }
 
-        if( compiledData.preDrawCallback ) compiledData.preDrawCallback( this );
-        
         compiledData.elements.draw();
 
         if( compiledData.postDrawCallback ) compiledData.postDrawCallback( this );
@@ -1446,6 +1445,10 @@ GLOW.Elements = (function() {
         this.elements = GL.createBuffer();
         this.length = data.length;
         this.type = type !== undefined ? type : GL.TRIANGLES;
+
+		if( !( data instanceof Uint16Array )) {
+			data = new Uint16Array( data );
+		}
 
         GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, this.elements );
         GL.bufferData( GL.ELEMENT_ARRAY_BUFFER, data, usage ? usage : GL.STATIC_DRAW );
@@ -1573,12 +1576,16 @@ GLOW.Attribute = (function() {
         this.name = parameters.name;
         this.type = parameters.type;
 
+        if( this.data.length / this.size > 65536 ) {
+            console.warn( "GLOW.Attribute.constructor: Unreachable attribute. Elements cannot reach attribute data beyond index 65535. Please split into several shaders." );
+        }
+
+        if( this.data.constructor.toString().indexOf( " Array()") !== -1 ) {
+            this.data = new Float32Array( this.data );
+        }
+
         if( this.interleaved === false ) {
-            if( this.data instanceof Float32Array ) {
-                this.bufferData( this.data, this.usage );
-            } else {
-                console.error( "GLOW.Attribute.constructor: Data for attribute " + this.name + " not in Float32Array format. Please fix. Quitting." );
-            }
+            this.bufferData( this.data, this.usage );
         }
     }
 
