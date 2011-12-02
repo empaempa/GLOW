@@ -1,10 +1,10 @@
 //# ParticleSimulationVertex
 
 attribute	vec4	aSimulationDataXYUVs;
-attribute	vec3	aSimulationPositions;
+attribute	vec2	aSimulationPositions;
 
 varying		vec2	vSimulationDataUV;
-varying		vec3	vSimulationPositions;
+varying		vec2	vSimulationPositions;
 
 void main(void) {
 	vSimulationDataUV    = aSimulationDataXYUVs.zw;
@@ -22,33 +22,37 @@ uniform		sampler2D	uDepthFBO;
 uniform		sampler2D	uParticlesFBO;
 
 varying		vec2	vSimulationDataUV;
-varying		vec3	vSimulationPositions;
+varying		vec2	vSimulationPositions;
 
 void main( void ) {
 	
+	// get data and calculate particle space, projected and UV position
+	
 	vec4 particleData = texture2D( uParticlesFBO, vSimulationDataUV );
-	vec4 particlePosition = vec4( particleData.x * 3000.0 - 1500.0, vSimulationPositions.x, vSimulationPositions.y, 1.0 );
+	vec4 particlePosition = vec4( particleData.x * 4000.0 - 2000.0, vSimulationPositions.x, vSimulationPositions.y, 1.0 );
 	vec4 particleProjected = uPerspectiveMatrix * uViewMatrix * particlePosition;
 	vec2 particleUV = ( particleProjected.xy / particleProjected.w ) * 0.5 + 0.5;
 	particleProjected.z = smoothstep( 0.0, 8000.0, particleProjected.z );
 	
+	// sample volume back and front depth and luminence
+	
 	vec2 backDepthLuminence  = texture2D( uDepthFBO, vec2( particleUV.x * 0.5,       particleUV.y )).xy; 
 	vec2 frontDepthLuminence = texture2D( uDepthFBO, vec2( particleUV.x * 0.5 + 0.5, particleUV.y )).xy;
 	
-	// update data
+	// update data dependent on inside or outside volume
 	
 	float oldTime = particleData.x;
 	
 	if( particleProjected.z > frontDepthLuminence.x && particleProjected.z < backDepthLuminence.x ) {
-		particleData.y += 0.05;									// rotation
-		particleData.z  = min( 35.0, particleData.z + 10.0 );	// size
+		particleData.y += 0.03;									// rotation
+		particleData.z  = min( 45.0, particleData.z + 10.0 );	// size
 	} else {
 		particleData.y += 0.05;									// rotation
-		particleData.z  = max( 10.0, particleData.z - 2.0 );	// size
+		particleData.z  = max( 8.0, particleData.z - 1.5 );		// size
 	}
 
 	particleData.x  = mod( particleData.x + 0.006, 1.0 );							// time
-	particleData.z *= 1.0 - smoothstep( 1000.0, 1500.0, abs( particlePosition.x ));	// size in the ends
+	particleData.z *= 1.0 - smoothstep( 1500.0, 2000.0, abs( particlePosition.x ));	// size in the ends
 	particleData.w  = frontDepthLuminence.y;										// luminence
 	
     gl_FragColor = particleData;

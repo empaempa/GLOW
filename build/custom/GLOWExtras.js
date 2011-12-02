@@ -1392,7 +1392,6 @@ GLOW.Camera = function( parameters ) {
 	else
 	    this.projection = GLOW.Matrix4.makeProjection( fov, aspect, near, far );
 
-//	this.projection = GLOW.Matrix4.makeProjection( fov, aspect, near, far );
 	this.inverse    = new GLOW.Matrix4();
 	this.target     = new GLOW.Vector3( 0, 0, -100 );
 	this.up         = new GLOW.Vector3( 0, 1, 0 );

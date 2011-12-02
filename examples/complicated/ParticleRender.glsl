@@ -7,10 +7,9 @@ uniform     mat4    	uPerspectiveMatrix;
 uniform		sampler2D	uParticlesFBO;
 
 attribute	vec2	aParticleUVs;
-attribute	vec3	aParticlePositions;
+attribute	vec2	aParticlePositions;
 attribute	vec3	aParticleDirections;
 attribute	vec3	aParticleNormals;
-attribute	float	aParticleDarkness;
 
 varying		vec3	vColor;
 
@@ -19,8 +18,7 @@ void main(void)
 	// particle position
 	
 	vec4 particleData = texture2D( uParticlesFBO, aParticleUVs );
-	vec3 particlePosition = vec3( particleData.x * 3000.0 - 1500.0, aParticlePositions.x, aParticlePositions.y );
-//	vec3 particlePosition = sin( particleData.x * PI * 2.0 ) * aParticlePositions;
+	vec3 particlePosition = vec3( particleData.x * 4000.0 - 2000.0, aParticlePositions.x, aParticlePositions.y );
 	
 	// particle rotation and size
 	
@@ -34,14 +32,17 @@ void main(void)
 
 	particlePosition += rotatedDirection * particleData.z;
 	
+	// particle normal rotation
+	
 	vec3 rotatedNormal;
 	rotatedNormal.x = cosRot * aParticleNormals.x - sinRot * aParticleNormals.y;
 	rotatedNormal.y = sinRot * aParticleNormals.x + cosRot * aParticleNormals.y;
 	rotatedNormal.z = aParticleNormals.z;
 
+	// light and color
+
 	float light = dot( vec3( 0.0, 1.0, 0.0 ), rotatedNormal ) + 1.0;
-	vec3  color = mix( vec3( 0.9 ), vec3( 0.9, 0.4, 1.0 ), smoothstep( 10.0, 20.0, particleData.z ));// * aParticleDarkness;
-	vColor = color * light;// + 0.2;
+	vColor      = mix( vec3( 0.9 ), vec3( 0.9, 0.4, 1.0 ), smoothstep( 10.0, 20.0, particleData.z )) * light;
 	
 	gl_Position = uPerspectiveMatrix * uViewMatrix * vec4( particlePosition, 1.0 );
 
