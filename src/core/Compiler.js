@@ -225,7 +225,7 @@ GLOW.Compiler = (function() {
 			name      = attribute.name;
 			
 			if( data[ name ] === undefined ) {
-				console.warn( "GLOW.Compiler.createAttributes: missing declaration for attribute " + name );
+				console.warn( "GLOW.Compiler.createAttributes: missing data for attribute " + name );
 			} else if( data[ name ] instanceof GLOW.Attribute ) {
 				attributes[ name ] = data[ name ];
 			} else {
@@ -326,9 +326,6 @@ GLOW.Compiler = (function() {
 		} else if( data instanceof GLOW.Elements ) {
 			elements = data;
 		} else {
-			if( !( data instanceof Uint16Array )) {
-				data = new Uint16Array( data );
-			}
 			elements = new GLOW.Elements( data, type, usage !== undefined ? usage : GL.STATIC_DRAW );
 		}
 
