@@ -55,7 +55,9 @@ GLOW.CompiledData = (function() {
     	var i;
     	for( i in this.interleavedAttributes ) {
     	    if( except[ i ] ) {
-    	        clone.interleavedAttributes[ i ] = new GLOW.InterleavedAttributes( except[ i ] );
+// This really needs some cleaning up... somehow.
+//    	        clone.interleavedAttributes[ i ] = new GLOW.InterleavedAttributes( except[ i ] );
+    	        clone.interleavedAttributes[ i ] = except[ i ];
     	    } else {
     	        clone.interleavedAttributes[ i ] = this.interleavedAttributes[ i ];
     	    }
