@@ -38,12 +38,16 @@ GLOW.Attribute = (function() {
         this.name = parameters.name;
         this.type = parameters.type;
 
+        if( this.data.length / this.size > 65536 ) {
+            console.warn( "GLOW.Attribute.constructor: Unreachable attribute. Elements cannot reach attribute data beyond index 65535. Please split into several shaders." );
+        }
+
+        if( this.data.constructor.toString().indexOf( " Array()") !== -1 ) {
+            this.data = new Float32Array( this.data );
+        }
+
         if( this.interleaved === false ) {
-            if( this.data instanceof Float32Array ) {
-                this.bufferData( this.data, this.usage );
-            } else {
-                console.error( "GLOW.Attribute.constructor: Data for attribute " + this.name + " not in Float32Array format. Please fix. Quitting." );
-            }
+            this.bufferData( this.data, this.usage );
         }
     }
 
