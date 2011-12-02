@@ -10,6 +10,7 @@ var Complicated = (function() {
  
     var cameraFBO              = new GLOW.Camera( { near: 0.1, far: 8000, aspect: 1 } );
     var camera                 = new GLOW.Camera( { near: 0.1, far: 8000 } );
+    var cameraShadow           = new GLOW.Camera( { near: 0.1, far: 8000, ortho: { left: -3000, right: 3000, top: 3000, bottom: -3000 } } );
     var animalNode             = new GLOW.Node();
     var particleSimulationNode = new GLOW.Node();
     var particleRenderNode     = new GLOW.Node();
@@ -28,6 +29,7 @@ var Complicated = (function() {
     var currentAnimalIndex = 0;
     var currentAnimal      = animals[ 0 ];
     var nextAnimal         = animals[ 1 ];
+    var mouseX             = 0;
 
     // Shaders and shader configuration objects
     // The undefines in the configs will be set
@@ -87,7 +89,11 @@ var Complicated = (function() {
         }
     };
     
-    var particleRenderShader;
+    // The particle render shader uses the data that the
+    // particle simulation shader has written and renders
+    // the actual 3D-particle to the screen
+    
+    var particleRenderShaders;
     var particleRenderShaderConfig = {
         vertexShader:       undefined,
         fragmentShader:     undefined,
@@ -98,9 +104,30 @@ var Complicated = (function() {
             uParticlesFBO:          undefined,
             aParticlePositions:     undefined,
             aParticleDirections:    undefined,
-            aParticleColors:        undefined
+            aParticleNormals:       undefined,
+            aParticleDarkness:      undefined
         }
     };
+    
+    // The shadow render shader draws the particles to the shadow
+    // FBO, which then is displayed on a plane using the particle
+    // shadow dislpay shader
+    
+    var shadowRenderShaders;
+    var shadowRenderShaderConfig = {
+        vertexShader:       undefined,
+        fragmentShader:     undefined,
+        triangles:          undefined,
+        data: {
+            uOrthoMatrix:           cameraShadow.projection,
+            uViewMatrix:            particleRenderNode.viewMatrix,
+            uParticlesFBO:          undefined,
+            aParticlePositions:     undefined,
+            aParticleDirections:    undefined,
+        }
+    } 
+    
+    // temp
     
     var depthToScreenShader;
     var depthToScreenShaderConfig = {
@@ -121,7 +148,7 @@ var Complicated = (function() {
             
             // the things we want to load...
             
-            animal:                     "animals_A_life.js",
+            animal:                     "animals.js",
             depthShader:                "Depth.glsl",
             particleSimulationShader:   "ParticleSimulation.glsl",
             particleRenderShader:       "ParticleRender.glsl",
@@ -141,6 +168,9 @@ var Complicated = (function() {
                     alert( "Couldn't initialize WebGL" );
                     return;
                 }
+                
+                var a = new Array( 10 );
+                var b = new Float32Array( 10 );
                 
                 context.setupClear( { red: 1, green: 1, blue: 1 } );
 //                context.domElement.style.position = 'absolute';
@@ -274,13 +304,15 @@ var Complicated = (function() {
                 
                 var particlePositions = [];
                 var particleDirections = [];
+                var particleDarkness = [];
                 var particleTriangles = [];
                 var particleUVs = [];
                 var simulationPoints = [];
                 var simulationPositions = [];
                 var simulationDataXYUVs = [];
                 var simulationData = [];
-                var y, z, u, v, s;
+                var vec3 = new GLOW.Vector3();
+                var x, y, z, u, v, s;
                 for( var i = 0; i < numParticles; i++ ) {
 
                     // First simulation specific stuff...
@@ -311,9 +343,19 @@ var Complicated = (function() {
                     // and render missmatch we need to store them once for the simulation
                     // and once for the render (further down below) 
 
-                    y = Math.random() * 1500 - 800;
+                    vec3.set( Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5 );
+                    vec3.normalize();
+                    vec3.multiplyScalar( Math.random() * 1500 );
+
+                    x = vec3.value[ 0 ];//Math.random() * 1500 - 800;
+                    y = vec3.value[ 1 ];//Math.random() * 2000 - 1000;
+                    z = vec3.value[ 2 ];//Math.random() * 2000 - 1000;
+
+                    x = Math.random() * 1500 - 800;
+                    y = Math.random() * 2000 - 1000;
                     z = Math.random() * 2000 - 1000;
                     
+                    simulationPositions.push( x );
                     simulationPositions.push( y );
                     simulationPositions.push( z );
 
@@ -337,10 +379,10 @@ var Complicated = (function() {
                     
                     // Save the positions for each particle (we created y and z above) 
                     
-                    particlePositions.push( y ); particlePositions.push( z ); 
-                    particlePositions.push( y ); particlePositions.push( z ); 
-                    particlePositions.push( y ); particlePositions.push( z ); 
-                    particlePositions.push( y ); particlePositions.push( z ); 
+                    particlePositions.push( x ); particlePositions.push( y ); particlePositions.push( z ); 
+                    particlePositions.push( x ); particlePositions.push( y ); particlePositions.push( z ); 
+                    particlePositions.push( x ); particlePositions.push( y ); particlePositions.push( z ); 
+                    particlePositions.push( x ); particlePositions.push( y ); particlePositions.push( z ); 
                     
                     // because the amount of elements in the renderer and the 
                     // simulation missmatch, we need to store the UVs again
@@ -411,17 +453,30 @@ var Complicated = (function() {
                 
                 particleSimulationShader = new GLOW.Shader( particleSimulationShaderConfig );
 
-                // Setup the config and create particle render shader 
+                // Setup the shader config for the particle render 
 
                 particleRenderShaderConfig.vertexShader             = result.particleRenderShader.vertexShader;
                 particleRenderShaderConfig.fragmentShader           = result.particleRenderShader.fragmentShader;
-                particleRenderShaderConfig.triangles                = new Uint16Array( particleTriangles );
-                particleRenderShaderConfig.data.aParticleUVs        = new Float32Array( particleUVs );
-                particleRenderShaderConfig.data.aParticlePositions  = new Float32Array( particlePositions );
-                particleRenderShaderConfig.data.aParticleDirections = new Float32Array( particleDirections );
+                particleRenderShaderConfig.triangles                = particleTriangles;
+                particleRenderShaderConfig.data.aParticleUVs        = particleUVs;
+                particleRenderShaderConfig.data.aParticlePositions  = particlePositions;
+                particleRenderShaderConfig.data.aParticleDirections = particleDirections;
+                particleRenderShaderConfig.data.aParticleNormals    = undefined;            // calculated below
+                particleRenderShaderConfig.data.aParticleDarkness   = undefined;            // calculated below
                 particleRenderShaderConfig.data.uParticlesFBO       = particlesFBO;
-
-                particleRenderShader = new GLOW.Shader( particleRenderShaderConfig );
+                
+                // flat shade the particles, compute normals and then, because we get higher
+                // element indices than 65536, split it into several shaders  
+                
+                var attributeDataSizes = { aParticleUVs: 2, 
+                                           aParticlePositions: 3,
+                                           aParticleDirections: 3,
+                                           aParticleNormals: 3 };
+                
+                GLOW.Geometry.flatShade( particleRenderShaderConfig, attributeDataSizes );
+                particleRenderShaderConfig.data.aParticleNormals  = GLOW.Geometry.faceNormals( particleRenderShaderConfig.data.aParticleDirections, particleRenderShaderConfig.triangles );
+                particleRenderShaderConfig.data.aParticleDarkness = GLOW.Geometry.randomArray( particleRenderShaderConfig.triangles.length, 0.5, 0.4, 3 );
+                particleRenderShaders = GLOW.ShaderUtils.createMultiple( particleRenderShaderConfig, attributeDataSizes );
 
 
                 // create depth to screen shader
@@ -439,6 +494,10 @@ var Complicated = (function() {
                 document.onclick = function() {
                     changeAnimal = true;
                 };
+                
+                document.onmousemove = function( e ) {
+                    mouseX = ( e.clientX - window.innerWidth * 0.5 ) / window.innerWidth;
+                }
                 
                 /*
                 
@@ -462,12 +521,14 @@ var Complicated = (function() {
         
         // update animal, particle simulation and render nodes
         
+        var rotation = Math.PI * 2 * mouseX + Math.PI * 0.5;
+        
         animalNode.localMatrix.setPosition( 0, -1050, -4000 );
-        animalNode.localMatrix.addRotation( 0, 0.01, 0 );
+        animalNode.localMatrix.setRotation( 0.0, rotation, 0.0 );
         animalNode.update( undefined, cameraFBO.inverse );
         
         particleSimulationNode.localMatrix.setPosition( 0, 0, -4000 );
-        particleSimulationNode.localMatrix.setRotation( 0.0, 3.141596 * 0.3, 0.0 );
+        particleSimulationNode.localMatrix.setRotation( 0.0, rotation, 0.0 );
         particleSimulationNode.update( undefined, cameraFBO.inverse );
 
         particleRenderNode.localMatrix.copy( particleSimulationNode.localMatrix );
@@ -535,7 +596,9 @@ var Complicated = (function() {
         particlesFBO.unbind();
 
         context.enableDepthTest( true );
-        particleRenderShader.draw();
+        
+        for( var i = 0; i < particleRenderShaders.length; i++ )
+            particleRenderShaders[ i ].draw();
 
         // draw to screen (temp)
 
