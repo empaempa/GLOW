@@ -1,10 +1,10 @@
 //# ParticleSimulationVertex
 
 attribute	vec4	aSimulationDataXYUVs;
-attribute	vec2	aSimulationPositions;
+attribute	vec3	aSimulationPositions;
 
 varying		vec2	vSimulationDataUV;
-varying		vec2	vSimulationPositions;
+varying		vec3	vSimulationPositions;
 
 void main(void) {
 	vSimulationDataUV    = aSimulationDataXYUVs.zw;
@@ -14,13 +14,15 @@ void main(void) {
 
 //# ParticleSimulationFragment
 
+const		float		PI = 3.14159265;
+
 uniform     mat4    	uViewMatrix;
 uniform     mat4    	uPerspectiveMatrix;
 uniform		sampler2D	uDepthFBO;
 uniform		sampler2D	uParticlesFBO;
 
 varying		vec2	vSimulationDataUV;
-varying		vec2	vSimulationPositions;
+varying		vec3	vSimulationPositions;
 
 void main( void ) {
 	
@@ -38,17 +40,16 @@ void main( void ) {
 	float oldTime = particleData.x;
 	
 	if( particleProjected.z > frontDepthLuminence.x && particleProjected.z < backDepthLuminence.x ) {
-		particleData.x  = mod( particleData.x + 0.005, 1.0 );	// time
-		particleData.y += 0.2;									// rotation
-		particleData.z  = 25.0;//min( 20.0, particleData.z + 10.0 );	// size
+		particleData.y += 0.05;									// rotation
+		particleData.z  = min( 35.0, particleData.z + 10.0 );	// size
 	} else {
-		particleData.x  = mod( particleData.x + 0.005, 1.0 );	// time
-		particleData.y += 0.1;									// rotation
-		particleData.z  = max( 2.0, particleData.z - 1.0 );		// size
+		particleData.y += 0.05;									// rotation
+		particleData.z  = max( 10.0, particleData.z - 2.0 );	// size
 	}
 
-	particleData.w = max( 0.1, particleData.w + ( frontDepthLuminence.y - particleData.w ) * 0.1 );	// luminence
+	particleData.x  = mod( particleData.x + 0.006, 1.0 );							// time
+	particleData.z *= 1.0 - smoothstep( 1000.0, 1500.0, abs( particlePosition.x ));	// size in the ends
+	particleData.w  = frontDepthLuminence.y;										// luminence
 	
     gl_FragColor = particleData;
 }
-

@@ -1,13 +1,18 @@
 //# ParticleRenderVertex
+
+const		float		PI = 3.14159265;
+
 uniform     mat4    	uViewMatrix;
 uniform     mat4    	uPerspectiveMatrix;
 uniform		sampler2D	uParticlesFBO;
 
 attribute	vec2	aParticleUVs;
-attribute	vec2	aParticlePositions;
+attribute	vec3	aParticlePositions;
 attribute	vec3	aParticleDirections;
+attribute	vec3	aParticleNormals;
+attribute	float	aParticleDarkness;
 
-varying		float	vLuminence;
+varying		vec3	vColor;
 
 void main(void)
 {
@@ -15,20 +20,28 @@ void main(void)
 	
 	vec4 particleData = texture2D( uParticlesFBO, aParticleUVs );
 	vec3 particlePosition = vec3( particleData.x * 3000.0 - 1500.0, aParticlePositions.x, aParticlePositions.y );
+//	vec3 particlePosition = sin( particleData.x * PI * 2.0 ) * aParticlePositions;
 	
 	// particle rotation and size
 	
-	float cosRot = cos( particleData.y );
-	float sinRot = sin( particleData.y );
+	float cosRot = cos( -particleData.y );
+	float sinRot = sin( -particleData.y );
 
 	vec3 rotatedDirection;
-	rotatedDirection.x = ( cosRot * aParticleDirections.x - sinRot * aParticleDirections.y );
-	rotatedDirection.y = ( sinRot * aParticleDirections.x + cosRot * aParticleDirections.y );
+	rotatedDirection.x = cosRot * aParticleDirections.x - sinRot * aParticleDirections.y;
+	rotatedDirection.y = sinRot * aParticleDirections.x + cosRot * aParticleDirections.y;
 	rotatedDirection.z = aParticleDirections.z;
 
 	particlePosition += rotatedDirection * particleData.z;
 	
-	vLuminence = particleData.w;
+	vec3 rotatedNormal;
+	rotatedNormal.x = cosRot * aParticleNormals.x - sinRot * aParticleNormals.y;
+	rotatedNormal.y = sinRot * aParticleNormals.x + cosRot * aParticleNormals.y;
+	rotatedNormal.z = aParticleNormals.z;
+
+	float light = dot( vec3( 0.0, 1.0, 0.0 ), rotatedNormal ) + 1.0;
+	vec3  color = mix( vec3( 0.9 ), vec3( 0.9, 0.4, 1.0 ), smoothstep( 10.0, 20.0, particleData.z ));// * aParticleDarkness;
+	vColor = color * light;// + 0.2;
 	
 	gl_Position = uPerspectiveMatrix * uViewMatrix * vec4( particlePosition, 1.0 );
 
@@ -37,9 +50,9 @@ void main(void)
 
 //# ParticleRenderFragment
 
-varying float vLuminence;
+varying vec3 vColor;
 
 void main( void ) {
-    gl_FragColor = vec4( vLuminence, vLuminence, vLuminence, 1.0 );
+    gl_FragColor = vec4( vColor, 1.0 );
 }
 
