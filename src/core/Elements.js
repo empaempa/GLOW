@@ -16,6 +16,10 @@ GLOW.Elements = (function() {
         this.length = data.length;
         this.type = type !== undefined ? type : GL.TRIANGLES;
 
+		if( !( data instanceof Uint16Array )) {
+			data = new Uint16Array( data );
+		}
+
         GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, this.elements );
         GL.bufferData( GL.ELEMENT_ARRAY_BUFFER, data, usage ? usage : GL.STATIC_DRAW );
     }
