@@ -258,25 +258,8 @@ var Complicated = (function() {
 
                 // Now to the fun part, setting up the shaders and FBOs...
                 
-                // First we create the depth shader, which renders the animal
-                // into the depth FBO.
-                // We set dummy vertex and color data as we're overwriting the buffer
-                // later with the frames create above.
-                
-                depthShaderConfig.vertexShader              = loadedData.depthShader.vertexShader;
-                depthShaderConfig.fragmentShader            = loadedData.depthShader.fragmentShader;
-                depthShaderConfig.triangles                 = new Uint16Array( animalTriangles );
-                depthShaderConfig.data.aVertexAnimalAFrame0 = new Float32Array( 1 );
-                depthShaderConfig.data.aVertexAnimalAFrame1 = new Float32Array( 1 );
-                depthShaderConfig.data.aVertexAnimalBFrame0 = new Float32Array( 1 );
-                depthShaderConfig.data.aVertexAnimalBFrame1 = new Float32Array( 1 );
-                depthShaderConfig.data.aColorAnimalA        = new Float32Array( 1 );
-                depthShaderConfig.data.aColorAnimalB        = new Float32Array( 1 );
-                
-                depthShader = new GLOW.Shader( depthShaderConfig );
-
-                // Now it's time to create particle simulation and render shader
-                // First generate the particle data that we need for the simulation
+                // First we create all the data we need for the particle simulation shader,
+                // particle render shader and the particle FBO.
                 
                 var particlePositions = [];
                 var particleDirections = [];
@@ -287,8 +270,7 @@ var Complicated = (function() {
                 var simulationPositions = [];
                 var simulationDataXYUVs = [];
                 var simulationData = [];
-                var vec3 = new GLOW.Vector3();
-                var x, y, z, u, v, s;
+                var y, z, u, v, s;
                 for( var i = 0; i < numParticles; i++ ) {
 
                     // First simulation specific stuff...
@@ -302,19 +284,20 @@ var Complicated = (function() {
                     
                     // The simulation data XYUV is for sampling and writing
                     // For sampling the data, we need UV (0->1) and for 
-                    // writing the data, we need XY (0->squareParticles). We 
+                    // writing the data, we need XY (-1->1). We 
                     // cram both XY and UV into a vec4. Note the weird 
                     // numbers in the formula for write position XY - I can't
-                    // really explain why it needs to be like this to work, if
-                    // you do please contact me
+                    // really explain why it needs to be like this to work. If
+                    // you do please contact me.
 
-                    u = i % squareParticles;
-                    v = Math.floor( i / squareParticles );
+                    u =           ( i % squareParticles ) / squareParticles;
+                    v = Math.floor( i / squareParticles ) / squareParticles;
                     
-                    simulationDataXYUVs.push( u * 1.001 / squareParticles * 2 - 0.999 );    // write position X (-1 -> 1)
-                    simulationDataXYUVs.push( v * 1.001 / squareParticles * 2 - 0.999 );    // write position Y (-1 -> 1)
-                    simulationDataXYUVs.push( u /= squareParticles );                       // read position U (0 -> 1)
-                    simulationDataXYUVs.push( v /= squareParticles );                       // read position V (0 -> 1)
+
+                    simulationDataXYUVs.push( u * 2.002 - 0.999 );    // write position X (-1 -> 1)
+                    simulationDataXYUVs.push( v * 2.002 - 0.999 );    // write position Y (-1 -> 1)
+                    simulationDataXYUVs.push( u );                    // read position U (0 -> 1)
+                    simulationDataXYUVs.push( v );                    // read position V (0 -> 1)
 
                     // This is the particle YZ. We calculate the X using the time
                     // stored in the FBO. As the amount of elements for the simulation
@@ -399,10 +382,14 @@ var Complicated = (function() {
                     alert( "Your graphics card doesn't support floating point textures. Sorry!" );
                     return;
                 }
+                
+                if( !context.maxVertexTextureImageUnits() ) {
+                    alert( "Your graphics card and browser combination doesn't supprt vertex shader textures. Sorry!" );
+                    return;
+                }
 
                 depthFBO = new GLOW.FBO( { width: 256, 
                                            height: 128, 
-                                           type: GL.FLOAT,
                                            magFilter: GL.NEAREST, 
                                            minFilter: GL.NEAREST,
                                            clear: { alpha: 0 } } ); 
@@ -457,6 +444,24 @@ var Complicated = (function() {
                 // returns an array of shaders 
 
                 particleRenderShaders = GLOW.ShaderUtils.createMultiple( particleRenderShaderConfig, attributeDataSizes );
+
+                // Lastly lets create the depth shader, which renders the animal
+                // into the depth FBO.
+                // We set dummy vertex and color data as we're overwriting the buffer
+                // later with the frames create above. The depth FBO will be created
+                // later and bound before drawing this shader.
+                
+                depthShaderConfig.vertexShader              = loadedData.depthShader.vertexShader;
+                depthShaderConfig.fragmentShader            = loadedData.depthShader.fragmentShader;
+                depthShaderConfig.triangles                 = new Uint16Array( animalTriangles );
+                depthShaderConfig.data.aVertexAnimalAFrame0 = new Float32Array( 1 );
+                depthShaderConfig.data.aVertexAnimalAFrame1 = new Float32Array( 1 );
+                depthShaderConfig.data.aVertexAnimalBFrame0 = new Float32Array( 1 );
+                depthShaderConfig.data.aVertexAnimalBFrame1 = new Float32Array( 1 );
+                depthShaderConfig.data.aColorAnimalA        = new Float32Array( 1 );
+                depthShaderConfig.data.aColorAnimalB        = new Float32Array( 1 );
+                
+                depthShader = new GLOW.Shader( depthShaderConfig );
 
                 // This shader is for debug use only
                 

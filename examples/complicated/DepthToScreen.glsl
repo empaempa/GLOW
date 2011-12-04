@@ -17,5 +17,5 @@ varying		vec2		vUV;
 
 void main(void) {
 //    gl_FragColor = vec4( smoothstep( 0.0, 5000.0, texture2D( uFBO, vUV ).a ) * 0.8 + 0.2, 0.0, 0.0, 1.0 );
-    gl_FragColor = texture2D( uFBO, vUV );
+    gl_FragColor = texture2D( uFBO, vUV ).rrra;
 }

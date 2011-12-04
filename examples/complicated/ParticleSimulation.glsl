@@ -32,6 +32,7 @@ void main( void ) {
 	vec4 particlePosition = vec4( particleData.x * 4000.0 - 2000.0, vSimulationPositions.x, vSimulationPositions.y, 1.0 );
 	vec4 particleProjected = uPerspectiveMatrix * uViewMatrix * particlePosition;
 	vec2 particleUV = ( particleProjected.xy / particleProjected.w ) * 0.5 + 0.5;
+	particleUV = clamp( particleUV, vec2( 0.0, 0.0), vec2( 1.0, 1.0 ));
 	particleProjected.z = smoothstep( 0.0, 8000.0, particleProjected.z );
 	
 	// sample volume back and front depth and luminence
