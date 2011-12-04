@@ -257,6 +257,14 @@ GLOW.Context = (function() {
             return undefined;
         }
     };
+    
+    GLOWContext.prototype.getParameter = function( parameter ) {
+        return GL.getParameter( parameter );
+    };
+    
+    GLOWContext.prototype.maxVertexTextureImageUnits = function() {
+        return this.getParameter( GL.MAX_VERTEX_TEXTURE_IMAGE_UNITS );
+    }
 	
 	return GLOWContext;
 })();
