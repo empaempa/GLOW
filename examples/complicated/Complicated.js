@@ -3,8 +3,8 @@ var Complicated = (function() {
     // General variables 
     
     var context;
-    var squareParticles = 128;
-    var numParticles = squareParticles * squareParticles;
+    var sqrtParticles = 128;
+    var numParticles = sqrtParticles * sqrtParticles;
 
     // Cameras, nodes and FBOs (which will be created later)
  
@@ -82,6 +82,7 @@ var Complicated = (function() {
         data: {
             uPerspectiveMatrix:         cameraFBO.projection,
             uViewMatrix:                particleSimulationNode.viewMatrix,
+            uViewportSize:              new GLOW.Vector2( sqrtParticles, sqrtParticles ),
             uDepthFBO:                  undefined,
             uParticlesFBO:              undefined,
             aSimulationDataPositions:   undefined,
@@ -268,7 +269,7 @@ var Complicated = (function() {
                 var particleUVs = [];
                 var simulationPoints = [];
                 var simulationPositions = [];
-                var simulationDataXYUVs = [];
+                var simulationDataXYs = [];
                 var simulationData = [];
                 var y, z, u, v, s;
                 for( var i = 0; i < numParticles; i++ ) {
@@ -282,24 +283,18 @@ var Complicated = (function() {
                     
                     simulationPoints.push( i );
                     
-                    // The simulation data XYUV is for sampling and writing
-                    // For sampling the data, we need UV (0->1) and for 
-                    // writing the data, we need XY (-1->1). We 
-                    // cram both XY and UV into a vec4. Note the weird 
-                    // numbers in the formula for write position XY - I can't
-                    // really explain why it needs to be like this to work. If
-                    // you do please contact me.
+                    // The simulation data XY is for reading/writing data fromt/to the FBO
+                    // For reading the data in the particle renderer we need UV (0->1) and for 
+                    // writing the data in the particle simulation we need XY (-1->1). Reading
+                    // the data in the particle simulation is handled using gl_FragCoord
 
-                    u =           ( i % squareParticles ) / squareParticles;
-                    v = Math.floor( i / squareParticles ) / squareParticles;
+                    u =           ( i % sqrtParticles ) / sqrtParticles;
+                    v = Math.floor( i / sqrtParticles ) / sqrtParticles;
                     
+                    simulationDataXYs.push( u * 2 - 1 + 1 / sqrtParticles );    // write position X (-1 -> 1)
+                    simulationDataXYs.push( v * 2 - 1 + 1 / sqrtParticles );    // write position Y (-1 -> 1)
 
-                    simulationDataXYUVs.push( u * 2.002 - 0.999 );    // write position X (-1 -> 1)
-                    simulationDataXYUVs.push( v * 2.002 - 0.999 );    // write position Y (-1 -> 1)
-                    simulationDataXYUVs.push( u );                    // read position U (0 -> 1)
-                    simulationDataXYUVs.push( v );                    // read position V (0 -> 1)
-
-                    // This is the particle YZ. We calculate the X using the time
+                    // This is the particle YZ space position. We calculate the X using the time
                     // stored in the FBO. As the amount of elements for the simulation
                     // and render missmatch we need to store them once for the simulation
                     // and once for the render (further down below) 
@@ -310,7 +305,7 @@ var Complicated = (function() {
                     simulationPositions.push( y );
                     simulationPositions.push( z );
 
-                    // This is the data sent to the particleFBO at start
+                    // This is the data sent to the particleFBO at start - 4 floats per pixel/particle
 
                     simulationData.push( Math.random());                            // x = translation time (0->1)
                     simulationData.push( Math.random() * 2 * 3.1415 );              // y = rotation
@@ -389,13 +384,13 @@ var Complicated = (function() {
                 }
 
                 depthFBO = new GLOW.FBO( { width: 256, 
-                                           height: 128, 
+                                           height: 128,
                                            magFilter: GL.NEAREST, 
                                            minFilter: GL.NEAREST,
                                            clear: { alpha: 0 } } ); 
 
-                particlesFBO = new GLOW.FBO( { width: squareParticles,     
-                                               height: squareParticles, 
+                particlesFBO = new GLOW.FBO( { width: sqrtParticles,     
+                                               height: sqrtParticles, 
                                                type: GL.FLOAT, 
                                                magFilter: GL.NEAREST, 
                                                minFilter: GL.NEAREST, 
@@ -407,7 +402,7 @@ var Complicated = (function() {
                 particleSimulationShaderConfig.vertexShader              = loadedData.particleSimulationShader.vertexShader;
                 particleSimulationShaderConfig.fragmentShader            = loadedData.particleSimulationShader.fragmentShader;
                 particleSimulationShaderConfig.points                    = new Uint16Array( simulationPoints );
-                particleSimulationShaderConfig.data.aSimulationDataXYUVs = new Float32Array( simulationDataXYUVs );
+                particleSimulationShaderConfig.data.aSimulationDataXYs   = new Float32Array( simulationDataXYs );
                 particleSimulationShaderConfig.data.aSimulationPositions = new Float32Array( simulationPositions );
                 particleSimulationShaderConfig.data.uDepthFBO            = depthFBO;
                 particleSimulationShaderConfig.data.uParticlesFBO        = particlesFBO;
@@ -467,10 +462,10 @@ var Complicated = (function() {
                 
                 depthToScreenShaderConfig.vertexShader   = loadedData.depthToScreenShader.vertexShader;
                 depthToScreenShaderConfig.fragmentShader = loadedData.depthToScreenShader.fragmentShader;
-                depthToScreenShaderConfig.data.uFBO      = depthFBO;
+                depthToScreenShaderConfig.data.uFBO      = particlesFBO;
                 depthToScreenShader                      = new GLOW.Shader( depthToScreenShaderConfig );
 
-                // start render
+                // start render (using setInterval as WebGLInspector seems to have problems with requestAnimationFrame)
 
                 setInterval( render, 1000 / 60 );
                 
@@ -578,7 +573,9 @@ var Complicated = (function() {
             particleRenderShaders[ i ].draw();
 
         // debug purposes only
-        // depthToScreenShader.draw();
+        //depthFBO.setupViewport( { x: 128, y: 128, width: 128, height: 128 } );
+        //depthToScreenShader.draw();
+        //depthFBO.setupViewport( { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight } );
         // stats.update();
     }
     

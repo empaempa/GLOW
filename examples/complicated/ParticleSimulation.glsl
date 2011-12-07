@@ -1,15 +1,13 @@
 //# ParticleSimulationVertex
 
-attribute	vec4	aSimulationDataXYUVs;
+attribute	vec2	aSimulationDataXYs;
 attribute	vec2	aSimulationPositions;
 
-varying		vec2	vSimulationDataUV;
 varying		vec2	vSimulationPositions;
 
 void main(void) {
-	vSimulationDataUV    = aSimulationDataXYUVs.zw;
 	vSimulationPositions = aSimulationPositions;
-	gl_Position = vec4( aSimulationDataXYUVs.x, aSimulationDataXYUVs.y, 1.0, 1.0 );
+	gl_Position = vec4( aSimulationDataXYs.x, aSimulationDataXYs.y, 1.0, 1.0 );
 }
 
 //# ParticleSimulationFragment
@@ -18,6 +16,7 @@ const		float		PI = 3.14159265;
 
 uniform     mat4    	uViewMatrix;
 uniform     mat4    	uPerspectiveMatrix;
+uniform		vec2		uViewportSize;
 uniform		sampler2D	uDepthFBO;
 uniform		sampler2D	uParticlesFBO;
 
@@ -28,7 +27,7 @@ void main( void ) {
 	
 	// get data and calculate particle space, projected and UV position
 	
-	vec4 particleData = texture2D( uParticlesFBO, vSimulationDataUV );
+	vec4 particleData = texture2D( uParticlesFBO, gl_FragCoord.xy / uViewportSize );
 	vec4 particlePosition = vec4( particleData.x * 4000.0 - 2000.0, vSimulationPositions.x, vSimulationPositions.y, 1.0 );
 	vec4 particleProjected = uPerspectiveMatrix * uViewMatrix * particlePosition;
 	vec2 particleUV = ( particleProjected.xy / particleProjected.w ) * 0.5 + 0.5;
