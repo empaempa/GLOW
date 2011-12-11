@@ -18,7 +18,7 @@ void main(void)
 	// particle position
 	
 	vec4 particleData = texture2D( uParticlesFBO, aParticleUVs );
-	vec3 particlePosition = vec3( particleData.x * 4000.0 - 2000.0, aParticlePositions.x, aParticlePositions.y );
+	vec3 particlePosition = vec3( particleData.x * 2000.0 - 1000.0, aParticlePositions.x, aParticlePositions.y );
 	
 	// particle rotation and size
 	
@@ -41,8 +41,8 @@ void main(void)
 
 	// light and color
 
-	float light = dot( vec3( 0.0, 1.0, 0.0 ), rotatedNormal ) + 1.0;
-	vColor      = mix( vec3( 0.9 ), vec3( 0.9, 0.4, 1.0 ), smoothstep( 10.0, 20.0, particleData.z )) * light;
+	float light = ( dot( vec3( 0.0, 1.0, 0.0 ), rotatedNormal ) + 1.0 ) * 0.75 + 0.5;
+	vColor      = mix( vec3( 0.9 ), vec3( 0.3 ), smoothstep( 10.0, 20.0, particleData.z )) * light * particleData.w;
 	
 	gl_Position = uPerspectiveMatrix * uViewMatrix * vec4( particlePosition, 1.0 );
 

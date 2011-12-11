@@ -10,12 +10,12 @@ var Complicated = (function() {
  
     var cameraFBO              = new GLOW.Camera( { near: 0.1, far: 8000, aspect: 1 } );
     var camera                 = new GLOW.Camera( { near: 0.1, far: 8000 } );
-    var cameraShadow           = new GLOW.Camera( { near: 0.1, far: 8000, ortho: { left: -3000, right: 3000, top: 3000, bottom: -3000 } } );
     var animalNode             = new GLOW.Node();
     var particleSimulationNode = new GLOW.Node();
     var particleRenderNode     = new GLOW.Node();
     var depthFBO;
     var particlesFBO;
+    var postFBO;
     
     // Animation variables
     
@@ -24,12 +24,13 @@ var Complicated = (function() {
     var animationSpeed     = 0.2;
     var animalMorph        = 0;
     var changeAnimal       = false;
-    var animals            = [ "horse", "bearbrown", "mountainlion", "deer", "goldenretreiver", "fox", "seal", "chow", "bunny", "frog", "raccoon" ];
-    var animalsScale       = [ 0.7,     0.8,         1.0,            1.0,    1.5,               2.0,   2.0,    2.0,    3.0,      3.0,   3.0       ];
+    var animals            = [ "horse", "bearbrown", "mountainlion", "deer", "goldenretreiver", "fox", "seal", "chow", "raccoon" ];
+    var animalsScale       = [ 0.6,     0.58,        0.9,            0.9,    1.2,               1.7,   1.4,    1.4,    2.0       ];
     var currentAnimalIndex = 0;
     var currentAnimal      = animals[ 0 ];
     var nextAnimal         = animals[ 1 ];
     var mouseX             = 0;
+    var mouseY             = 0;
 
     // Shaders and shader configuration objects.
     // The undefines in the configs will be set
@@ -85,6 +86,7 @@ var Complicated = (function() {
             uViewportSize:              new GLOW.Vector2( sqrtParticles, sqrtParticles ),
             uDepthFBO:                  undefined,
             uParticlesFBO:              undefined,
+            uTime:                      new GLOW.Float( 0.001 ),
             aSimulationDataPositions:   undefined,
             aParticlePositions:         undefined,
         }
@@ -109,6 +111,23 @@ var Complicated = (function() {
             aParticleDarkness:      undefined
         }
     };
+
+    // post effect shader
+    
+    var postShader;
+    var postShaderConfig = {
+        vertexShader:       undefined,
+        fragmentShader:     undefined,
+        triangles:          GLOW.Geometry.Plane.elements(),
+        data: {
+            aVertices:              GLOW.Geometry.Plane.vertices(),
+            aUVs:                   GLOW.Geometry.Plane.uvs(),
+            uFBO0:                  undefined,
+            uFBO1:                  undefined,
+            uFBO2:                  undefined,
+            uFBO3:                  undefined
+        }
+    }
         
     // Temporary debug shader that I've used 
     // to look at the data in the FBOs
@@ -138,6 +157,7 @@ var Complicated = (function() {
             particleSimulationShader:   "ParticleSimulation.glsl",
             particleRenderShader:       "ParticleRender.glsl",
             depthToScreenShader:        "DepthToScreen.glsl",
+            postShader:                 "Post.glsl",
 
             // ...and what we do when they are loaded.
 
@@ -297,10 +317,11 @@ var Complicated = (function() {
                     // This is the particle YZ space position. We calculate the X using the time
                     // stored in the FBO. As the amount of elements for the simulation
                     // and render missmatch we need to store them once for the simulation
-                    // and once for the render (further down below) 
+                    // and once for the render (further down below). We use UV to get an even distribution
+                    // of the particles. 
 
-                    y = Math.random() * 1500 - 800;
-                    z = Math.random() * 2000 - 1000;
+                    y = u * 2000 - 1000;
+                    z = v * 2000 - 1000;
                     
                     simulationPositions.push( y );
                     simulationPositions.push( z );
@@ -345,21 +366,21 @@ var Complicated = (function() {
                     // We use some randomness so not every particle looks
                     // the same.
                     
-                    particleDirections.push( 0.0 + Math.random() * 0.2 );
-                    particleDirections.push( 0.7 + Math.random() * 0.2 );
-                    particleDirections.push( 1.3 + Math.random() * 0.2 );
+                    particleDirections.push( 0.0 + /*Math.random() */ 0.2 );
+                    particleDirections.push( 0.7 + /*Math.random() */ 0.2 );
+                    particleDirections.push( 1.3 + /*Math.random() */ 0.2 );
                     
-                    particleDirections.push( -1.0 + Math.random() * 0.2 );
-                    particleDirections.push(  0.7 + Math.random() * 0.2 );
-                    particleDirections.push( -0.7 + Math.random() * 0.2 );
+                    particleDirections.push( -1.0 + /*Math.random() */ 0.2 );
+                    particleDirections.push(  0.7 + /*Math.random() */ 0.2 );
+                    particleDirections.push( -0.7 + /*Math.random() */ 0.2 );
     				
-    				particleDirections.push(  1.0 + Math.random() * 0.2 );
-    				particleDirections.push(  0.7 + Math.random() * 0.2 );
-    				particleDirections.push( -0.7 + Math.random() * 0.2 );
+    				particleDirections.push(  1.0 + /*Math.random() */ 0.2 );
+    				particleDirections.push(  0.7 + /*Math.random() */ 0.2 );
+    				particleDirections.push( -0.7 + /*Math.random() */ 0.2 );
     				
-    				particleDirections.push(  0.0 + Math.random() * 0.2 );
-    				particleDirections.push( -1.3 + Math.random() * 0.2 );
-    				particleDirections.push(  0.0 + Math.random() * 0.2 );
+    				particleDirections.push(  0.0 + /*Math.random() */ 0.2 );
+    				particleDirections.push( -1.3 + /*Math.random() */ 0.2 );
+    				particleDirections.push(  0.0 + /*Math.random() */ 0.2 );
                 }
 
                 // Now let's enable floating point textures and setup 
@@ -387,7 +408,7 @@ var Complicated = (function() {
                                            height: 128,
                                            magFilter: GL.NEAREST, 
                                            minFilter: GL.NEAREST,
-                                           clear: { alpha: 0 } } ); 
+                                           clear: { red: 0, green: 1, blue: 1, alpha: 0 } } ); 
 
                 particlesFBO = new GLOW.FBO( { width: sqrtParticles,     
                                                height: sqrtParticles, 
@@ -396,6 +417,8 @@ var Complicated = (function() {
                                                minFilter: GL.NEAREST, 
                                                depth: false,
                                                data: new Float32Array( simulationData ) } );
+
+                postFBO = new GLOW.FBO( { clear: { red: 1, green: 1, blue: 1, alpha: 0 }, magFilter: GL.NEAREST, minFilter: GL.NEAREST } )
 
                 // Setup the config and create the particle simulation shader
 
@@ -440,7 +463,7 @@ var Complicated = (function() {
 
                 particleRenderShaders = GLOW.ShaderUtils.createMultiple( particleRenderShaderConfig, attributeDataSizes );
 
-                // Lastly lets create the depth shader, which renders the animal
+                // Lets create the depth shader, which renders the animal
                 // into the depth FBO.
                 // We set dummy vertex and color data as we're overwriting the buffer
                 // later with the frames create above. The depth FBO will be created
@@ -458,6 +481,16 @@ var Complicated = (function() {
                 
                 depthShader = new GLOW.Shader( depthShaderConfig );
 
+                
+                // Lastly, let's create the post shader
+                
+                postShaderConfig.vertexShader   = loadedData.postShader.vertexShader;
+                postShaderConfig.fragmentShader = loadedData.postShader.fragmentShader;
+                postShaderConfig.data.uFBO      = postFBO;
+                
+                postShader = new GLOW.Shader( postShaderConfig );
+
+
                 // This shader is for debug use only
                 
                 depthToScreenShaderConfig.vertexShader   = loadedData.depthToScreenShader.vertexShader;
@@ -474,28 +507,33 @@ var Complicated = (function() {
                 };
                 
                 document.onmousemove = function( e ) {
-                    mouseX = ( e.clientX - window.innerWidth * 0.5 ) / window.innerWidth;
+                    mouseX = ( e.clientX - window.innerWidth  * 0.5 ) / window.innerWidth;
+                    mouseY = ( e.clientY - window.innerHeight * 0.5 ) / window.innerHeight;
                 }
             }
         } );
     };
 
+    var time = 0;
+    
     var render = function() {
         
         // update animal, particle simulation and render nodes
         
         var rotation = Math.PI * 2 * mouseX + Math.PI * 0.5;
         
-        animalNode.localMatrix.setPosition( 0, -1050, -4000 );
+        animalNode.localMatrix.setPosition( 0, -650, -3000 );
         animalNode.localMatrix.setRotation( 0.0, rotation, 0.0 );
         animalNode.update( undefined, cameraFBO.inverse );
         
-        particleSimulationNode.localMatrix.setPosition( 0, 0, -4000 );
+        particleSimulationNode.localMatrix.setPosition( 0, 0, -3000 );
         particleSimulationNode.localMatrix.setRotation( 0.0, rotation, 0.0 );
         particleSimulationNode.update( undefined, cameraFBO.inverse );
 
         particleRenderNode.localMatrix.copy( particleSimulationNode.localMatrix );
         particleRenderNode.update( undefined, camera.inverse );
+    
+        time += 0.01;
     
         // Update animal animation
 		
@@ -534,7 +572,6 @@ var Complicated = (function() {
         // Clear context and cache and we're ready to go rendering
         
 		context.cache.clear();
-        context.clear();
 
         // Draw back and front animal to depth FBO
         // We draw back of volume to the left and the front
@@ -559,24 +596,31 @@ var Complicated = (function() {
         context.enableDepthTest( false );
         
         particlesFBO.bind();
+        particleSimulationShader.uTime.set( 0.01 - Math.abs( mouseY ) * 0.0099 );
         particleSimulationShader.draw();
         particlesFBO.unbind();
 
         context.enableDepthTest( true );
-        
+
         // Draw all particles (because we've got indices greater
         // than 65536 we split up the shader into multiple shaders
         // and thus need to loop through all of them to draw all
         // particles)
         
+        postFBO.bind();
+        postFBO.clear();
+        
         for( var i = 0; i < particleRenderShaders.length; i++ )
             particleRenderShaders[ i ].draw();
+
+        postFBO.unbind();
+        postShader.draw();
 
         // debug purposes only
         //depthFBO.setupViewport( { x: 128, y: 128, width: 128, height: 128 } );
         //depthToScreenShader.draw();
         //depthFBO.setupViewport( { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight } );
-        // stats.update();
+        stats.update();
     }
     
     var updateAnimaion = function( animal ) {

@@ -12,11 +12,15 @@
 				overflow:hidden;
 			}
 
-			#glow { position: absolute; top: 10px; left: 10px; z-index:1000; }
+			#glow { position: absolute; top: 10px; left: 20px; z-index:1000; line-height:70%; }
+			#glow a {text-decoration:underline;color:#000;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
 			#glow span.title {margin:0 0 0 1px;border-bottom:8px solid #000;font:bold 12pt/16pt Arial, Helvetica;letter-spacing:1px;line-height:1.50}
-			#glow span.title a {text-decoration:none;color:#000}
+			#glow span.title a {text-decoration:none;color:#000;font:bold 12pt/16pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
 			#glow span.title a:visited {text-decoration:none;color:#000;}
-			#glow span.sub {margin:0 0 0 -1px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
+			#glow span.sub {margin:0 0 0 -6px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;padding-top:8px;display:inline-block;}
+			#glow span.tut {margin:0 0 0 -4px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
+			#glow span.roA {margin:0 0 0 -13px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
+			#glow span.roB {margin:0 0 0 2px;font:bold 6pt/6pt Arial, Helvetica, Sans-serif;text-transform:uppercase;}
 
 		</style>
 	
@@ -32,11 +36,11 @@
             var stats = new Stats();
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.left = '0px';
-            stats.domElement.style.top = '0px';
-//            document.body.appendChild( stats.domElement );
+            stats.domElement.style.top = '150px';
+            //document.body.appendChild( stats.domElement );
 	    </script>
 
-<!--		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">COMPLICATED</span></div> -->
+		<div id="glow"><span class="title"><a href="http://i-am-glow.com/">GLOW</a></span><br/><span class="sub">FBO SIMULATION</span><br/><span class="tut"><a href="http://http://i-am-glow.com/?page_id=183">READ TUTORIAL</a></span><br/><span class="roA">MODELS BY <a href="http://mirada.com/">MIRADA</a></span></br><span class="roB">FROM <a href="http://ro.me">ROME</a></span></div>
 		<div id="container"></div>
 	</body>
 </html>
