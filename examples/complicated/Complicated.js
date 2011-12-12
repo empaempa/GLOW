@@ -498,9 +498,7 @@ var Complicated = (function() {
                 depthToScreenShaderConfig.data.uFBO      = particlesFBO;
                 depthToScreenShader                      = new GLOW.Shader( depthToScreenShaderConfig );
 
-                // start render (using setInterval as WebGLInspector seems to have problems with requestAnimationFrame)
-
-                setInterval( render, 1000 / 60 );
+                // setup mouse
                 
                 document.onclick = function() {
                     changeAnimal = true;
@@ -510,6 +508,14 @@ var Complicated = (function() {
                     mouseX = ( e.clientX - window.innerWidth  * 0.5 ) / window.innerWidth;
                     mouseY = ( e.clientY - window.innerHeight * 0.5 ) / window.innerHeight;
                 }
+
+                // start render (using setInterval as WebGLInspector seems to have problems with requestAnimationFrame)
+
+                setInterval( render, 1000 / 60 );
+                
+                // remove loading
+                
+                document.getElementById( "loading" ).style.visibility = 'hidden'; 
             }
         } );
     };
