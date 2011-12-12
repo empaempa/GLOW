@@ -42,7 +42,7 @@ void main(void)
 	// light and color
 
 	float light = ( dot( vec3( 0.0, 1.0, 0.0 ), rotatedNormal ) + 1.0 ) * 0.75 + 0.5;
-	vColor      = mix( vec3( 0.9 ), vec3( 0.3 ), smoothstep( 10.0, 20.0, particleData.z )) * light * particleData.w;
+	vColor      = mix( vec3( 0.9 ), vec3( 0.5, 0.3, 0.5 ), smoothstep( 10.0, 20.0, particleData.z )) * light * particleData.w;
 	
 	gl_Position = uPerspectiveMatrix * uViewMatrix * vec4( particlePosition, 1.0 );
 
