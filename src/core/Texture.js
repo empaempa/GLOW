@@ -27,7 +27,16 @@ GLOW.Texture = (function() {
 
 	// methods
     GLOWTexture.prototype.init = function() {
-    	if( typeof( this.data ) === "string" ) {
+        if( this.data === undefined && 
+            this.width !== undefined && 
+            this.height !== undefined ) {
+                
+            if( this.type === GL.UNSIGNED_BYTE ) 
+                this.data = new Uint8Array( this.width * this.height * ( this.format === GL.RGBA ? 4 : 3 ));
+            else
+                this.data = new Float32Array( this.width * this.height * ( this.format === GL.RGBA ? 4 : 3 ));
+            
+        } else if( typeof( this.data ) === "string" ) {
         	this.textureType = GL.TEXTURE_2D;
             var originalURL  = this.data;
         	var lowerCaseURL = originalURL.toLowerCase();
@@ -51,7 +60,8 @@ GLOW.Texture = (function() {
     	} else if( this.data instanceof HTMLImageElement ||
     	           this.data instanceof HTMLVideoElement ||
     	           this.data instanceof HTMLCanvasElement ||
-    	           this.data instanceof Uint8Array ) {
+    	           this.data instanceof Uint8Array ||
+    	           this.data instanceof Float32Array ) {
             this.textureType = GL.TEXTURE_2D;
     	    this.createTexture();
     	// cube map
@@ -149,9 +159,7 @@ GLOW.Texture = (function() {
         var yOffset = parameters.yOffset !== undefined ? parameters.yOffset : 0;
         var updateMipmap = parameters.updateMipmap !== undefined ? parameters.updateMipmap : true;
         
-        if( !GLOW.currentContext.cache.textureCached( this )) {
-            GL.bindTexture( this.textureType, this.texture );
-        }
+        GL.bindTexture( this.textureType, this.texture );
 
         if( this.textureType == GL.TEXTURE_2D ) {
             if( this.data instanceof Uint8Array ) {
