@@ -691,7 +691,8 @@ GLOW.CompiledData = (function() {
     			clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
 				if( clone.uniforms[ u ].type === GL.SAMPLER_2D || 
 				    clone.uniforms[ u ].type === GL.SAMPLER_CUBE ) {
-					clone.uniforms[ u ].data.init( this.uniforms[ u ].data.textureUnit );
+					clone.uniforms[ u ].data.init();
+					clone.uniforms[ u ].textureUnit = this.uniforms[ u ].textureUnit; 
 				}
     		} else {
     			clone.uniforms[ u ] = this.uniforms[ u ];
@@ -718,11 +719,13 @@ GLOW.CompiledData = (function() {
     	    }
     	}
 
-    	if( except.elements ) {
-    		clone.elements = new GLOW.Elements( except.elements );
-    	} else {
-    		clone.elements = this.elements;
-    	}
+        if( this.elements ) {
+        	if( except.elements ) {
+        		clone.elements = new GLOW.Elements( except.elements );
+        	} else {
+        		clone.elements = this.elements;
+        	}
+        }
 
         if( except.program ) {
         	clone.program = except.program;
@@ -1122,7 +1125,16 @@ GLOW.Texture = (function() {
 
 	// methods
     GLOWTexture.prototype.init = function() {
-    	if( typeof( this.data ) === "string" ) {
+        if( this.data === undefined && 
+            this.width !== undefined && 
+            this.height !== undefined ) {
+                
+            if( this.type === GL.UNSIGNED_BYTE ) 
+                this.data = new Uint8Array( this.width * this.height * ( this.format === GL.RGBA ? 4 : 3 ));
+            else
+                this.data = new Float32Array( this.width * this.height * ( this.format === GL.RGBA ? 4 : 3 ));
+            
+        } else if( typeof( this.data ) === "string" ) {
         	this.textureType = GL.TEXTURE_2D;
             var originalURL  = this.data;
         	var lowerCaseURL = originalURL.toLowerCase();
@@ -1146,7 +1158,8 @@ GLOW.Texture = (function() {
     	} else if( this.data instanceof HTMLImageElement ||
     	           this.data instanceof HTMLVideoElement ||
     	           this.data instanceof HTMLCanvasElement ||
-    	           this.data instanceof Uint8Array ) {
+    	           this.data instanceof Uint8Array ||
+    	           this.data instanceof Float32Array ) {
             this.textureType = GL.TEXTURE_2D;
     	    this.createTexture();
     	// cube map
@@ -1244,9 +1257,7 @@ GLOW.Texture = (function() {
         var yOffset = parameters.yOffset !== undefined ? parameters.yOffset : 0;
         var updateMipmap = parameters.updateMipmap !== undefined ? parameters.updateMipmap : true;
         
-        if( !GLOW.currentContext.cache.textureCached( this )) {
-            GL.bindTexture( this.textureType, this.texture );
-        }
+        GL.bindTexture( this.textureType, this.texture );
 
         if( this.textureType == GL.TEXTURE_2D ) {
             if( this.data instanceof Uint8Array ) {
@@ -1450,24 +1461,33 @@ GLOW.Elements = (function() {
     // constructor
     function GLOWElements( data, type, usage ) {
         this.id = GLOW.uniqueId();
-        this.elements = GL.createBuffer();
-        this.length = data.length;
         this.type = type !== undefined ? type : GL.TRIANGLES;
+        this.offset = 0;
 
-		if( !( data instanceof Uint16Array )) {
-			data = new Uint16Array( data );
-		}
+        if( typeof( data ) === "number" ) {
+            this.length = data;
+        } else {
+    		if( !( data instanceof Uint16Array )) {
+    			data = new Uint16Array( data );
+    		}
 
-        GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, this.elements );
-        GL.bufferData( GL.ELEMENT_ARRAY_BUFFER, data, usage ? usage : GL.STATIC_DRAW );
+            this.length = data.length;
+            this.elements = GL.createBuffer();
+            GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, this.elements );
+            GL.bufferData( GL.ELEMENT_ARRAY_BUFFER, data, usage ? usage : GL.STATIC_DRAW );
+        }
     }
 
     // methods
     GLOWElements.prototype.draw = function() {
-        if( !GLOW.currentContext.cache.elementsCached( this )) {
-             GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements );
+        if( this.elements !== undefined ) {
+            if( !GLOW.currentContext.cache.elementsCached( this )) {
+                 GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements );
+            }
+            GL.drawElements( this.type, this.length, GL.UNSIGNED_SHORT, this.offset );
+        } else {
+            GL.drawArrays( this.type, this.offset, this.length );
         }
-        GL.drawElements( this.type, this.length, GL.UNSIGNED_SHORT, 0 );
     };
     
     GLOWElements.prototype.dispose = function() {
