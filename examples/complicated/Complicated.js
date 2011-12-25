@@ -457,12 +457,14 @@ var Complicated = (function() {
                 particleRenderShaderConfig.data.aParticleNormals  = GLOW.Geometry.faceNormals( particleRenderShaderConfig.data.aParticleDirections, particleRenderShaderConfig.triangles );
                 particleRenderShaderConfig.data.aParticleDarkness = GLOW.Geometry.randomArray( particleRenderShaderConfig.triangles.length, 0.5, 0.4, 3 );
 
-                // Because we now have higher attribute indices than 65535 we need to create
-                // multiple shaders. We use the brand new shader util createMultiple to this, which
-                // returns an array of shaders 
+                // Because we now have higher attribute indices than 65535 and we've
+                // flat shaded all data, we can now switch to use drawArrays instead
+                // of drawElements. This is done by changing .triangle to a length instead
+                // of an array. We divide the normals array by 3 (xyz) to get the correct length.
+                // Then we create the shader as usual 
 
                 particleRenderShaderConfig.triangles = particleRenderShaderConfig.data.aParticleNormals.length / 3;
-                particleRenderShaders = new GLOW.Shader( particleRenderShaderConfig );// GLOW.ShaderUtils.createMultiple( particleRenderShaderConfig, attributeDataSizes );
+                particleRenderShaders = new GLOW.Shader( particleRenderShaderConfig );
 
                 // Lets create the depth shader, which renders the animal
                 // into the depth FBO.
@@ -609,16 +611,10 @@ var Complicated = (function() {
 
         context.enableDepthTest( true );
 
-        // Draw all particles (because we've got indices greater
-        // than 65536 we split up the shader into multiple shaders
-        // and thus need to loop through all of them to draw all
-        // particles)
+        // Draw all particles 
         
         postFBO.bind();
         postFBO.clear();
-        
-        //for( var i = 0; i < particleRenderShaders.length; i++ )
-        //    particleRenderShaders[ i ].draw();
 
         particleRenderShaders.draw();
 
