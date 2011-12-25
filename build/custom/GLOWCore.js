@@ -719,13 +719,11 @@ GLOW.CompiledData = (function() {
     	    }
     	}
 
-        if( this.elements ) {
-        	if( except.elements ) {
-        		clone.elements = new GLOW.Elements( except.elements );
-        	} else {
-        		clone.elements = this.elements;
-        	}
-        }
+    	if( except.elements ) {
+    		clone.elements = new GLOW.Elements( except.elements );
+    	} else {
+    		clone.elements = this.elements;
+    	}
 
         if( except.program ) {
         	clone.program = except.program;
@@ -1459,10 +1457,10 @@ GLOW.Elements = (function() {
     // private data, functions and initializations here
 
     // constructor
-    function GLOWElements( data, type, usage ) {
+    function GLOWElements( data, type, usage, offset ) {
         this.id = GLOW.uniqueId();
         this.type = type !== undefined ? type : GL.TRIANGLES;
-        this.offset = 0;
+        this.offset = offset !== undefined ? offset : 0;
 
         if( typeof( data ) === "number" ) {
             this.length = data;

@@ -461,7 +461,8 @@ var Complicated = (function() {
                 // multiple shaders. We use the brand new shader util createMultiple to this, which
                 // returns an array of shaders 
 
-                particleRenderShaders = GLOW.ShaderUtils.createMultiple( particleRenderShaderConfig, attributeDataSizes );
+                particleRenderShaderConfig.triangles = particleRenderShaderConfig.data.aParticleNormals.length / 3;
+                particleRenderShaders = new GLOW.Shader( particleRenderShaderConfig );// GLOW.ShaderUtils.createMultiple( particleRenderShaderConfig, attributeDataSizes );
 
                 // Lets create the depth shader, which renders the animal
                 // into the depth FBO.
@@ -616,8 +617,10 @@ var Complicated = (function() {
         postFBO.bind();
         postFBO.clear();
         
-        for( var i = 0; i < particleRenderShaders.length; i++ )
-            particleRenderShaders[ i ].draw();
+        //for( var i = 0; i < particleRenderShaders.length; i++ )
+        //    particleRenderShaders[ i ].draw();
+
+        particleRenderShaders.draw();
 
         postFBO.unbind();
         postShader.draw();
