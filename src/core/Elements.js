@@ -11,8 +11,8 @@ GLOW.Elements = (function() {
 
     // constructor
     function GLOWElements( data, type, usage, offset ) {
-        this.id = GLOW.uniqueId();
-        this.type = type !== undefined ? type : GL.TRIANGLES;
+        this.id     = GLOW.uniqueId();
+        this.type   = type   !== undefined ? type : GL.TRIANGLES;
         this.offset = offset !== undefined ? offset : 0;
 
         if( typeof( data ) === "number" ) {
@@ -33,7 +33,7 @@ GLOW.Elements = (function() {
     GLOWElements.prototype.draw = function() {
         if( this.elements !== undefined ) {
             if( !GLOW.currentContext.cache.elementsCached( this )) {
-                 GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements );
+                 GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, this.elements );
             }
             GL.drawElements( this.type, this.length, GL.UNSIGNED_SHORT, this.offset );
         } else {

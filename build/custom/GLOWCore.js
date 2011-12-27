@@ -349,41 +349,63 @@ GLOW.Compiler = (function() {
 		var attributes            = compiler.createAttributes    ( compiler.extractAttributes( program ), parameters.data, parameters.usage, parameters.interleave );
 		var interleavedAttributes = compiler.interleaveAttributes( attributes, parameters.interleave );
 
-		var elements = parameters.elements;
-		var elementType = GL.TRIANGLES;
-		var usageParameters = parameters.usage ? parameters.usage : {};
-		var elementUsage = usageParameters.elements;
+        if( parameters.elements ) {
+            console.error( "GLOW.Compiler.compile: .elements is no longer supported, please use .indices combined with .primitives" );
+            return;
+        }
+
+		var indices         = parameters.indices;
+		var primitives      = parameters.primitives !== undefined ? parameters.primitives : GL.TRIANGLES;
+		var usageParameters = parameters.usage      !== undefined ? parameters.usage : {};
+		var primitivesUsage = usageParameters.primitives;
 
 		if( parameters.triangles ) {
-		    elements = parameters.triangles;
-		    elementUsage = usageParameters.triangles;
+		    indices         = parameters.triangles;
+		    primitivesUsage = usageParameters.triangles;
 		} else if( parameters.triangleStrip ) {
-		    elements = parameters.triangleStrip;
-		    elementType = GL.TRIANGLE_STRIP;
-		    elementUsage = usageParameters.triangleStrip;
+		    indices         = parameters.triangleStrip;
+		    primitives      = GL.TRIANGLE_STRIP;
+		    primitivesUsage = usageParameters.triangleStrip;
 		} else if( parameters.triangleFan ) {
-		    elements = parameters.triangleFan;
-		    elementType = GL.TRIANGLE_FAN;
-		    elementUsage = usageParameters.triangleFan;
+		    indices         = parameters.triangleFan;
+		    primitives      = GL.TRIANGLE_FAN;
+		    primitivesUsage = usageParameters.triangleFan;
 		} else if( parameters.points ) {
-		    elements = parameters.points;
-		    elementType = GL.POINTS;
-		    elementUsage = usageParameters.points;
+		    indices         = parameters.points;
+		    primitives      = GL.POINTS;
+		    primitivesUsage = usageParameters.points;
 		} else if( parameters.lines ) {
-		    elements = parameters.lines;
-		    elementType = GL.LINES;
-		    elementUsage = usageParameters.lines;
+		    indices         = parameters.lines;
+		    primitives      = GL.LINES;
+		    primitivesUsage = usageParameters.lines;
 		} else if( parameters.lineLoop ) {
-		    elements = parameters.lineLoop;
-		    elementType = GL.LINE_LOOP;
-		    elementUsage = usageParameters.lineLoop;
+		    indices         = parameters.lineLoop;
+		    primitives      = GL.LINE_LOOP;
+		    primitivesUsage = usageParameters.lineLoop;
 		} else if( parameters.lineStrip ) {
-		    elements = parameters.lineStrip;
-		    elementType = GL.LINE_STRIP;
-		    elementUsage = usageParameters.lineStrip;
+		    indices         = parameters.lineStrip;
+		    primitives      = GL.LINE_STRIP;
+		    primitivesUsage = usageParameters.lineStrip;
+		} 
+		
+		if( indices === undefined ) {                    // this is drawArray
+		    for( var a in attributes ) {
+		        indices = attributes[ a ].data.length / attributes[ a ].size;
+		        break;
+		    }
+		    
+		    if( indices === undefined ) {
+		        for( var i in interleavedAttributes ) {
+		            for( var a in interleavedAttributes[ i ].attributes ) {
+		                indices = interleavedAttributes[ i ].attributes[ a ].data.length / interleavedAttributes[ i ].attributes[ a ].size;
+		                break;
+		            }
+		            break;
+		        }
+		    }
 		}
 
-		elements = compiler.createElements( elements, elementType, elementUsage ); 
+		var elements = compiler.createElements( indices, primitives, primitivesUsage ); 
 
         return new GLOW.CompiledData( program, uniforms, attributes, interleavedAttributes, elements, parameters );
 	}
@@ -1458,8 +1480,8 @@ GLOW.Elements = (function() {
 
     // constructor
     function GLOWElements( data, type, usage, offset ) {
-        this.id = GLOW.uniqueId();
-        this.type = type !== undefined ? type : GL.TRIANGLES;
+        this.id     = GLOW.uniqueId();
+        this.type   = type   !== undefined ? type : GL.TRIANGLES;
         this.offset = offset !== undefined ? offset : 0;
 
         if( typeof( data ) === "number" ) {
@@ -1480,7 +1502,7 @@ GLOW.Elements = (function() {
     GLOWElements.prototype.draw = function() {
         if( this.elements !== undefined ) {
             if( !GLOW.currentContext.cache.elementsCached( this )) {
-                 GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.elements );
+                 GL.bindBuffer( GL.ELEMENT_ARRAY_BUFFER, this.elements );
             }
             GL.drawElements( this.type, this.length, GL.UNSIGNED_SHORT, this.offset );
         } else {
@@ -1603,7 +1625,7 @@ GLOW.Attribute = (function() {
         this.type = parameters.type;
 
         if( this.data.length / this.size > 65536 ) {
-            console.warn( "GLOW.Attribute.constructor: Unreachable attribute. Elements cannot reach attribute data beyond index 65535. Please split into several shaders." );
+            console.warn( "GLOW.Attribute.constructor: Unreachable attribute? Please activate GL.drawArrays or split into multiple shaders. Indexed elements cannot reach attribute data beyond 65535." );
         }
 
         if( this.data.constructor.toString().indexOf( " Array()") !== -1 ) {

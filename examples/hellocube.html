@@ -45,7 +45,8 @@
 			// vertexShader: the vertex shader code
 			// fragmentShader: the fragment shader code
 			// data: the uniform, attribute and texture data
-			// elements: the element data 
+			// indices: the primitive's index data
+			// primitives: the type of primitives (defaults to GL.TRIANGLES if left out) 
 		
 			var cubeShaderInfo = {
 				
@@ -110,13 +111,14 @@
 
 					vertices: GLOW.Geometry.Cube.vertices( 500 ),
 					uvs: GLOW.Geometry.Cube.uvs(),
-					normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices(), GLOW.Geometry.Cube.elements())
+					normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices(), GLOW.Geometry.Cube.indices())
 				},
 				
 
 				// create element data
 				
-				elements: GLOW.Geometry.Cube.elements(),
+				indices: GLOW.Geometry.Cube.indices(),
+				primitives: GLOW.Geometry.Cube.primitives()
 			}
 			
 

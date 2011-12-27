@@ -17,7 +17,7 @@ GLOW.Geometry.Plane = {
 		return a;
 	},
 
-	elements: function() {
+	indices: function() {
 
 		var a = new Uint16Array( 2 * 3 );
 		var i = 0;
@@ -39,5 +39,9 @@ GLOW.Geometry.Plane = {
 		a[ i++ ] = 0; a[ i++ ] = 0;
 		
 		return a;
+	},
+	
+	primitives: function() {
+	    return GL.TRIANGLES;
 	}
 }

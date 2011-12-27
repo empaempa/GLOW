@@ -96,13 +96,14 @@
 					// create attribute data
 
 					vertices: GLOW.Geometry.Cube.vertices( 500 ),
-					normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices( 500 ), GLOW.Geometry.Cube.elements())
+					normals: GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices( 500 ), GLOW.Geometry.Cube.indices())
 				},
 				
 
 				// create element data
 				
-				elements: GLOW.Geometry.Cube.elements(),
+				indices: GLOW.Geometry.Cube.indices(),
+				primitives: GLOW.Geometry.Cube.primitives()
 			};
 			
 
@@ -168,9 +169,10 @@
 					uvs: GLOW.Geometry.Plane.uvs()
 				},
 
-				// create elements
+				// create primitives
 
-				elements: GLOW.Geometry.Plane.elements()
+				indices: GLOW.Geometry.Plane.indices(),
+				primitives: GLOW.Geometry.Plane.primitives()
 			};
 			
 			

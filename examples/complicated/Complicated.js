@@ -45,7 +45,7 @@ var Complicated = (function() {
     var depthShaderConfig = {
         vertexShader:       undefined,
         fragmentShader:     undefined,
-        elements:           undefined,
+        indices:            undefined,
         data: {
             uPerspectiveMatrix:     cameraFBO.projection,
             uViewMatrix:            animalNode.viewMatrix,
@@ -118,7 +118,7 @@ var Complicated = (function() {
     var postShaderConfig = {
         vertexShader:       undefined,
         fragmentShader:     undefined,
-        triangles:          GLOW.Geometry.Plane.elements(),
+        triangles:          GLOW.Geometry.Plane.indices(),
         data: {
             aVertices:              GLOW.Geometry.Plane.vertices(),
             aUVs:                   GLOW.Geometry.Plane.uvs(),
@@ -136,7 +136,7 @@ var Complicated = (function() {
     var depthToScreenShaderConfig = {
         vertexShader:   undefined,
         fragmentShader: undefined,
-		elements:       GLOW.Geometry.Plane.elements(),
+		indices:        GLOW.Geometry.Plane.indices(),
         data: {
             aVertices:  GLOW.Geometry.Plane.vertices(),
             aUVs:       GLOW.Geometry.Plane.uvs(),
@@ -315,7 +315,7 @@ var Complicated = (function() {
                     simulationDataXYs.push( v * 2 - 1 + 1 / sqrtParticles );    // write position Y (-1 -> 1)
 
                     // This is the particle YZ space position. We calculate the X using the time
-                    // stored in the FBO. As the amount of elements for the simulation
+                    // stored in the FBO. As the amount of primitives for the simulation
                     // and render missmatch we need to store them once for the simulation
                     // and once for the render (further down below). We use UV to get an even distribution
                     // of the particles. 
@@ -334,7 +334,7 @@ var Complicated = (function() {
                     simulationData.push( 0.1 );                                     // w = luminence
                     
                     // And now the render specfic stuff...
-                    // This is the elements array, containing
+                    // This is the indices array, containing
                     // offset to the data created below. We create
                     // three triangles per particle to get a nice
                     // 3D thingy instead of a simple 2D sprite/point
@@ -351,7 +351,7 @@ var Complicated = (function() {
                     particlePositions.push( y ); particlePositions.push( z ); 
                     particlePositions.push( y ); particlePositions.push( z ); 
                     
-                    // Again, because the amount of elements in the renderer and the 
+                    // Again, because the amount of primitives in the renderer and the 
                     // simulation missmatch, we need to store the UVs again
                     // for the render (we created u and v above)
                     
@@ -459,11 +459,12 @@ var Complicated = (function() {
 
                 // Because we now have higher attribute indices than 65535 and we've
                 // flat shaded all data, we can now switch to use drawArrays instead
-                // of drawElements. This is done by changing .triangle to a length instead
-                // of an array. We divide the normals array by 3 (xyz) to get the correct length.
+                // of drawElements. This is done by setting .triangle to undefined and 
+                // just have the .primitives set to GL.TRIANGLES.
                 // Then we create the shader as usual 
 
-                particleRenderShaderConfig.triangles = particleRenderShaderConfig.data.aParticleNormals.length / 3;
+                particleRenderShaderConfig.triangles  = undefined;
+                particleRenderShaderConfig.primitives = GL.TRIANGLES;
                 particleRenderShaders = new GLOW.Shader( particleRenderShaderConfig );
 
                 // Lets create the depth shader, which renders the animal
