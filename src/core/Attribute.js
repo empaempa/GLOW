@@ -39,7 +39,7 @@ GLOW.Attribute = (function() {
         this.type = parameters.type;
 
         if( this.data.length / this.size > 65536 ) {
-            console.warn( "GLOW.Attribute.constructor: Unreachable attribute. Elements cannot reach attribute data beyond index 65535. Please split into several shaders." );
+            console.warn( "GLOW.Attribute.constructor: Unreachable attribute? Please activate GL.drawArrays or split into multiple shaders. Indexed elements cannot reach attribute data beyond 65535." );
         }
 
         if( this.data.constructor.toString().indexOf( " Array()") !== -1 ) {
