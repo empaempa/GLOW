@@ -49,6 +49,7 @@ EXTRAS_FILES = [
 'extras/geometry/Plane.js',
 'extras/graph/Node.js',
 'extras/graph/Camera.js',
+'extras/io/Load.js',
 'extras/shaders/ShaderUtils.js'
 ]
 
