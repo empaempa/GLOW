@@ -15,9 +15,9 @@ GLOW.Matrix3 = (function() {
 
     // methods
     matrix3.prototype.set = function( m11, m12, m13, m21, m22, m23, m31, m32, m33 ) {
-    	this.value[ 0 ] = m11; this.value[ 4 ] = m12; this.value[ 8 ] = m13;
-    	this.value[ 1 ] = m21; this.value[ 5 ] = m22; this.value[ 9 ] = m23;
-    	this.value[ 2 ] = m31; this.value[ 6 ] = m32; this.value[ 10 ] = m33;
+    	this.value[ 0 ] = m11; this.value[ 3 ] = m12; this.value[ 6 ] = m13;
+    	this.value[ 1 ] = m21; this.value[ 4 ] = m22; this.value[ 7 ] = m23;
+    	this.value[ 2 ] = m31; this.value[ 5 ] = m32; this.value[ 8 ] = m33;
     	return this;
     }
 
