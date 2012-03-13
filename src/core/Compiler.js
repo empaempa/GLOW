@@ -156,9 +156,10 @@ GLOW.Compiler = (function() {
 		var uniforms = {};
 		var uniform;
 		var locationNumber = 0;
+		var numLocations = GL.getProgramParameter( program, GL.ACTIVE_UNIFORMS );
 		var result;
 
-		while( true ) {
+		for( ; locationNumber < numLocations; locationNumber++ ) {
 			result = GL.getActiveUniform( program, locationNumber );
 			if( result !== null && result !== -1 && result !== undefined ) {
                 uniform = {
@@ -170,7 +171,6 @@ GLOW.Compiler = (function() {
                 };
 				uniforms[ uniform.name ] = uniform;
 			} else break;
-			locationNumber++;
 		}
 
 		return uniforms;
@@ -180,11 +180,13 @@ GLOW.Compiler = (function() {
 	//--- extract attributes ---
 	
 	compiler.extractAttributes = function( program ) {
-		var attribute, locationNumber = 0;
 		var attributes = {};
-        var result;
+		var attribute;
+		var locationNumber = 0;
+		var numLocations = GL.getProgramParameter( program, GL.ACTIVE_ATTRIBUTES );
+		var result;
 
-		while( true ) {
+		for( ; locationNumber < numLocations; locationNumber++ ) {
 			result = GL.getActiveAttrib( program, locationNumber );
 			if( result !== null && result !== -1 && result !== undefined ) {
                 attribute = {
@@ -196,7 +198,6 @@ GLOW.Compiler = (function() {
                 }
 				attributes[ attribute.name ] = attribute;
 			} else break;
-			locationNumber++;
 		}
 
 		program.highestAttributeNumber = locationNumber - 1;
@@ -221,9 +222,10 @@ GLOW.Compiler = (function() {
 				uniforms[ name ] = data[ name ];
 			} else {
 				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
-				if( uniforms[ name ].type === GL.SAMPLER_2D || uniforms[ name ].type === GL.SAMPLER_CUBE ) {
+				if( uniforms[ name ].type === GL.SAMPLER_2D || uniforms[ name ].type === GL.SAMPLER_CUBE ) {
 					uniforms[ name ].textureUnit = textureUnit++;
-					uniforms[ name ].data.init();
+					if( uniforms[ name ].data !== undefined )
+						uniforms[ name ].data.init();
 				}
 			}
 		}
@@ -316,7 +318,7 @@ GLOW.Compiler = (function() {
  	    // create interleaved attributes
 	    var name, interleavedAttributes = {};
 	    for( a = 0, al = attributeByIndex.length; a < al; a++ ) {
-	        if( attributeByIndex[ a ] !== undefined ) {
+	        if( attributeByIndex[ a ] !== undefined ) {
 	            name = "";
 	            for( b = 0, bl = attributeByIndex[ a ].length; b < bl; b++ ) {
 	                name += b !== bl - 1 ? attributeByIndex[ a ][ b ].name + "_" : attributeByIndex[ a ][ b ].name;
