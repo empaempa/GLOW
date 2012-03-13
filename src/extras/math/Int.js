@@ -3,14 +3,18 @@
 * @author: Mikael Emtinger, gomo.se
 */
 
-GLOW.Int = (function() {
+GLOW.Int = function( value ) {
 
 	"use strict";
 	
     // constructor
 	function int( value ) {
-    	this.value = new Int32Array( 1 );
-    	this.value[ 0 ] = value !== undefined ? value : 0;
+        if( value.length ) {
+            this.value = new int32Array( value );
+        } else {
+            this.value = new int32Array( 1 );
+            this.value[ 0 ] = value !== undefined ? value : 0;
+        }
 	}
 
     // methods
@@ -45,4 +49,4 @@ GLOW.Int = (function() {
     }
     	
 	return int;
-})();
+}
