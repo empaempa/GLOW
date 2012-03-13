@@ -78,6 +78,18 @@ GLOW.Cache = (function() {
         return false;
     };
 
+    GLOWCache.prototype.interleavedAttributeCached = function( interleavedAttribtue ) {
+        if( this.active ) {
+            var a = 0, al = interleavedAttribtue.attributes.length, attribute;
+            for( ; a < al; a++ ) {
+                attribute = interleavedAttribtue.attributes[ a ];
+                if( this.attributeByLocation[ attribute.locationNumber ] === attribute.id ) return true;
+                this.attributeByLocation[ attribute.locationNumber ] = attribute.id;
+            }
+        }
+        return false;
+    }
+
     GLOWCache.prototype.invalidateAttribute = function( attribute ) {
         this.attributeByLocation[ attribute.locationNumber ] = undefined;
     }

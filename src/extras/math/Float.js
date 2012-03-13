@@ -9,8 +9,12 @@ GLOW.Float = (function() {
 	
     // constructor
 	function float( value ) {
-    	this.value = new Float32Array( 1 );
-    	this.value[ 0 ] = value !== undefined ? value : 0;
+        if( value !== undefined && value.length ) {
+            this.value = new Float32Array( value );
+       } else {
+            this.value = new Float32Array( 1 );
+            this.value[ 0 ] = value !== undefined ? value : 0;
+        }
 	}
 
     // methods

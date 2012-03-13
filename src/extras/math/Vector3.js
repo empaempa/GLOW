@@ -86,7 +86,7 @@ GLOW.Vector3 = (function( x, y, z ) {
     	a = a.value;
     	var ax = a[ 0 ], ay = a[ 1 ], az = a[ 2 ];
     	var vx = this.value[ 0 ], vy = this.value[ 1 ], vz = this.value[ 2 ];
-    	this.value[ 0 ] = ay * vz - az * vy;
+    	this.value[ 0 ] = ay * vz - az * vy;
     	this.value[ 1 ] = az * vx - ax * vz;
     	this.value[ 2 ] = ax * vy - ay * vx;
     	return this;
@@ -173,7 +173,7 @@ GLOW.Vector3 = (function( x, y, z ) {
 
     vector3.prototype.setPositionFromMatrix = function( m ) {
     	m = m.value;
-    	this.value[ 0 ] = m[ 12 ];
+    	this.value[ 0 ] = m[ 12 ];
     	this.value[ 1 ] = m[ 13 ];
     	this.value[ 2 ] = m[ 14 ];
     }

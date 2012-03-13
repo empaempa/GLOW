@@ -47,10 +47,10 @@ GLOW.Load = (function() {
                     parameters[ p ].onreadystatechange = this.onLoadJSON;
                     parameters[ p ].send();
                 } else {
-                    parameters[ p ] = document.createElement( "video" );
-        	        parameters[ p ].scope = this;
-            		parameters[ p ].addEventListener( "loadeddata", this.onLoadVideo, false );
-            	    parameters[ p ].src = originalURL;
+                    parameters[ p ] = document.createElement( "video" );
+                    parameters[ p ].scope = this;
+                    parameters[ p ].addEventListener( "loadeddata", this.onLoadVideo, false );
+                    parameters[ p ].src = originalURL;
                 }
             } 
         }

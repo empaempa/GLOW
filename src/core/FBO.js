@@ -69,7 +69,11 @@ GLOW.FBO = (function() {
     	GL.texParameteri( this.textureType, GL.TEXTURE_MIN_FILTER, minFilter );
 
         if( this.textureType === GL.TEXTURE_2D ) {
-        	GL.texImage2D( this.textureType, 0, internalFormat, this.width, this.height, 0, format, type, data );
+            if( data === null || data instanceof Uint8Array ) {
+                GL.texImage2D( this.textureType, 0, internalFormat, this.width, this.height, 0, format, type, data );
+            } else {
+                GL.texImage2D( this.textureType, 0, internalFormat, format, type, data );
+            }
         } else {
             for( var c in cubeSideOffsets ) {
             	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, internalFormat, this.width, this.height, 0, format, type, data[ c ] );

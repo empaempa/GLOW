@@ -70,7 +70,7 @@
 					"void main(void)",
 					"{",
 						"uv = uvs;",
-						"light = dot( normalize( mat3( rotation[0].xyz, rotation[1].xyz, rotation[2].xyz ) * normals ), vec3( 0.0, 0.0, -1.0 ));",
+						"light = dot( normalize( mat3( rotation[0].xyz, rotation[1].xyz, rotation[2].xyz ) * normals ), vec3( 0.0, 0.0, 1.0 ));",
 						"gl_Position = cameraProjection * cameraInverse * transform * rotation * vec4( vertices, 1.0 );",
 					"}"
 						

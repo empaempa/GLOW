@@ -77,7 +77,11 @@ GLOW.Geometry.Cube = {
 
 		return a;
 	},
-	
+
+	primitives: function() {
+	    return GL.TRIANGLES;
+	},
+
 	uvs: function() {
 		
 		var a = new Float32Array( 6 * 4 * 2 );
@@ -116,8 +120,8 @@ GLOW.Geometry.Cube = {
 		return a;
 	},
 	
-	primitives: function() {
-	    return GL.TRIANGLES;
+	normals: function() {
+		return GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices(), GLOW.Geometry.Cube.indices());
 	}
 }
 

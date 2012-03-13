@@ -64,8 +64,8 @@ GLOW.CompiledData = (function() {
     	    }
     	}
 
-    	if( except.elements ) {
-    		clone.elements = new GLOW.Elements( except.elements );
+    	if( except.indices ) {
+    		clone.elements = new GLOW.Elements( except.indices, except.primitives );
     	} else {
     		clone.elements = this.elements;
     	}

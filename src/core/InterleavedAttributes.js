@@ -7,7 +7,7 @@ GLOW.InterleavedAttributes = (function() {
         this.attributes = attributes;
         
         // interleave data from the attributes
-        var l, ll = attributes[ 0 ].data.length / attributes[ 0 ].size;
+        var l, ll = attributes[ 0 ].data.length / attributes[ 0 ].size;
         var a, al = attributes.length;
         var b, bl;
         var i, indices = [];
