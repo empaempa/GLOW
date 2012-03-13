@@ -10,17 +10,17 @@ GLOW.Camera = function( parameters ) {
 
 	parameters = parameters !== undefined ? parameters : {};
 
-	var fov    = parameters.fov    !== undefined ? parameters.fov    : 40;
-	var aspect = parameters.aspect !== undefined ? parameters.aspect : window.innerWidth / window.innerHeight;
-	var near   = parameters.near   !== undefined ? parameters.near   : 0.1;
-	var far    = parameters.far    !== undefined ? parameters.far    : 10000;
+	this.fov    = parameters.fov    !== undefined ? parameters.fov    : 40;
+	this.aspect = parameters.aspect !== undefined ? parameters.aspect : window.innerWidth / window.innerHeight;
+	this.near   = parameters.near   !== undefined ? parameters.near   : 0.1;
+	this.far    = parameters.far    !== undefined ? parameters.far    : 10000;
 
-	this.useTarget  = parameters.useTarget !== undefined ? parameters.useTarget : true;
+	this.useTarget = parameters.useTarget !== undefined ? parameters.useTarget : true;
 	
 	if( parameters.ortho !== undefined )
-	    this.projection = GLOW.Matrix4.makeOrtho( parameters.ortho.left, parameters.ortho.right, parameters.ortho.top, parameters.ortho.bottom, near, far );
+	    this.projection = GLOW.Matrix4.makeOrtho( parameters.ortho.left, parameters.ortho.right, parameters.ortho.top, parameters.ortho.bottom, this.near, this.far );
 	else
-	    this.projection = GLOW.Matrix4.makeProjection( fov, aspect, near, far );
+	    this.projection = GLOW.Matrix4.makeProjection( this.fov, this.aspect, this.near, this.far );
 
 	this.inverse    = new GLOW.Matrix4();
 	this.target     = new GLOW.Vector3( 0, 0, -100 );
