@@ -29,6 +29,10 @@ COMMON_FILES = [
 MATH_FILES = [
 'extras/math/Float.js',
 'extras/math/Int.js',
+'extras/math/Bool.js',
+'extras/math/Bool2.js',
+'extras/math/Bool3.js',
+'extras/math/Bool4.js',
 'extras/math/Vector2.js',
 'extras/math/Vector3.js',
 'extras/math/Vector4.js',
@@ -39,6 +43,10 @@ MATH_FILES = [
 EXTRAS_FILES = [
 'extras/math/Float.js',
 'extras/math/Int.js',
+'extras/math/Bool.js',
+'extras/math/Bool2.js',
+'extras/math/Bool3.js',
+'extras/math/Bool4.js',
 'extras/math/Vector2.js',
 'extras/math/Vector3.js',
 'extras/math/Vector4.js',
