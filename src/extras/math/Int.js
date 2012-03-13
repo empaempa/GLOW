@@ -9,7 +9,7 @@ GLOW.Int = function( value ) {
 	
     // constructor
 	function int( value ) {
-        if( value.length ) {
+        if( value !== undefined && value.length ) {
             this.value = new int32Array( value );
         } else {
             this.value = new int32Array( 1 );
