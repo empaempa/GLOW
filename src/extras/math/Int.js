@@ -3,7 +3,7 @@
 * @author: Mikael Emtinger, gomo.se
 */
 
-GLOW.Int = function( value ) {
+GLOW.Int = (function() {
 
 	"use strict";
 	
@@ -49,4 +49,5 @@ GLOW.Int = function( value ) {
     }
     	
 	return int;
-}
+})();
+
