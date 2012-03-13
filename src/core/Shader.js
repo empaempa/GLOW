@@ -96,7 +96,9 @@ GLOW.Shader = (function() {
         }
 
         for( var a in compiledData.interleavedAttributes ) {
-            compiledData.interleavedAttributes[ a ].bind();
+            if( !cache.interleavedAttributeCached( compiledData.interleavedAttributes[ a ] )) {
+                compiledData.interleavedAttributes[ a ].bind();
+            }
         }
         
         for( var u in compiledData.uniforms ) {
