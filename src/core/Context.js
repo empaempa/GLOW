@@ -170,7 +170,7 @@ GLOW.Context = (function() {
     GLOWContext.prototype.setupStencilTest = function( setup ) {
         if( setup.func && setup.funcFace ) {
             GL.stencilFuncSeparate( setup.funcFace, setup.func, setup.funcRef, setup.funcMask );
-        } else if( setup.func ) {
+        } else if( setup.func ) {
             GL.stencilFunc( setup.func, setup.funcRef, setup.funcMask );
         }
         

@@ -41,7 +41,7 @@ GLOW.Geometry = {
 	},
 	
 	faceNormals: function( vertices, elements ) {
-		var normals = new Float32Array( vertices.length );
+		var normals = new Array( vertices.length );
 		var e, el = elements.length;
 		var a, b, c;
 		var av = new GLOW.Vector3();
@@ -61,7 +61,7 @@ GLOW.Geometry = {
 			bv.subSelf( av );
 			cv.subSelf( av );
 			
-			nv.cross( cv, bv ).normalize();
+			nv.cross( bv, cv ).normalize();
 			
 			normals[ a + 0 ] = nv.value[ 0 ]; normals[ a + 1 ] = nv.value[ 1 ]; normals[ a + 2 ] = nv.value[ 2 ];
 			normals[ b + 0 ] = nv.value[ 0 ]; normals[ b + 1 ] = nv.value[ 1 ]; normals[ b + 2 ] = nv.value[ 2 ];
@@ -105,7 +105,7 @@ GLOW.Geometry = {
 	    
 	    for( d in attributeSizes ) {
 	        if( vertexShadedData[ d ] ) {
-    	        vertexShadedAttribute = vertexShadedData[ d ];
+    	        vertexShadedAttribute = vertexShadedData[ d ];
     	        flatShadedAttribute   = [];
     	        size                  = attributeSizes[ d ];
 

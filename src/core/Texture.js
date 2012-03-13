@@ -27,6 +27,8 @@ GLOW.Texture = (function() {
 
 	// methods
     GLOWTexture.prototype.init = function() {
+        if( this.texture !== undefined ) return;
+
         if( this.data === undefined && 
             this.width !== undefined && 
             this.height !== undefined ) {
@@ -112,6 +114,7 @@ GLOW.Texture = (function() {
     };
     
     GLOWTexture.prototype.createTexture = function() {
+
        	this.texture = GL.createTexture();
     	GL.bindTexture( this.textureType, this.texture );
 
@@ -128,15 +131,15 @@ GLOW.Texture = (function() {
         	}
     	} else {
     	    for( var c in cubeSideOffsets ) {
-    	        if( this.data[ c ] instanceof Uint8Array || this.data[ c ] instanceof Float32Array ) {
-            	    if( this.width !== undefined && this.height !== undefined ) {
-                    	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data[ c ] );
+                if( this.data[ c ] instanceof Uint8Array || this.data[ c ] instanceof Float32Array ) {
+                    if( this.width !== undefined && this.height !== undefined ) {
+                        GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data[ c ] );
             	    } else {
             	        console.error( "GLOW.Texture.createTexture: Textures of type Uint8Array/Float32Array requires width and height parameters. Quitting." );
-            	        return;
-            	    }
-    	        } else {
-                	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.format, this.type, this.data[ c ] );
+                        return;
+                    }
+                } else {
+                    GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.format, this.type, this.data[ c ] );
     	        }
     	    }
     	}
@@ -152,6 +155,9 @@ GLOW.Texture = (function() {
     };
     
     GLOWTexture.prototype.updateTexture = function( parameters ) {
+
+        if( this.texture === undefined ) return;
+
         parameters = parameters !== undefined ? parameters : {};
         
         var level = parameters.level !== undefined ? parameters.level : 0;
