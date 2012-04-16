@@ -49,7 +49,7 @@ THREE.JSONLoader.prototype.createModel = function ( json, callback, texture_path
 
 		if ( json.version === undefined || json.version != 2 ) {
 
-			console.error( 'Deprecated file format.' );
+			GLOW.error( 'Deprecated file format.' );
 			return;
 
 		}
@@ -131,7 +131,7 @@ THREE.JSONLoader.prototype.createModel = function ( json, callback, texture_path
 			hasFaceColor	    = isBitSet( type, 6 );
 			hasFaceVertexColor  = isBitSet( type, 7 );
 
-			//console.log("type", type, "bits", isQuad, hasMaterial, hasFaceUv, hasFaceVertexUv, hasFaceNormal, hasFaceVertexNormal, hasFaceColor, hasFaceVertexColor);
+			//GLOW.log("type", type, "bits", isQuad, hasMaterial, hasFaceUv, hasFaceVertexUv, hasFaceNormal, hasFaceVertexNormal, hasFaceColor, hasFaceVertexColor);
 
 			if ( isQuad ) {
 
