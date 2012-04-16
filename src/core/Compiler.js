@@ -31,7 +31,7 @@ GLOW.Compiler = (function() {
 		var interleavedAttributes = compiler.interleaveAttributes( attributes, parameters.interleave );
 
         if( parameters.elements ) {
-            console.error( "GLOW.Compiler.compile: .elements is no longer supported, please use .indices combined with .primitives" );
+            GLOW.error( "GLOW.Compiler.compile: .elements is no longer supported, please use .indices combined with .primitives" );
             return;
         }
 
@@ -71,8 +71,10 @@ GLOW.Compiler = (function() {
 		
 		if( indices === undefined ) {                    // this is drawArray
 		    for( var a in attributes ) {
-		        indices = attributes[ a ].data.length / attributes[ a ].size;
-		        break;
+		    	if( attributes[ a ].data ) {
+			        indices = attributes[ a ].data.length / attributes[ a ].size;
+			        break;
+		    	}
 		    }
 		    
 		    if( indices === undefined ) {
@@ -83,6 +85,10 @@ GLOW.Compiler = (function() {
 		            }
 		            break;
 		        }
+		    }
+
+		    if( indices === undefined ) {				// this is fallback length if no attributes exists at compile time
+  			    indices = 0;								 
 		    }
 		}
 
@@ -104,7 +110,7 @@ GLOW.Compiler = (function() {
 		GL.compileShader( vertexShader );
 
 	    if( !GL.getShaderParameter( vertexShader, GL.COMPILE_STATUS )) {
-			console.error( "GLOW.Compiler.compileVertexShader: " + GL.getShaderInfoLog( vertexShader ));
+			GLOW.error( "GLOW.Compiler.compileVertexShader: " + GL.getShaderInfoLog( vertexShader ));
 		}
 		
 		return vertexShader;
@@ -123,7 +129,7 @@ GLOW.Compiler = (function() {
 		GL.compileShader( fragmentShader );
 
 	    if( !GL.getShaderParameter( fragmentShader, GL.COMPILE_STATUS )) {
-			console.error( "GLOW.Compiler.compileFragmentShader: " + GL.getShaderInfoLog( fragmentShader ));
+			GLOW.error( "GLOW.Compiler.compileFragmentShader: " + GL.getShaderInfoLog( fragmentShader ));
 		}
 		
 		return fragmentShader;
@@ -143,7 +149,7 @@ GLOW.Compiler = (function() {
 	    GL.linkProgram ( program );
 
 	    if( !GL.getProgramParameter( program, GL.LINK_STATUS )) {
-			console.error( "GLOW.Compiler.linkProgram: Could not initialise program" );
+			GLOW.error( "GLOW.Compiler.linkProgram: Could not initialise program" );
 	    }
 	
 		return program;
@@ -216,11 +222,12 @@ GLOW.Compiler = (function() {
 		for( u in uniformInformation ) {
 			uniform = uniformInformation[ u ];
 			name    = uniform.name;
-			if( data[ name ] === undefined ) {
-				console.warn( "GLOW.Compiler.createUniforms: missing declaration for uniform " + name );
-			} else if( data[ name ] instanceof GLOW.Uniform ) {
+			if( data[ name ] instanceof GLOW.Uniform ) {
 				uniforms[ name ] = data[ name ];
 			} else {
+				if( data[ name ] === undefined ) {
+					GLOW.warn( "GLOW.Compiler.createUniforms: missing data for uniform " + name + ". Creating anyway, but make sure to set data before drawing." );
+				}
 				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
 				if( uniforms[ name ].type === GL.SAMPLER_2D || uniforms[ name ].type === GL.SAMPLER_CUBE ) {
 					uniforms[ name ].textureUnit = textureUnit++;
@@ -248,12 +255,13 @@ GLOW.Compiler = (function() {
 			attribute = attributeInformation[ a ];
 			name      = attribute.name;
 			
-			if( data[ name ] === undefined ) {
-				console.warn( "GLOW.Compiler.createAttributes: missing data for attribute " + name );
-			} else if( data[ name ] instanceof GLOW.Attribute ) {
+			if( data[ name ] instanceof GLOW.Attribute ) {
 				attributes[ name ] = data[ name ];
 			} else {
-				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ] !== undefined ? usage[ name ] : undefined, interleave[ name ] !== undefined ? interleave[ name ] : true );
+				if( data[ name ] === undefined ) {
+					GLOW.warn( "GLOW.Compiler.createAttributes: missing data for attribute " + name + ". Creating anyway, but make sure to set data before drawing." );
+				}
+				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ], interleave[ name ] !== undefined ? interleave[ name ] : true );
 			}
 		}
 
@@ -263,12 +271,30 @@ GLOW.Compiler = (function() {
 	//--- interleave attributes ---
 	
 	compiler.interleaveAttributes = function( attributes, interleave ) {
+
 	    interleave = interleave !== undefined ? interleave : {};
-	    
+  
 	    var a, al, b, bl, i;
 	    var lowestAvailableIndex = 0;
 	    var attributeByIndex = [];
 	    
+		// early out if only one attribute in program
+		al = 0;
+		for( a in attributes ) {
+			al++;
+		}
+		if( al === 1 ) {
+			// if attribute is interleaved, force to non-interleaved and upload its data
+			for( a in attributes ) {
+				if( attributes[ a ].interleaved === true ) {
+					attributes[ a ].interleaved = false;
+					if( attributes[ a ].data )
+						attributes[ a ].bufferData();
+				}
+			}
+			return undefined;
+		}
+
 	    // get lowest available index
 	    for( a in attributes ) {
 	        if( interleave[ a ] !== undefined && interleave[ a ] !== false ) {
@@ -300,7 +326,7 @@ GLOW.Compiler = (function() {
  	            stride = 0;
  	            for( b = 0, bl = attributeByIndex[ a ].length; b < bl; b++ ) {
  	                if( stride + attributeByIndex[ a ][ b ].size * 4 > 255 ) {
- 	                    console.warn( "GLOW.Compiler.interleaveAttributes: Stride owerflow, moving attributes to new interleave index. Please check your interleave setup!" );
+ 	                    GLOW.warn( "GLOW.Compiler.interleaveAttributes: Stride owerflow, moving attributes to new interleave index. Please check your interleave setup!" );
  	                    currentLength = attributeByIndex.length;
  	                    attributeByIndex[ currentLength ] = [];
  	                    while( b < bl ) {
@@ -345,12 +371,10 @@ GLOW.Compiler = (function() {
 
 		var elements;
 
-		if( data === undefined ) {
-			console.error( "GLOW.Compiler.createElements: missing 'elements' in supplied data. Quitting." );
-		} else if( data instanceof GLOW.Elements ) {
+		if( data instanceof GLOW.Elements ) {
 			elements = data;
 		} else {
-			elements = new GLOW.Elements( data, type, usage !== undefined ? usage : GL.STATIC_DRAW );
+			elements = new GLOW.Elements( data, type, usage );
 		}
 
 		return elements;
