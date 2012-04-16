@@ -6,7 +6,7 @@
  * @author mikael emtinger / http://gomo.se/
  */
 
-GLOW.Vector3 = (function( x, y, z ) {
+GLOW.Vector3 = (function() {
 
 	"use strict"; "use restrict";
 
@@ -27,7 +27,7 @@ GLOW.Vector3 = (function( x, y, z ) {
     }
 
     vector3.prototype.copy = function ( v ) {
-    	this.set( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+    	this.set( v.value[ 0 ], v.value[ 1 ], v.value[ 2 ] );
     	return this;
     }
 
