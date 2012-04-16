@@ -6,15 +6,15 @@ GLOW.Attribute = (function() {
     var sizes = [];
     function lazyInit() {
         // lazy initialization so we know we got GL bound to a context
-        sizes[GL.INT] = 1;
-        sizes[GL.INT_VEC2] = 2;
-        sizes[GL.INT_VEC3] = 3;
-        sizes[GL.INT_VEC4] = 4;
-        sizes[GL.BOOL] = 1;
-        sizes[GL.BOOL_VEC2] = 2;
-        sizes[GL.BOOL_VEC3] = 3;
-        sizes[GL.BOOL_VEC4] = 4;
-        sizes[GL.FLOAT] = 1;
+        sizes[GL.INT]        = 1;
+        sizes[GL.INT_VEC2]   = 2;
+        sizes[GL.INT_VEC3]   = 3;
+        sizes[GL.INT_VEC4]   = 4;
+        sizes[GL.BOOL]       = 1;
+        sizes[GL.BOOL_VEC2]  = 2;
+        sizes[GL.BOOL_VEC3]  = 3;
+        sizes[GL.BOOL_VEC4]  = 4;
+        sizes[GL.FLOAT]      = 1;
         sizes[GL.FLOAT_VEC2] = 2;
         sizes[GL.FLOAT_VEC3] = 3;
         sizes[GL.FLOAT_VEC4] = 4;
@@ -29,29 +29,28 @@ GLOW.Attribute = (function() {
             once = true;
             lazyInit();
         }
-
-        this.id = GLOW.uniqueId();
-        this.data = data;
-        this.location = parameters.location;
+        
+        this.id             = GLOW.uniqueId();
+        this.data           = data;
+        this.location       = parameters.location;
         this.locationNumber = parameters.locationNumber;
-        this.stride = 0;
-        this.offset = 0;
-        this.usage = usage !== undefined ? usage : GL.STATIC_DRAW;
-        this.interleaved = interleaved !== undefined ? interleaved : false;
-        this.size = sizes[ parameters.type ];
-        this.name = parameters.name;
-        this.type = parameters.type;
+        this.stride         = 0;
+        this.offset         = 0;
+        this.usage          = usage !== undefined ? usage : GL.STATIC_DRAW;
+        this.interleaved    = interleaved !== undefined ? interleaved : false;
+        this.size           = sizes[ parameters.type ];
+        this.name           = parameters.name;
+        this.type           = parameters.type;
 
-        if( this.data.length / this.size > 65536 ) {
-            console.warn( "GLOW.Attribute.constructor: Unreachable attribute? Please activate GL.drawArrays or split into multiple shaders. Indexed elements cannot reach attribute data beyond 65535." );
-        }
+        if( this.data ) {
 
-        if( this.data.constructor.toString().indexOf( " Array()") !== -1 ) {
-            this.data = new Float32Array( this.data );
-        }
+            if( this.data.length / this.size > 65536 ) {
+                GLOW.warn( "GLOW.Attribute.constructor: Unreachable attribute? Please activate GL.drawArrays or split into multiple shaders. Indexed elements cannot reach attribute data beyond 65535." );
+            }
 
-        if( this.interleaved === false ) {
-            this.bufferData( this.data, this.usage );
+            if( this.interleaved === false ) {
+                this.bufferData( this.data, this.usage );
+            }
         }
     }
 
@@ -66,6 +65,10 @@ GLOW.Attribute = (function() {
         if( data !== undefined && this.data !== data ) this.data = data;
         if( usage !== undefined && this.usage !== usage ) this.usage = usage;
         if( this.buffer === undefined ) this.buffer = GL.createBuffer();
+
+        if( this.data.constructor.toString().indexOf( " Array()") !== -1 ) {
+            this.data = new Float32Array( this.data );
+        }
         
         GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
         GL.bufferData( GL.ARRAY_BUFFER, this.data, this.usage );
@@ -80,11 +83,12 @@ GLOW.Attribute = (function() {
     
     GLOWAttribute.prototype.clone = function( except ) {
         if( this.interleaved ) {
-            console.error( "GLOW.Attribute.clone: Cannot clone interleaved attribute. Please check your interleave setup." );
+            GLOW.error( "GLOW.Attribute.clone: Cannot clone interleaved attribute. Please check your interleave setup." );
             return;
         }
-        
-        var clone = new GLOW.Attribute( this, this.data, this.usage, this.interleaved )
+
+        except = except || {};
+        return new GLOW.Attribute( this, except.data || this.data, except.usage || this.usage, except.interleaved || this.interleaved );
     }
     
     GLOWAttribute.prototype.dispose = function() {
