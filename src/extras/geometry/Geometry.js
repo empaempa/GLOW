@@ -87,12 +87,12 @@ GLOW.Geometry = {
 	    
 	    if( shaderConfig.triangles === undefined || 
 	        shaderConfig.data      === undefined ) {
-	        console.error( "GLOW.Geometry.flatShade: missing .data and/or .triangles in shader config object. Quitting." );
+	        GLOW.error( "GLOW.Geometry.flatShade: missing .data and/or .triangles in shader config object. Quitting." );
 	        return;
 	    }
 	    
 	    if( attributeSizes === undefined ) {
-	        console.error( "GLOW.Geometry.flatShade: missing attribute data sizes. Quitting." );
+	        GLOW.error( "GLOW.Geometry.flatShade: missing attribute data sizes. Quitting." );
 	        return;
 	    }
 	    
