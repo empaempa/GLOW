@@ -17,8 +17,12 @@ GLOW.Shader = (function() {
 
     // constructor
     function GLOWShader( parameters ) {
-        this.id = GLOW.uniqueId();
+        this.id           = GLOW.uniqueId();
         this.compiledData = parameters.use ? parameters.use.clone( parameters.except ) : GLOW.Compiler.compile( parameters );
+        this.uniforms     = this.compiledData.uniforms;
+        this.elements     = this.compiledData.elements;
+        this.program      = this.compiledData.program;
+
         this.attachData();
     }
 
@@ -26,15 +30,15 @@ GLOW.Shader = (function() {
     GLOWShader.prototype.attachData = function() {
         var u, a, i;
 
-        this.uniforms = this.compiledData.uniforms;
-        this.elements = this.compiledData.elements;
-        this.program = this.compiledData.program;
-
         for( u in this.compiledData.uniforms ) {
-            if( this[ u ] === undefined) {
-                this[ u ] = this.compiledData.uniforms[ u ].data;
-            } else {
-                console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data." );
+            if( this[ u ] === undefined ) {
+                if( this.compiledData.uniforms[ u ].data !== undefined ) {
+                    this[ u ] = this.compiledData.uniforms[ u ].data;
+                } else {
+                    GLOW.warn( "GLOW.Shader.attachUniformAndAttributeData: no data for uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to set data." );
+                }
+            } else if( this[ u ] !== this.compiledData.uniforms[ u ].data ) {
+                GLOW.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data." );
             }
         }
 
@@ -44,8 +48,8 @@ GLOW.Shader = (function() {
             }
             if( this[ a ] === undefined ) {
                 this[ a ] = this.compiledData.attributes[ a ];
-            } else {
-                console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data." );
+            } else if( this[ a ] !== this.compiledData.attributes[ a ] ) {
+                GLOW.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on attribute " + a + ", not attaching for easy access. Please use Shader.attributes." + a + ".data to access data." );
             }
         }
         
@@ -55,8 +59,8 @@ GLOW.Shader = (function() {
             }
             if( this[ i ] === undefined ) {
                 this[ i ] = this.compiledData.interleavedAttributes[ i ];
-            } else {
-                console.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on interleavedAttribute " + a + ", not attaching for easy access. Please use Shader.interleavedAttributes." + a + ".data to access data." )
+            } else if( this[ i ] !== this.compiledData.interleavedAttributes[ i ] ) {
+                GLOW.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on interleavedAttribute " + a + ", not attaching for easy access. Please use Shader.interleavedAttributes." + a + ".data to access data." )
             }
         }
     };
@@ -65,8 +69,6 @@ GLOW.Shader = (function() {
         var compiledData = this.compiledData;
         var cache = GLOW.currentContext.cache;
 
-        if( compiledData.preDrawCallback ) compiledData.preDrawCallback( this );
-        
         if( !cache.programCached( compiledData.program )) {
             GL.useProgram( compiledData.program );
             var diff = cache.setProgramHighestAttributeNumber( compiledData.program );
@@ -108,8 +110,6 @@ GLOW.Shader = (function() {
         }
 
         compiledData.elements.draw();
-
-        if( compiledData.postDrawCallback ) compiledData.postDrawCallback( this );
     };
 
     GLOWShader.prototype.clone = function(except) {
