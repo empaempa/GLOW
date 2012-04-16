@@ -34,7 +34,7 @@ GLOW.Context = (function() {
                                                                                       premultipliedAlpha:    this.premultipliedAlpha,
                                                                                       preserveDrawingBuffer: this.preserveDrawingBuffer } );
         	} catch( error ) {
-        		console.error( "GLOW.Context.construct: " + error );
+        		GLOW.error( "GLOW.Context.construct: " + error );
         	}
 
             if( this.GL !== null ) {
@@ -82,7 +82,7 @@ GLOW.Context = (function() {
             	this.setViewport();
             	this.clear();
             } else {
-                console.error( "GLOW.Context.construct: unable to initialize WebGL" );
+                GLOW.error( "GLOW.Context.construct: unable to initialize WebGL" );
             }
     	}
     }
@@ -201,7 +201,7 @@ GLOW.Context = (function() {
     		if( setup.frontFace ) GL.frontFace( setup.frontFace );
     		if( setup.cullFace  ) GL.cullFace ( setup.cullFace  );
     	} catch( error ) {
-    		console.error( "GLOW.Context.setupCulling: " + error );
+    		GLOW.error( "GLOW.Context.setupCulling: " + error );
     	}
     	return this;
     };
@@ -220,7 +220,7 @@ GLOW.Context = (function() {
         try {
             GL.scissor( setup.x, setup.y, setup.width, setup.height );
         } catch( error ) {
-            console.error( "GLOW.Context.setupScissorTest: " + error );
+            GLOW.error( "GLOW.Context.setupScissorTest: " + error );
         } 
     	return this;
     };
@@ -264,6 +264,18 @@ GLOW.Context = (function() {
     
     GLOWContext.prototype.maxVertexTextureImageUnits = function() {
         return this.getParameter( GL.MAX_VERTEX_TEXTURE_IMAGE_UNITS );
+    }
+
+    GLOWContext.prototype.resize = function( newWidth, newHeight ) {
+
+        var widthFactor  = newWidth  / this.width;
+        var heightFactor = newHeight / this.height; 
+
+        this.viewport.width  = this.viewport.width  * widthFactor;
+        this.viewport.height = this.viewport.height * heightFactor; 
+
+        this.domElement.width  = this.width  = newWidth;
+        this.domElement.height = this.height = newHeight;
     }
 	
 	return GLOWContext;
