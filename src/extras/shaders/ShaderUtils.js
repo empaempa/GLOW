@@ -11,7 +11,7 @@ GLOW.ShaderUtils = {
 
         if( originalShaderConfig.triangles === undefined ||
             originalShaderConfig.data      === undefined ) {
-	        console.error( "GLOW.ShaderUtils.createMultiple: missing .data and/or .triangles in shader config object. Quitting." );
+	        GLOW.error( "GLOW.ShaderUtils.createMultiple: missing .data and/or .triangles in shader config object. Quitting." );
 	        return;
         }
 
@@ -34,7 +34,7 @@ GLOW.ShaderUtils = {
                 if( originalData[ s ] ) {
                     except[ s ] = [];
                 } else {
-    	            console.error( "GLOW.ShaderUtils.createMultiple: attribute " + d + " doesn't exist in originalShaderConfig.data. Quitting." );
+    	            GLOW.error( "GLOW.ShaderUtils.createMultiple: attribute " + d + " doesn't exist in originalShaderConfig.data. Quitting." );
     	            return;
                 }
             }
