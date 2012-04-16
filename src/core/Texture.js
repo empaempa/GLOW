@@ -10,24 +10,24 @@ GLOW.Texture = (function() {
             parameters.data = parameters.url;
         }
     	
-    	this.id = GLOW.uniqueId();
-        this.data = parameters.data;
-        this.autoUpdate = parameters.autoUpdate;
-    	this.internalFormat = parameters.internalFormat !== undefined ? parameters.internalFormat : GL.RGBA;
-    	this.format = parameters.format !== undefined ? parameters.format : GL.RGBA;
-    	this.type = parameters.type !== undefined ? parameters.type : GL.UNSIGNED_BYTE;
-    	this.wrapS = parameters.wrapS !== undefined ? parameters.wrapS : parameters.wrap !== undefined ? parameters.wrap : GL.REPEAT;
-    	this.wrapT = parameters.wrapT !== undefined ? parameters.wrapT : parameters.wrap !== undefined ? parameters.wrap : GL.REPEAT;
-    	this.magFilter = parameters.magFilter !== undefined ? parameters.magFilter : GL.LINEAR;
-    	this.minFilter = parameters.minFilter !== undefined ? parameters.minFilter : GL.LINEAR_MIPMAP_LINEAR;
-	    this.width  = parameters.width;
-	    this.height = parameters.height;
-    	this.texture = undefined;
+        this.id             = GLOW.uniqueId();
+        this.data           = parameters.data;
+        this.autoUpdate     = parameters.autoUpdate;
+        this.internalFormat = parameters.internalFormat || GL.RGBA;
+        this.format         = parameters.format         || GL.RGBA;
+        this.type           = parameters.type           || GL.UNSIGNED_BYTE;
+        this.wrapS          = parameters.wrapS          || parameters.wrap || GL.REPEAT;
+        this.wrapT          = parameters.wrapT          || parameters.wrap || GL.REPEAT;
+        this.magFilter      = parameters.magFilter      || parameters.filter || GL.LINEAR;
+        this.minFilter      = parameters.minFilter      || parameters.filter || GL.LINEAR_MIPMAP_LINEAR;
+        this.width          = parameters.width;
+        this.height         = parameters.height;
+        this.texture        = undefined;
 	}
 
 	// methods
     GLOWTexture.prototype.init = function() {
-        if( this.texture !== undefined ) return;
+        if( this.texture !== undefined ) return this;
 
         if( this.data === undefined && 
             this.width !== undefined && 
@@ -76,7 +76,7 @@ GLOW.Texture = (function() {
     	                this.itemsToLoad++;
     	            }
 	            } else {
-	                console.error( "GLOW.Texture.init: data type error. Did you forget cube map " + c + "? If not, the data type is not supported" );
+	                GLOW.error( "GLOW.Texture.init: data type error. Did you forget cube map " + c + "? If not, the data type is not supported" );
 	            }
     	    }
     	    
@@ -111,6 +111,8 @@ GLOW.Texture = (function() {
         	    }
     	    }
     	}
+
+        return this;
     };
     
     GLOWTexture.prototype.createTexture = function() {
@@ -123,7 +125,7 @@ GLOW.Texture = (function() {
         	    if( this.width !== undefined && this.height !== undefined ) {
                 	GL.texImage2D( this.textureType, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data );
         	    } else {
-        	        console.error( "GLOW.Texture.createTexture: Textures of type Uint8Array requires width and height parameters. Quitting." );
+        	        GLOW.error( "GLOW.Texture.createTexture: Textures of type Uint8Array requires width and height parameters. Quitting." );
         	        return;
         	    }
         	} else {
@@ -135,7 +137,7 @@ GLOW.Texture = (function() {
                     if( this.width !== undefined && this.height !== undefined ) {
                         GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data[ c ] );
             	    } else {
-            	        console.error( "GLOW.Texture.createTexture: Textures of type Uint8Array/Float32Array requires width and height parameters. Quitting." );
+            	        GLOW.error( "GLOW.Texture.createTexture: Textures of type Uint8Array/Float32Array requires width and height parameters. Quitting." );
                         return;
                     }
                 } else {
@@ -152,6 +154,8 @@ GLOW.Texture = (function() {
     	if( this.minFilter !== GL.NEAREST && this.minFilter !== GL.LINEAR ) {
     	    GL.generateMipmap( this.textureType );
 	    }
+
+        return this;
     };
     
     GLOWTexture.prototype.updateTexture = function( parameters ) {
