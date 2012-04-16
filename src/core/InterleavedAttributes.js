@@ -33,7 +33,7 @@ GLOW.InterleavedAttributes = (function() {
         this.usage = attributes[ 0 ].usage;
         for( a = 0; a < al; a++ ) {
             if( this.usage !== attributes[ a ].usage ) {
-                console.warn( "GLOW.InterleavedAttributes.construct: Attribute " + attributes[ a ].name + " has different usage, defaulting to STATIC_DRAW." );
+                GLOW.warn( "GLOW.InterleavedAttributes.construct: Attribute " + attributes[ a ].name + " has different usage, defaulting to STATIC_DRAW." );
                 this.usage = GL.STATIC_DRAW;
                 break;
             }
