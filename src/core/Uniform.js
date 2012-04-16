@@ -67,5 +67,9 @@ GLOW.Uniform = (function() {
         return this.data.value;
     };
 
+    GLOWUniform.prototype.clone = function( data ) {
+        return new GLOW.Uniform( this, data || this.data );
+    }
+
     return GLOWUniform;
 })();
