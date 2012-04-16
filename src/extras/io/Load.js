@@ -3,56 +3,55 @@ GLOW.Load = (function() {
     "use strict"; "use restrict";
     
     // constructor
-    var load = function( parameters ) {
-        this.parameters = parameters;
-        this.numItemsToLoad = 0;
+    function load( parameters ) {
+        this.parameters         = parameters;
+        this.onLoadComplete     = undefined;
+        this.onLoadContext      = null;
+        this.onLoadItem         = undefined;
+        this.numItemsToLoad     = 0;
         this.numItemsLeftToLoad = 0;
+
         for( var p in parameters ) {
-            if( p !== "onLoadComplete" && p !== "onLoadItem" && p!== "dontParseJS" ) {
+            if( p !== "onLoadComplete" && p !== "onLoadItem" && p!== "dontParseJS" && p != "onLoadContext" ) {
                 this.numItemsToLoad++;
-                this.numItemsLeftToLoad++;
+            } else {
+                this[ p ] = parameters[ p ];
+                delete parameters[ p ];
             }
         }
+        this.numItemsLeftToLoad = this.numItemsToLoad;
         
         for( var p in parameters ) {
-            if( p === "onLoadComplete" ) {
-                this.onLoadComplete = parameters[ p ];
-            } else if( p === "onLoadItem" ) {
-                this.onLoadItem = parameters[ p ];
-            } else if( p === "dontParseJS" ) {
-                this.dontParseJS = parameters[ p ];
+            var originalURL  = parameters[ p ];
+            var lowerCaseURL = parameters[ p ];
+            if( lowerCaseURL.indexOf( ".png" ) !== -1 ||
+                lowerCaseURL.indexOf( ".gif" ) !== -1 ||
+                lowerCaseURL.indexOf( ".jpg" ) !== -1 ||
+                lowerCaseURL.indexOf( "jpeg" ) !== -1 ) {
+                parameters[ p ] = new Image();
+                parameters[ p ].scope = this;
+                parameters[ p ].onload = this.onLoadImage;
+                parameters[ p ].src = originalURL;
+            } else if( lowerCaseURL.indexOf( ".glsl" ) !== -1 ) {
+                parameters[ p ] = new XMLHttpRequest();
+                parameters[ p ].scope = this;
+                parameters[ p ].parametersProperty = p;
+                parameters[ p ].open( "GET", originalURL );
+                parameters[ p ].onreadystatechange = this.onLoadGLSL;
+                parameters[ p ].send();
+            } else if( lowerCaseURL.indexOf( ".js" ) !== -1 || lowerCaseURL.indexOf( ".json" ) !== -1 ) {
+                parameters[ p ] = new XMLHttpRequest();
+                parameters[ p ].scope = this;
+                parameters[ p ].parametersProperty = p;
+                parameters[ p ].open( "GET", originalURL );
+                parameters[ p ].onreadystatechange = this.onLoadJSON;
+                parameters[ p ].send();
             } else {
-                var originalURL  = parameters[ p ];
-                var lowerCaseURL = parameters[ p ];
-                if( lowerCaseURL.indexOf( ".png" ) !== -1 ||
-                    lowerCaseURL.indexOf( ".gif" ) !== -1 ||
-                    lowerCaseURL.indexOf( ".jpg" ) !== -1 ||
-                    lowerCaseURL.indexOf( "jpeg" ) !== -1 ) {
-                    parameters[ p ] = new Image();
-                    parameters[ p ].scope = this;
-                    parameters[ p ].onload = this.onLoadImage;
-                    parameters[ p ].src = originalURL;
-                } else if( lowerCaseURL.indexOf( ".glsl" ) !== -1 ) {
-                    parameters[ p ] = new XMLHttpRequest();
-                    parameters[ p ].scope = this;
-                    parameters[ p ].parametersProperty = p;
-                    parameters[ p ].open( "GET", originalURL );
-                    parameters[ p ].onreadystatechange = this.onLoadGLSL;
-                    parameters[ p ].send();
-                } else if( lowerCaseURL.indexOf( ".js" ) !== -1 || lowerCaseURL.indexOf( ".json" ) !== -1 ) {
-                    parameters[ p ] = new XMLHttpRequest();
-                    parameters[ p ].scope = this;
-                    parameters[ p ].parametersProperty = p;
-                    parameters[ p ].open( "GET", originalURL );
-                    parameters[ p ].onreadystatechange = this.onLoadJSON;
-                    parameters[ p ].send();
-                } else {
-                    parameters[ p ] = document.createElement( "video" );
-                    parameters[ p ].scope = this;
-                    parameters[ p ].addEventListener( "loadeddata", this.onLoadVideo, false );
-                    parameters[ p ].src = originalURL;
-                }
-            } 
+                parameters[ p ] = document.createElement( "video" );
+                parameters[ p ].scope = this;
+                parameters[ p ].addEventListener( "loadeddata", this.onLoadVideo, false );
+                parameters[ p ].src = originalURL;
+            }
         }
     }
     
@@ -60,10 +59,10 @@ GLOW.Load = (function() {
     load.prototype.handleLoadedItem = function() {
         this.numItemsLeftToLoad--;
         if( this.onLoadItem !== undefined ) {
-            this.onLoadItem.call( null, 1 - this.numItemsLeftToLoad / this.numItemsToLoad );
+            this.onLoadItem.call( this.onLoadContext, 1 - this.numItemsLeftToLoad / this.numItemsToLoad );
         }
         if( this.numItemsLeftToLoad <= 0 ) {
-            this.onLoadComplete.call( null, this.parameters );
+            this.onLoadComplete.call( this.onLoadContext, this.parameters );
         }
     };
 
@@ -131,6 +130,9 @@ GLOW.Load = (function() {
         			if( l.indexOf( "//" ) > -1 ) {
         			    l = l.substring( 0, l.indexOf( "//" ));
     			    }
+                    if( l.indexOf( ";" ) === -1 ) {
+                        l += "\n";
+                    }
         			buf += l;
         		}
         	}
@@ -159,7 +161,7 @@ GLOW.Load = (function() {
 
     	function parseModel( scale ) {
     		if( json.version === undefined || json.version != 2 ) {
-    			console.error( 'Deprecated file format.' );
+    			GLOW.error( 'Deprecated file format.' );
     			return;
     		}
 
@@ -228,7 +230,7 @@ GLOW.Load = (function() {
     			hasFaceColor	    = isBitSet( type, 6 );
     			hasFaceVertexColor  = isBitSet( type, 7 );
 
-    			//console.log("type", type, "bits", isQuad, hasMaterial, hasFaceUv, hasFaceVertexUv, hasFaceNormal, hasFaceVertexNormal, hasFaceColor, hasFaceVertexColor);
+    			//GLOW.log("type", type, "bits", isQuad, hasMaterial, hasFaceUv, hasFaceVertexUv, hasFaceNormal, hasFaceVertexNormal, hasFaceColor, hasFaceVertexColor);
 
     			if ( isQuad ) {
 
