@@ -15,7 +15,7 @@ GLOW.Elements = (function() {
         this.type   = type   !== undefined ? type : GL.TRIANGLES;
         this.offset = offset !== undefined ? offset : 0;
 
-        if( typeof( data ) === "number" ) {
+        if( typeof( data ) === "number" || data === undefined ) {
             this.length = data;
         } else {
     		if( !( data instanceof Uint16Array )) {
@@ -41,6 +41,11 @@ GLOW.Elements = (function() {
         }
     };
     
+    GLOWElements.prototype.clone = function( except ) {
+        except = except || {};
+        return new GLOW.Elements( except.data || this.data, except.type || this.type, except.usage, except.offset || this.offset );
+    }
+
     GLOWElements.prototype.dispose = function() {
         // TODO
     };
