@@ -156,7 +156,7 @@ GLOW.Matrix4 = (function() {
     }
 
     matrix4.prototype.multiplySelf = function ( a ) {
-    	this.multiply( m, a );
+    	this.multiply( this, a );
     	return this;
     }
 
@@ -219,20 +219,47 @@ GLOW.Matrix4 = (function() {
     }
 
 
-    matrix4.prototype.setPosition = function( x, y, z ) {
-    	this.value[ 12 ] = x;
+    matrix4.prototype.setPosition = function( v, y, z ) {
+    	var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
+        this.value[ 12 ] = x;
     	this.value[ 13 ] = y;
     	this.value[ 14 ] = z;
     	return this;
     }
 
-    matrix4.prototype.addPosition = function( x, y, z ) {
+    matrix4.prototype.addPosition = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
     	this.value[ 12 ] += x;
     	this.value[ 13 ] += y;
     	this.value[ 14 ] += z;
     }
 
-    matrix4.prototype.setRotation = function( x, y, z ) {
+    matrix4.prototype.setRotation = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
     	this.rotation.set( x, y, z );
     	var a = Math.cos( x ), b = Math.sin( x ),
     	    c = Math.cos( y ), d = Math.sin( y ),
@@ -250,7 +277,16 @@ GLOW.Matrix4 = (function() {
     	return this;
     }
 
-    matrix4.prototype.addRotation = function( x, y, z ) {
+    matrix4.prototype.addRotation = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
     	this.rotation.value[ 0 ] += x;
     	this.rotation.value[ 1 ] += y;
     	this.rotation.value[ 2 ] += z;
@@ -292,6 +328,11 @@ GLOW.Matrix4 = (function() {
     	this.value[ 2 ] *= x; this.value[ 6 ] *= y; this.value[ 10 ] *= z;
     	this.value[ 3 ] *= x; this.value[ 7 ] *= y; this.value[ 11 ] *= z;
     	return this;
+    }
+
+    matrix4.prototype.invert = function() {
+        GLOW.Matrix4.makeInverse( this, this );
+        return this;
     }
 
     return matrix4;
@@ -378,11 +419,11 @@ GLOW.Matrix4.makeInverse = function ( m1, m2 ) {
 }
 */
 
-GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
+GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far, destMatrix ) {
 
 	var m, mv, x, y, a, b, c, d;
 
-	m = new GLOW.Matrix4();
+	m = destMatrix || new GLOW.Matrix4();
 	x = 2 * near / ( right - left );
 	y = 2 * near / ( top - bottom );
 	a = ( right + left ) / ( right - left );
@@ -397,10 +438,9 @@ GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
 	mv[ 3 ] = 0;  mv[ 7 ] = 0;  mv[ 11 ] = - 1; mv[ 15 ] = 0;
 
 	return m;
-
 };
 
-GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
+GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far, destMatrix ) {
 
 	var ymax, ymin, xmin, xmax;
 
@@ -409,15 +449,15 @@ GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
 	xmin = ymin * aspect;
 	xmax = ymax * aspect;
 
-	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far );
+	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far, destMatrix );
 
 };
 
-GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far ) {
+GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far, destMatrix ) {
 
 	var m, mv, x, y, z, w, h, p;
 
-	m = new GLOW.Matrix4();
+	m = destMatrix || new GLOW.Matrix4();
 	w = Math.abs( right - left );
 	h = Math.abs( top - bottom );
 	p = Math.abs( far - near );
