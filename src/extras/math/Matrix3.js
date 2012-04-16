@@ -32,6 +32,15 @@ GLOW.Matrix3 = (function() {
                   matrix4.value[ 2 ], matrix4.value[ 6 ], matrix4.value[ 10 ] );
         return this;
     }
+
+    matrix3.prototype.multiplyVector3 = function( v ) {
+        var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ];
+        v.value[ 0 ] = this.value[ 0 ] * vx + this.value[ 3 ] * vy + this.value[ 6 ] * vz;
+        v.value[ 1 ] = this.value[ 1 ] * vx + this.value[ 4 ] * vy + this.value[ 7 ] * vz;
+        v.value[ 2 ] = this.value[ 2 ] * vx + this.value[ 5 ] * vy + this.value[ 8 ] * vz;
+        return v;
+    }
+
     
     return matrix3;
 })();
