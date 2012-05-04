@@ -71,5 +71,11 @@ GLOW.Uniform = (function() {
         return new GLOW.Uniform( this, data || this.data );
     }
 
+    GLOWUniform.prototype.dispose = function() {
+        delete this.data;
+        delete this.load;
+        delete this.location;
+    }
+
     return GLOWUniform;
 })();

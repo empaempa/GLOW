@@ -44,10 +44,13 @@ GLOW.Elements = (function() {
     GLOWElements.prototype.clone = function( except ) {
         except = except || {};
         return new GLOW.Elements( except.data || this.data, except.type || this.type, except.usage, except.offset || this.offset );
-    }
+    };
 
     GLOWElements.prototype.dispose = function() {
-        // TODO
+        if( this.elements !== undefined ) {
+            GL.deleteBuffer( this.elements );
+            delete this.elements;
+        }
     };
     
 

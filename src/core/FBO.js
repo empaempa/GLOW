@@ -50,8 +50,8 @@ GLOW.FBO = (function() {
 	        
 	        if( this.clearSettings.bits === -1 ) {
             	this.clearSettings.bits  = GL.COLOR_BUFFER_BIT;
-            	this.clearSettings.bits |= depth   ? GL.DEPTH_BUFFER_BIT   : 0;
-                this.clearSettings.bits |= stencil ? GL.STENCIL_BUFFER_BIT : 0;
+            	this.clearSettings.bits |= this.depth   ? GL.DEPTH_BUFFER_BIT   : 0;
+                this.clearSettings.bits |= this.stencil ? GL.STENCIL_BUFFER_BIT : 0;
 	        }
     	} else {
         	this.clearSettings = { r: 0, g: 0, b: 0, a: 1, depth: 1, bits: 0 };
@@ -67,6 +67,12 @@ GLOW.FBO = (function() {
     GLOWFBO.prototype.createBuffers = function() {
         // setup texture
         this.texture = GL.createTexture();
+
+        if( GL.getError() !== GL.NO_ERROR ) {
+            GLOW.error( "GLOW.FBO.createBuffers: Error creating render texture." );
+            return;
+        }
+
         GL.bindTexture  ( this.textureType, this.texture );
         GL.texParameteri( this.textureType, GL.TEXTURE_WRAP_S, this.wrapS );
         GL.texParameteri( this.textureType, GL.TEXTURE_WRAP_T, this.wrapT );
@@ -88,6 +94,12 @@ GLOW.FBO = (function() {
         // setup render buffer
         if( this.depth || this.stencil ) {
             this.renderBuffer = GL.createRenderbuffer();
+
+            if( GL.getError() !== GL.NO_ERROR ) {
+                GLOW.error( "GLOW.FBO.createBuffers: Error creating render buffer." );
+                return;
+            }
+
             GL.bindRenderbuffer( GL.RENDERBUFFER, this.renderBuffer );
             if( this.depth && !this.stencil ) {
                 GL.renderbufferStorage( GL.RENDERBUFFER, GL.DEPTH_COMPONENT16, this.width, this.height );
@@ -102,6 +114,12 @@ GLOW.FBO = (function() {
         // setup frame buffer
         if( this.textureType === GL.TEXTURE_2D ) {
             this.frameBuffer = GL.createFramebuffer();
+
+            if( GL.getError() !== GL.NO_ERROR ) {
+                GLOW.error( "GLOW.FBO.createBuffers: Error creating frame buffer." );
+                return;
+            }
+
             GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
             GL.framebufferTexture2D( GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, this.texture, 0 );
 
@@ -116,6 +134,12 @@ GLOW.FBO = (function() {
             this.frameBuffers = {};
             for( var f in cubeSideOffsets ) {
                 this.frameBuffers[ f ] = GL.createFramebuffer();
+
+                if( GL.getError() !== GL.NO_ERROR ) {
+                    GLOW.error( "GLOW.FBO.createBuffers: Error creating frame buffer for side " + f );
+                    return;
+                }
+
                 GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffers[ f ] );
                 GL.framebufferTexture2D( GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ f ], this.texture, 0 );
 
@@ -240,6 +264,19 @@ GLOW.FBO = (function() {
     	GL.bindTexture( this.textureType, null );
     	return this;
     };
+
+    GLOWFBO.prototype.dispose = function() {
+        this.deleteBuffers();
+
+        delete this.data;
+        delete this.viewport;
+        delete this.texture;
+        delete this.renderBuffer;
+        delete this.frameBuffer;
+        delete this.frameBuffers;
+        delete this.viewport;
+        delete this.clearSettings;
+    }
     
     return GLOWFBO;
 })();

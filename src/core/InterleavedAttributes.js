@@ -67,11 +67,27 @@ GLOW.InterleavedAttributes = (function() {
     GLOWInterleavedAttributes.prototype.bind = function() {
         GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
         
-        var a, al = this.attributes.length;
-        for( a = 0; a < al; a++ ) {
+        var a = this.attributes.length;
+        while( a-- ) {
             this.attributes[ a ].bind();
         }
     };
+
+    GLOWInterleavedAttributes.prototype.dispose = function() {
+        if( this.buffer ) {
+            GL.deleteBuffer( this.buffer );
+            delete this.buffer;
+        }
+        delete this.data;
+
+        if( this.attributes ) {
+            var a = this.attributes.length;
+            while( a-- ) {
+                this.attributes[ a ].dispose();
+            }
+            delete this.attributes;
+        }
+    }
     
     
     return GLOWInterleavedAttributes;

@@ -30,14 +30,14 @@ GLOW.Shader = (function() {
     GLOWShader.prototype.attachData = function() {
         var u, a, i;
 
-        for( u in this.compiledData.uniforms ) {
+        for( u in this.uniforms ) {
             if( this[ u ] === undefined ) {
-                if( this.compiledData.uniforms[ u ].data !== undefined ) {
-                    this[ u ] = this.compiledData.uniforms[ u ].data;
+                if( this.uniforms[ u ].data !== undefined ) {
+                    this[ u ] = this.uniforms[ u ].data;
                 } else {
                     GLOW.warn( "GLOW.Shader.attachUniformAndAttributeData: no data for uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to set data." );
                 }
-            } else if( this[ u ] !== this.compiledData.uniforms[ u ].data ) {
+            } else if( this[ u ] !== this.uniforms[ u ].data ) {
                 GLOW.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on uniform " + u + ", not attaching for easy access. Please use Shader.uniforms." + u + ".data to access data." );
             }
         }
@@ -68,6 +68,7 @@ GLOW.Shader = (function() {
     GLOWShader.prototype.draw = function() {
         var compiledData = this.compiledData;
         var cache = GLOW.currentContext.cache;
+        var isCached = cache.programCached;
 
         if( !cache.programCached( compiledData.program )) {
             GL.useProgram( compiledData.program );
@@ -89,26 +90,38 @@ GLOW.Shader = (function() {
             }
         }
         
-        for( var a in compiledData.attributes ) {
-            if( compiledData.attributes[ a ].interleaved === false ) {
-                if( !cache.attributeCached( compiledData.attributes[ a ] )) {
-                    compiledData.attributes[ a ].bind();
+        var data = compiledData.attributeArray;
+        var a    = data.length;
+        isCached = cache.attributeCached;
+
+        while( a-- ) {
+            if( data[ a ].interleaved === false ) {
+                if( !cache.attributeCached( data[ a ] )) {
+                    data[ a ].bind();
                 }
             }
         }
 
-        for( var a in compiledData.interleavedAttributes ) {
-            if( !cache.interleavedAttributeCached( compiledData.interleavedAttributes[ a ] )) {
-                compiledData.interleavedAttributes[ a ].bind();
-            }
-        }
-        
-        for( var u in compiledData.uniforms ) {
-            if( !cache.uniformCached( compiledData.uniforms[ u ] )) {
-                compiledData.uniforms[ u ].load();
+        data     = compiledData.interleavedAttributeArray;
+        a        = data.length;
+        isCached = cache.interleavedAttributeCached;
+
+        while( a-- ) {
+            if( !cache.interleavedAttributeCached( data[ a ] )) {
+                data[ a ].bind();
             }
         }
 
+        data     = compiledData.uniformArray;
+        a        = data.length;
+        isCached = cache.uniformCached;
+
+        while( a-- ) {
+            if( !cache.uniformCached( data[ a ] )) {
+                data[ a ].load();
+            }
+        }
+        
         compiledData.elements.draw();
     };
 
@@ -116,8 +129,30 @@ GLOW.Shader = (function() {
         return new GLOW.Shader( { use: this.compiledData, except: except } );
     };
 
-    GLOWShader.prototype.dispose = function() {
-        // TODO
+    GLOWShader.prototype.dispose = function( disposeBuffers, disposeProgram ) {
+
+        var u, a, i;
+
+        for( u in this.compiledData.uniforms ) {
+            delete this[ u ]; 
+        }
+
+        for( a in this.compiledData.attributes ) {
+            delete this[ a ];
+        }
+        
+        for( i in this.compiledData.interleavedAttributes ) {
+            delete this[ i ];
+        }
+
+        delete this.program;
+        delete this.elements;
+        delete this.uniforms;
+        delete this.attributes;
+        delete this.interleavedAttributes;
+
+        this.compiledData.dispose( disposeBuffers, disposeProgram );
+        delete this.compiledData;
     };
 
     return GLOWShader;

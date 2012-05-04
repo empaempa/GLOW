@@ -92,7 +92,11 @@ GLOW.Attribute = (function() {
     }
     
     GLOWAttribute.prototype.dispose = function() {
-        // TODO
+        if( this.buffer ) {
+            GL.deleteBuffer( this.buffer );
+            delete this.buffer;
+        }
+        delete this.data;
     }
 
     return GLOWAttribute;

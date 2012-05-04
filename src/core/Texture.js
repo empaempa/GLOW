@@ -117,6 +117,10 @@ GLOW.Texture = (function() {
     
     GLOWTexture.prototype.createTexture = function() {
 
+        if( this.texture !== undefined ) {
+            GL.deleteTexture( this.texture );
+        }
+
        	this.texture = GL.createTexture();
     	GL.bindTexture( this.textureType, this.texture );
 
@@ -164,11 +168,12 @@ GLOW.Texture = (function() {
 
         parameters = parameters !== undefined ? parameters : {};
         
-        var level = parameters.level !== undefined ? parameters.level : 0;
-        var xOffset = parameters.xOffset !== undefined ? parameters.xOffset : 0;
-        var yOffset = parameters.yOffset !== undefined ? parameters.yOffset : 0;
+        var level        = parameters.level   || 0;
+        var xOffset      = parameters.xOffset || 0;
+        var yOffset      = parameters.yOffset || 0;
         var updateMipmap = parameters.updateMipmap !== undefined ? parameters.updateMipmap : true;
-        
+        this.data = parameters.data || this.data;
+
         GL.bindTexture( this.textureType, this.texture );
 
         if( this.textureType == GL.TEXTURE_2D ) {
@@ -230,6 +235,14 @@ GLOW.Texture = (function() {
                 }
             }
         }
+    }
+
+    GLOWTexture.prototype.dispose = function() {
+        if( this.texture !== undefined ) {
+            GL.deleteTexture( this.texture );
+            delete this.texture;
+        } 
+        delete this.data;
     }
     
 	return GLOWTexture;

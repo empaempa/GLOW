@@ -12,17 +12,41 @@ GLOW.CompiledData = (function() {
     // constructor
     
     function GLOWCompiledData( program, uniforms, attributes, interleavedAttributes, elements ) {
-	    this.program = program;
-	    this.uniforms = uniforms !== undefined ? uniforms : {};
-	    this.attributes = attributes !== undefined ? attributes : {};
-	    this.interleavedAttributes = interleavedAttributes !== undefined ? interleavedAttributes : {};
-	    this.elements = elements;
+        this.program                   = program;
+        this.uniforms                  = uniforms || {};
+        this.attributes                = attributes || {};
+        this.interleavedAttributes     = interleavedAttributes || {};
+        this.elements                  = elements;
+        this.uniformArray              = undefined;
+        this.attributeArray            = undefined;
+        this.interleavedAttributeArray = undefined;
+
+        this.createArrays();
     }
 
     // methods
+    GLOWCompiledData.prototype.createArrays = function() {
+        this.uniformArray              = [];
+        this.attributeArray            = [];
+        this.interleavedAttributeArray = [];
+
+        var u, a, i;
+        for( u in this.uniforms ) {
+            this.uniformArray.push( this.uniforms[ u ] );
+        }
+
+        for( a in this.attributes ) {
+            this.attributeArray.push( this.attributes[ a ] );
+        }
+
+        for( i in this.interleavedAttributes ) {
+            this.interleavedAttributeArray.push( this.interleavedAttributes[ i ] );
+        }
+    }
+
     GLOWCompiledData.prototype.clone = function( except ) {
     	var clone = new GLOW.CompiledData();
-    	except = except !== undefined ? except : {};
+    	except = except || {};
 
     	var u;
     	for( u in this.uniforms ) {
@@ -80,8 +104,53 @@ GLOW.CompiledData = (function() {
         } else {
         	clone.program = this.program;
         }
+
+        clone.createArrays();
         
     	return clone;
+    };
+
+    GLOWCompiledData.prototype.dispose = function( disposeBuffers, disposeProgram ) {
+        if( disposeBuffers ) {
+            var u, a, i;
+            u = this.uniformArray.length;
+            while( u-- ) {
+                this.uniformArray[ u ].dispose();
+            }
+
+            a = this.attributeArray.length;
+            while( a-- ) {
+                this.attributeArray[ a ].dispose();
+            }
+
+            i = this.interleavedAttributeArray.length;
+            while( i-- ) {
+                this.interleavedAttributeArray[ i ].dispose();
+            }
+
+            this.elements.dispose();
+        }
+
+        if( disposeProgram && GL.isProgram( this.program )) {
+            var shaders = GL.getAttachedShaders( this.program );
+            if( shaders ) {
+                var s = shaders.length;
+                while( s-- ) {
+                    GL.detachShader( this.program, shaders[ s ] );
+                    GL.deleteShader( shaders[ s ] );
+                }
+                GL.deleteProgram( this.program );
+            }
+        }
+
+        delete this.program;
+        delete this.uniforms;
+        delete this.attributes;
+        delete this.interleavedAttributes;
+        delete this.elements;
+        delete this.uniformArray;
+        delete this.attributeArray;
+        delete this.interleavedAttributeArray;
     };
     
     return GLOWCompiledData;
