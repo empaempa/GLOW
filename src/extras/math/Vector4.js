@@ -91,6 +91,10 @@ GLOW.Vector4 = (function() {
 	    return this;
 	};
 
+	vector4.prototype.lengthOfXYZ = function() {
+		return Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
+	}
+
 	vector4.prototype.clone = function () {
 		return new GLOW.Vector4( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
 	};
