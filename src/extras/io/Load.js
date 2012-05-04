@@ -31,6 +31,8 @@ GLOW.Load = (function() {
                 parameters[ p ] = new Image();
                 parameters[ p ].scope = this;
                 parameters[ p ].onload = this.onLoadImage;
+                parameters[ p ].onerror = this.onLoadError;
+                parameters[ p ].onabort = this.onLoadError;
                 parameters[ p ].src = originalURL;
             } else if( lowerCaseURL.indexOf( ".glsl" ) !== -1 ) {
                 parameters[ p ] = new XMLHttpRequest();
@@ -38,6 +40,8 @@ GLOW.Load = (function() {
                 parameters[ p ].parametersProperty = p;
                 parameters[ p ].open( "GET", originalURL );
                 parameters[ p ].onreadystatechange = this.onLoadGLSL;
+                parameters[ p ].onerror = this.onLoadError;
+                parameters[ p ].onabort = this.onLoadError;
                 parameters[ p ].send();
             } else if( lowerCaseURL.indexOf( ".js" ) !== -1 || lowerCaseURL.indexOf( ".json" ) !== -1 ) {
                 parameters[ p ] = new XMLHttpRequest();
@@ -45,6 +49,8 @@ GLOW.Load = (function() {
                 parameters[ p ].parametersProperty = p;
                 parameters[ p ].open( "GET", originalURL );
                 parameters[ p ].onreadystatechange = this.onLoadJSON;
+                parameters[ p ].onerror = this.onLoadError;
+                parameters[ p ].onabort = this.onLoadError;
                 parameters[ p ].send();
             } else {
                 parameters[ p ] = document.createElement( "video" );
@@ -143,6 +149,10 @@ GLOW.Load = (function() {
         }
     };
     
+    load.prototype.onLoadError = function( event ) {
+        GLOW.error( "GLOW.Load.onLoadError: Error " + event.target.status );
+    };
+
     /*
      * Three.js file format parser by
      * @author mrdoob / http://mrdoob.com/
