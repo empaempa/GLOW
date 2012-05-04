@@ -48,6 +48,14 @@ GLOW.Cache = (function() {
         if( this.active ) {
             if( program.id === this.programId ) return true;
             this.programId = program.id;
+
+            // clear uniforms, attributes, textures and elements which can't be shared
+            // by two different programs
+
+            this.uniformByLocation.length = 0;
+            this.attributeByLocation.length = 0;
+            this.textureByLocation.length = 0;
+            this.elementId = -1;
         }
         return false;
     };
