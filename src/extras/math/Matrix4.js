@@ -260,20 +260,23 @@ GLOW.Matrix4 = (function() {
             z = v.value[ 2 ];
         }
 
-    	this.rotation.set( x, y, z );
-    	var a = Math.cos( x ), b = Math.sin( x ),
-    	    c = Math.cos( y ), d = Math.sin( y ),
-    	    e = Math.cos( z ), f = Math.sin( z ),
-    	    ad = a * d, bd = b * d;
-    	this.value[ 0 ] = c * e;
-    	this.value[ 4 ] = - c * f;
-    	this.value[ 8 ] = d;
-    	this.value[ 1 ] = bd * e + a * f;
-    	this.value[ 5 ] = - bd * f + a * e;
-    	this.value[ 9 ] = - b * c;
-    	this.value[ 2 ] = - ad * e + b * f;
-    	this.value[ 6 ] = ad * f + b * e;
-    	this.value[ 10 ] = a * c;
+        var ch = Math.cos(y);
+        var sh = Math.sin(y);
+        var ca = Math.cos(z);
+        var sa = Math.sin(z);
+        var cb = Math.cos(x);
+        var sb = Math.sin(x);
+
+        this.value[ 0  ] = ch * ca;
+        this.value[ 4  ] = sh*sb - ch*sa*cb;
+        this.value[ 8  ] = ch*sa*sb + sh*cb;
+        this.value[ 1  ] = sa;
+        this.value[ 5  ] = ca*cb;
+        this.value[ 9  ] = -ca*sb;
+        this.value[ 2  ] = -sh*ca;
+        this.value[ 6  ] = sh*sa*cb + ch*sb;
+        this.value[ 10 ] = -sh*sa*sb + ch*cb;
+
     	return this;
     }
 
