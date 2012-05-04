@@ -5,7 +5,7 @@ GLOW.Color = (function() {
 	function color( rOrHex, g, b ) {
 		this.value = new Float32Array( 3 );
 		if( g === undefined && b === undefined ) {		// duck hunt!
-			this.setHex( rOrHex );
+			this.setHex( rOrHex || 0 );
 		} else {
 			this.setRGB( rOrHex, g, b );
 		}
@@ -22,6 +22,28 @@ GLOW.Color = (function() {
 		this.value[ 0 ] = (( hex & 0xff0000 ) >> 16 ) / 255;
 		this.value[ 1 ] = (( hex & 0x00ff00 ) >> 8  ) / 255;
 		this.value[ 2 ] = (( hex & 0x0000ff )       ) / 255;
+		return this;
+	}
+
+	color.prototype.multiplyScalar = function( s ) {
+		this.value[ 0 ] *= s;
+		this.value[ 1 ] *= s;
+		this.value[ 2 ] *= s;
+		return this;
+	} 
+
+	color.prototype.mix = function( otherColor, amount ) {
+		var invAmount = 1.0 - amount;
+		this.value[ 0 ] = this.value[ 0 ] * invAmount + otherColor.value[ 0 ] * amount;
+		this.value[ 1 ] = this.value[ 1 ] * invAmount + otherColor.value[ 1 ] * amount;
+		this.value[ 2 ] = this.value[ 2 ] * invAmount + otherColor.value[ 2 ] * amount;
+		return this;
+	}
+
+	color.prototype.copy = function( srcColor ) {
+		this.value[ 0 ] = srcColor.value[ 0 ];
+		this.value[ 1 ] = srcColor.value[ 1 ];
+		this.value[ 2 ] = srcColor.value[ 2 ];
 		return this;
 	}
 
