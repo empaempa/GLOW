@@ -80,7 +80,7 @@ GLOW.FBO = (function() {
         GL.texParameteri( this.textureType, GL.TEXTURE_MIN_FILTER, this.minFilter );
 
         if( this.textureType === GL.TEXTURE_2D ) {
-            if( this.data === null || this.data instanceof Uint8Array ) {
+            if( this.data === null || this.data instanceof Uint8Array || this.data instanceof Float32Array ) {
                 GL.texImage2D( this.textureType, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data );
             } else {
                 GL.texImage2D( this.textureType, 0, this.internalFormat, this.format, this.type, this.data );
