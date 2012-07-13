@@ -201,7 +201,7 @@ GLOW.Texture = (function() {
 	    }
     };
     
-    GLOWTexture.prototype.changeTexture = function( data ) {
+    GLOWTexture.prototype.swapTexture = function( data ) {
         this.dispose();
         this.data = data;
         this.init();
@@ -252,9 +252,9 @@ GLOW.Texture = (function() {
     GLOWTexture.prototype.dispose = function() {
         if( this.texture !== undefined ) {
             GL.deleteTexture( this.texture );
-            delete this.texture;
+            this.texture = undefined;
         } 
-        delete this.data;
+        this.data = undefined;
     };
     
 	return GLOWTexture;
