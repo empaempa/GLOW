@@ -199,8 +199,14 @@ GLOW.Texture = (function() {
     	if( this.minFilter !== GL.NEAREST && this.minFilter !== GL.LINEAR && updateMipmap === true ) {
     	    GL.generateMipmap( this.textureType );
 	    }
-    }
-
+    };
+    
+    GLOWTexture.prototype.changeTexture = function( data ) {
+        this.dispose();
+        this.data = data;
+        this.init();
+    };
+    
     GLOWTexture.prototype.onLoadImage = function() {
     	this.scope.createTexture();
         
@@ -214,12 +220,12 @@ GLOW.Texture = (function() {
         if( this.scope.itemsToLoad === 0 ) {
             this.scope.createTexture();
         }
-    }
+    };
     
     GLOWTexture.prototype.onLoadVideo = function() {
 		this.removeEventListener( "loadeddata", this.scope.onLoadVideo, false );
         this.scope.createTexture();
-    }
+    };
 
     GLOWTexture.prototype.onLoadCubeVideo = function() {
 		this.removeEventListener( "loadeddata", this.scope.onLoadVideo, false );
@@ -227,7 +233,7 @@ GLOW.Texture = (function() {
         if( this.scope.itemsToLoad === 0 ) {
             this.scope.createTexture();
         }
-    }
+    };
     
     GLOWTexture.prototype.play = function() {
         if( this.textureType === GL.TEXTURE_2D ) {
@@ -241,7 +247,7 @@ GLOW.Texture = (function() {
                 }
             }
         }
-    }
+    };
 
     GLOWTexture.prototype.dispose = function() {
         if( this.texture !== undefined ) {
@@ -249,7 +255,7 @@ GLOW.Texture = (function() {
             delete this.texture;
         } 
         delete this.data;
-    }
+    };
     
 	return GLOWTexture;
 })();
