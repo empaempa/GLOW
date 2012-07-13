@@ -85,7 +85,7 @@ GLOW.Texture = (function() {
     	    } else {
         	    for( var c in cubeSideOffsets ) {
     	            if( typeof( this.data[ c ] ) === "string" ) {
-        	            var originalURL  = this.data[ c ];
+        	            var originalURL  = this.data[ c ];
                     	var lowerCaseURL = originalURL.toLowerCase();
                     	if( lowerCaseURL.indexOf( ".jpg" ) !== -1 || 
                             lowerCaseURL.indexOf( ".png" ) !== -1 ||

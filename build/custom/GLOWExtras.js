@@ -282,7 +282,7 @@ GLOW.Vector3 = (function( x, y, z ) {
     	a = a.value;
     	var ax = a[ 0 ], ay = a[ 1 ], az = a[ 2 ];
     	var vx = this.value[ 0 ], vy = this.value[ 1 ], vz = this.value[ 2 ];
-    	this.value[ 0 ] = ay * vz - az * vy;
+    	this.value[ 0 ] = ay * vz - az * vy;
     	this.value[ 1 ] = az * vx - ax * vz;
     	this.value[ 2 ] = ax * vy - ay * vx;
     	return this;
@@ -369,7 +369,7 @@ GLOW.Vector3 = (function( x, y, z ) {
 
     vector3.prototype.setPositionFromMatrix = function( m ) {
     	m = m.value;
-    	this.value[ 0 ] = m[ 12 ];
+    	this.value[ 0 ] = m[ 12 ];
     	this.value[ 1 ] = m[ 13 ];
     	this.value[ 2 ] = m[ 14 ];
     }
@@ -1083,7 +1083,7 @@ GLOW.Geometry = {
 	    
 	    for( d in attributeSizes ) {
 	        if( vertexShadedData[ d ] ) {
-    	        vertexShadedAttribute = vertexShadedData[ d ];
+    	        vertexShadedAttribute = vertexShadedData[ d ];
     	        flatShadedAttribute   = [];
     	        size                  = attributeSizes[ d ];
 
@@ -1506,7 +1506,7 @@ GLOW.ShaderUtils = {
                 triangles[ t ] = t++;
 
         	    for( s in attributeSizes ) {
-        	        originalAttribute = originalData[ s ];
+        	        originalAttribute = originalData[ s ];
         	        newAttribute      = except[ s ];
         	        size              = attributeSizes[ s ];
 
@@ -1522,7 +1522,7 @@ GLOW.ShaderUtils = {
         // create first shader...
         
         for( s in attributeSizes )
-            originalShaderConfig.data[ s ] = excepts[ 0 ][ s ];
+            originalShaderConfig.data[ s ] = excepts[ 0 ][ s ];
     
         originalShaderConfig.triangles = excepts[ 0 ].elements;
   
@@ -1535,7 +1535,7 @@ GLOW.ShaderUtils = {
 
         for( i = 1; i < excepts.length; i++ ) {
             for( s in attributeSizes )
-                originalShaderConfig.data[ s ] = excepts[ i ][ s ];
+                originalShaderConfig.data[ s ] = excepts[ i ][ s ];
                 
     		attributes            = GLOW.Compiler.createAttributes( GLOW.Compiler.extractAttributes( shader.compiledData.program ), originalShaderConfig.data, originalShaderConfig.usage, originalShaderConfig.interleave );
     		interleavedAttributes = GLOW.Compiler.interleaveAttributes( attributes, originalShaderConfig.interleave );

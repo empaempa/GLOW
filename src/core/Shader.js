@@ -138,7 +138,7 @@ GLOW.Shader = (function() {
         }
 
         for( a in this.compiledData.attributes ) {
-            delete this[ a ];
+            delete this[ a ];
         }
         
         for( i in this.compiledData.interleavedAttributes ) {

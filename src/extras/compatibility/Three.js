@@ -184,7 +184,7 @@ GLOW.ThreeJS.Mesh = (function() {
                     } else if( parameters.data[ d ] === "colors" ) {
                         parameters.data[ d ] = this.geometry.GLOW.colors;
                     } else if( parameters.data[ d ] === "normals" ) {
-                        parameters.data[ d ] = this.geometry.GLOW.normals;
+                        parameters.data[ d ] = this.geometry.GLOW.normals;
                     } else if( parameters.data[ d ] === "matrix" ) {
                         parameters.data[ d ] = this.matrix;
                     } else if( parameters.data[ d ] === "matrixWorld" ) {
