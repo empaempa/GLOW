@@ -217,7 +217,7 @@ GLOW.Context = (function() {
     GLOWContext.prototype.setupStencilTest = function( setup ) {
         if( setup.func && setup.funcFace ) {
             GL.stencilFuncSeparate( setup.funcFace, setup.func, setup.funcRef, setup.funcMask );
-        } else if( setup.func ) {
+        } else if( setup.func ) {
             GL.stencilFunc( setup.func, setup.funcRef, setup.funcMask );
         }
         
@@ -540,7 +540,7 @@ GLOW.Compiler = (function() {
 				uniforms[ name ] = data[ name ];
 			} else {
 				uniforms[ name ] = new GLOW.Uniform( uniform, data[ name ] );
-				if( uniforms[ name ].type === GL.SAMPLER_2D || uniforms[ name ].type === GL.SAMPLER_CUBE ) {
+				if( uniforms[ name ].type === GL.SAMPLER_2D || uniforms[ name ].type === GL.SAMPLER_CUBE ) {
 					uniforms[ name ].textureUnit = textureUnit++;
 					uniforms[ name ].data.init();
 				}
@@ -635,7 +635,7 @@ GLOW.Compiler = (function() {
  	    // create interleaved attributes
 	    var name, interleavedAttributes = {};
 	    for( a = 0, al = attributeByIndex.length; a < al; a++ ) {
-	        if( attributeByIndex[ a ] !== undefined ) {
+	        if( attributeByIndex[ a ] !== undefined ) {
 	            name = "";
 	            for( b = 0, bl = attributeByIndex[ a ].length; b < bl; b++ ) {
 	                name += b !== bl - 1 ? attributeByIndex[ a ][ b ].name + "_" : attributeByIndex[ a ][ b ].name;
@@ -1201,7 +1201,7 @@ GLOW.Texture = (function() {
     	    } else {
         	    for( var c in cubeSideOffsets ) {
     	            if( typeof( this.data[ c ] ) === "string" ) {
-        	            var originalURL  = this.data[ c ];
+        	            var originalURL  = this.data[ c ];
                     	var lowerCaseURL = originalURL.toLowerCase();
                     	if( lowerCaseURL.indexOf( ".jpg" ) !== -1 || 
                             lowerCaseURL.indexOf( ".png" ) !== -1 ||
@@ -1248,13 +1248,13 @@ GLOW.Texture = (function() {
     	    for( var c in cubeSideOffsets ) {
     	        if( this.data[ c ] instanceof Uint8Array || this.data[ c ] instanceof Float32Array ) {
             	    if( this.width !== undefined && this.height !== undefined ) {
-                    	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data[ c ] );
+                    	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data[ c ] );
             	    } else {
             	        console.error( "GLOW.Texture.createTexture: Textures of type Uint8Array/Float32Array requires width and height parameters. Quitting." );
             	        return;
             	    }
     	        } else {
-                	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.format, this.type, this.data[ c ] );
+                	GL.texImage2D( GL.TEXTURE_CUBE_MAP_POSITIVE_X + cubeSideOffsets[ c ], 0, this.internalFormat, this.format, this.type, this.data[ c ] );
     	        }
     	    }
     	}
@@ -1684,7 +1684,7 @@ GLOW.InterleavedAttributes = (function() {
         this.attributes = attributes;
         
         // interleave data from the attributes
-        var l, ll = attributes[ 0 ].data.length / attributes[ 0 ].size;
+        var l, ll = attributes[ 0 ].data.length / attributes[ 0 ].size;
         var a, al = attributes.length;
         var b, bl;
         var i, indices = [];

@@ -52,7 +52,7 @@ GLOW.CompiledData = (function() {
     	for( u in this.uniforms ) {
     		if( except[ u ] ) {
                 if( except[ u ] instanceof GLOW.Uniform ) {
-                    clone.uniforms[ u ] = execept[ u ];
+                    clone.uniforms[ u ] = execept[ u ];
                 } else {
                     clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
                     if( clone.uniforms[ u ].type === GL.SAMPLER_2D || 

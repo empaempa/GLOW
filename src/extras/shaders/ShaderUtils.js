@@ -50,7 +50,7 @@ GLOW.ShaderUtils = {
                 triangles[ t ] = t++;
 
         	    for( s in attributeSizes ) {
-        	        originalAttribute = originalData[ s ];
+        	        originalAttribute = originalData[ s ];
         	        newAttribute      = except[ s ];
         	        size              = attributeSizes[ s ];
 
@@ -66,7 +66,7 @@ GLOW.ShaderUtils = {
         // create first shader...
         
         for( s in attributeSizes )
-            originalShaderConfig.data[ s ] = excepts[ 0 ][ s ];
+            originalShaderConfig.data[ s ] = excepts[ 0 ][ s ];
     
         originalShaderConfig.triangles = excepts[ 0 ].elements;
   
@@ -79,7 +79,7 @@ GLOW.ShaderUtils = {
 
         for( i = 1; i < excepts.length; i++ ) {
             for( s in attributeSizes )
-                originalShaderConfig.data[ s ] = excepts[ i ][ s ];
+                originalShaderConfig.data[ s ] = excepts[ i ][ s ];
                 
     		attributes            = GLOW.Compiler.createAttributes( GLOW.Compiler.extractAttributes( shader.compiledData.program ), originalShaderConfig.data, originalShaderConfig.usage, originalShaderConfig.interleave );
     		interleavedAttributes = GLOW.Compiler.interleaveAttributes( attributes, originalShaderConfig.interleave );
