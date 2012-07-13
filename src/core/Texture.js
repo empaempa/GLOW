@@ -22,6 +22,7 @@ GLOW.Texture = (function() {
         this.minFilter      = parameters.minFilter      || parameters.filter || GL.LINEAR_MIPMAP_LINEAR;
         this.width          = parameters.width;
         this.height         = parameters.height;
+        this.loadCallback   = parameters.loadCallback;
         this.texture        = undefined;
 	}
 
@@ -201,6 +202,10 @@ GLOW.Texture = (function() {
 
     GLOWTexture.prototype.onLoadImage = function() {
     	this.scope.createTexture();
+        
+        if (this.scope.loadCallback) {
+            this.scope.loadCallback(this.scope);
+        }
     };
     
     GLOWTexture.prototype.onLoadCubeImage = function() {
