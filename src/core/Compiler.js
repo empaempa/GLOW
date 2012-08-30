@@ -109,7 +109,7 @@ GLOW.Compiler = (function() {
 		GL.shaderSource ( vertexShader, vertexShaderCode );
 		GL.compileShader( vertexShader );
 
-	    if( !GL.getShaderParameter( vertexShader, GL.COMPILE_STATUS )) {
+	    if( !GL.getShaderParameter( vertexShader, GL.COMPILE_STATUS ) && !GL.isContextLost() ) {
 			GLOW.error( "GLOW.Compiler.compileVertexShader: " + GL.getShaderInfoLog( vertexShader ));
 		}
 		
@@ -128,7 +128,7 @@ GLOW.Compiler = (function() {
 		GL.shaderSource ( fragmentShader, fragmentShaderCode );
 		GL.compileShader( fragmentShader );
 
-	    if( !GL.getShaderParameter( fragmentShader, GL.COMPILE_STATUS )) {
+	    if( !GL.getShaderParameter( fragmentShader, GL.COMPILE_STATUS ) && !GL.isContextLost() ) {
 			GLOW.error( "GLOW.Compiler.compileFragmentShader: " + GL.getShaderInfoLog( fragmentShader ));
 		}
 		
@@ -140,15 +140,19 @@ GLOW.Compiler = (function() {
 
 	compiler.linkProgram = function( vertexShader, fragmentShader ) {
 
-		var program;
-	    program    = GL.createProgram();
+		var program = GL.createProgram();
+		
+		if ( !program ) {
+			GLOW.error( "GLOW.Compiler.linkProgram: Could not create program" );
+		}
+		
 		program.id = GLOW.uniqueId();
 
 	    GL.attachShader( program, vertexShader );
 	    GL.attachShader( program, fragmentShader );
 	    GL.linkProgram ( program );
 
-	    if( !GL.getProgramParameter( program, GL.LINK_STATUS )) {
+	    if( !GL.getProgramParameter( program, GL.LINK_STATUS ) && !GL.isContextLost() ) {
 			GLOW.error( "GLOW.Compiler.linkProgram: Could not initialise program" );
 	    }
 	

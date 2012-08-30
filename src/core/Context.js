@@ -20,19 +20,25 @@ GLOW.Context = (function() {
     	this.width                  = parameters.width                 !== undefined ? parameters.width                 : window.innerWidth;
     	this.height                 = parameters.height                !== undefined ? parameters.height                : window.innerHeight;
     	this.cache                  = new GLOW.Cache();
-
+        this.debug                  = parameters.debug                 !== undefined ? parameters.debug                 : false;
+        
     	if( parameters.context ) {
     	    this.GL = parameters.context;
         	GLOW.registerContext( this );
     	} else {
         	try {
         		this.domElement = document.createElement( 'canvas' );
-        		this.GL         = this.domElement.getContext( 'experimental-webgl', { alpha:                 this.alpha, 
-                                                                                      depth:                 this.depth, 
-                                                                                      antialias:             this.antialias,
-                                                                                      stencil:               this.stencil,
-                                                                                      premultipliedAlpha:    this.premultipliedAlpha,
-                                                                                      preserveDrawingBuffer: this.preserveDrawingBuffer } );
+                
+                if( this.debug && window.WebGLDebugUtils ) {
+                    this.domElement = WebGLDebugUtils.makeLostContextSimulatingCanvas( this.domElement );
+                }
+                
+        		this.GL = this.domElement.getContext( 'experimental-webgl', { alpha:                 this.alpha, 
+                                                                              depth:                 this.depth, 
+                                                                              antialias:             this.antialias,
+                                                                              stencil:               this.stencil,
+                                                                              premultipliedAlpha:    this.premultipliedAlpha,
+                                                                              preserveDrawingBuffer: this.preserveDrawingBuffer } );
         	} catch( error ) {
         		GLOW.error( "GLOW.Context.construct: " + error );
         	}
