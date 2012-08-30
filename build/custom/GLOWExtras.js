@@ -10,8 +10,12 @@ GLOW.Float = (function() {
 	
     // constructor
 	function float( value ) {
-    	this.value = new Float32Array( 1 );
-    	this.value[ 0 ] = value !== undefined ? value : 0;
+        if( value !== undefined && value.length ) {
+            this.value = new Float32Array( value );
+       } else {
+            this.value = new Float32Array( 1 );
+            this.value[ 0 ] = value !== undefined ? value : 0;
+        }
 	}
 
     // methods
@@ -52,14 +56,18 @@ GLOW.Float = (function() {
 * @author: Mikael Emtinger, gomo.se
 */
 
-GLOW.Int = function( value ) {
+GLOW.Int = (function() {
 
 	"use strict";
 	
     // constructor
 	function int( value ) {
-    	this.value = new int32Array( 1 );
-    	this.value[ 0 ] = value !== undefined ? value : 0;
+        if( value !== undefined && value.length ) {
+            this.value = new Int32Array( value );
+        } else {
+            this.value = new Int32Array( 1 );
+            this.value[ 0 ] = value !== undefined ? value : 0;
+        }
 	}
 
     // methods
@@ -94,7 +102,113 @@ GLOW.Int = function( value ) {
     }
     	
 	return int;
-}
+})();
+
+/*
+* GLOW.Bool
+* @author: Tom Beddard, subblue.com
+*/
+
+GLOW.Bool = (function() {
+	
+	"use strict";
+	
+    // constructor
+	function bool( value ) {
+    	this.value = [];
+    	this.value[ 0 ] = value !== undefined ? !!value : false;
+	}
+
+    // methods
+    bool.prototype.set = function( value ) {
+        this.value[ 0 ] = !!value;
+        return this;
+    }
+    
+	return bool;
+})();
+/*
+* GLOW.Bool2
+* @author: Tom Beddard, subblue.com
+*/
+
+GLOW.Bool2 = (function() {
+	
+	"use strict";
+	
+    // constructor
+	function bool( x, y ) {
+    	this.value = [];
+		this.value[ 0 ] = x !== undefined ? !!x : false;
+        this.value[ 1 ] = y !== undefined ? !!y : false;
+	}
+
+    // methods
+    bool.prototype.set = function ( x, y ) {
+		this.value[ 0 ] = !!x;
+		this.value[ 1 ] = !!y;
+		return this;
+    }
+    
+	return bool;
+})();
+/*
+* GLOW.Bool3
+* @author: Tom Beddard, subblue.com
+*/
+
+GLOW.Bool3 = (function() {
+	
+	"use strict";
+	
+    // constructor
+	function bool( x, y, z ) {
+    	this.value = [];
+		this.value[ 0 ] = x !== undefined ? !!x : false;
+        this.value[ 1 ] = y !== undefined ? !!y : false;
+        this.value[ 2 ] = z !== undefined ? !!z : false;
+	}
+
+    // methods
+    bool.prototype.set = function ( x, y, z ) {
+		this.value[ 0 ] = !!x;
+		this.value[ 1 ] = !!y;
+		this.value[ 2 ] = !!z;
+		return this;
+    }
+    
+	return bool;
+})();
+
+/*
+* GLOW.Bool4
+* @author: Tom Beddard, subblue.com
+*/
+
+GLOW.Bool4 = (function() {
+	
+	"use strict";
+	
+    // constructor
+	function bool( x, y, z, w ) {
+    	this.value = [];
+		this.value[ 0 ] = x !== undefined ? !!x : false;
+        this.value[ 1 ] = y !== undefined ? !!y : false;
+        this.value[ 2 ] = z !== undefined ? !!z : false;
+        this.value[ 3 ] = w !== undefined ? !!w : false;
+	}
+
+    // methods
+    bool.prototype.set = function ( x, y, z, w ) {
+		this.value[ 0 ] = !!x;
+		this.value[ 1 ] = !!y;
+		this.value[ 2 ] = !!z;
+		this.value[ 3 ] = !!w;
+		return this;
+    }
+    
+	return bool;
+})();
 /**
  * GLOW.Vector2 Based upon THREE.Vector2 by
  * @author mr.doob / http://mrdoob.com/
@@ -202,7 +316,7 @@ GLOW.Vector2 = (function() {
  * @author mikael emtinger / http://gomo.se/
  */
 
-GLOW.Vector3 = (function( x, y, z ) {
+GLOW.Vector3 = (function() {
 
 	"use strict"; "use restrict";
 
@@ -223,7 +337,7 @@ GLOW.Vector3 = (function( x, y, z ) {
     }
 
     vector3.prototype.copy = function ( v ) {
-    	this.set( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+    	this.set( v.value[ 0 ], v.value[ 1 ], v.value[ 2 ] );
     	return this;
     }
 
@@ -482,6 +596,10 @@ GLOW.Vector4 = (function() {
 	    return this;
 	};
 
+	vector4.prototype.lengthOfXYZ = function() {
+		return Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
+	}
+
 	vector4.prototype.clone = function () {
 		return new GLOW.Vector4( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
 	};
@@ -505,9 +623,9 @@ GLOW.Matrix3 = (function() {
 
     // methods
     matrix3.prototype.set = function( m11, m12, m13, m21, m22, m23, m31, m32, m33 ) {
-    	this.value[ 0 ] = m11; this.value[ 4 ] = m12; this.value[ 8 ] = m13;
-    	this.value[ 1 ] = m21; this.value[ 5 ] = m22; this.value[ 9 ] = m23;
-    	this.value[ 2 ] = m31; this.value[ 6 ] = m32; this.value[ 10 ] = m33;
+    	this.value[ 0 ] = m11; this.value[ 3 ] = m12; this.value[ 6 ] = m13;
+    	this.value[ 1 ] = m21; this.value[ 4 ] = m22; this.value[ 7 ] = m23;
+    	this.value[ 2 ] = m31; this.value[ 5 ] = m32; this.value[ 8 ] = m33;
     	return this;
     }
 
@@ -515,20 +633,23 @@ GLOW.Matrix3 = (function() {
     	this.set( 1, 0, 0, 0, 1, 0, 0, 0, 1	);
     	return this;
     }
-    
-    matrix3.prototype.getValueAsFloat32Array = function() {
-        this.float32Array[ 0 ] = this.value[ 0 ];
-        this.float32Array[ 1 ] = this.value[ 1 ];
-        this.float32Array[ 2 ] = this.value[ 2 ];
-        this.float32Array[ 3 ] = this.value[ 3 ];
-        this.float32Array[ 4 ] = this.value[ 4 ];
-        this.float32Array[ 5 ] = this.value[ 5 ];
-        this.float32Array[ 6 ] = this.value[ 6 ];
-        this.float32Array[ 7 ] = this.value[ 7 ];
-        this.float32Array[ 8 ] = this.value[ 8 ];
-        return this.float32Array;
+
+    matrix3.prototype.extractFromMatrix4 = function( matrix4 ) {
+        this.set( matrix4.value[ 0 ], matrix4.value[ 4 ], matrix4.value[ 8  ],
+                  matrix4.value[ 1 ], matrix4.value[ 5 ], matrix4.value[ 9  ],
+                  matrix4.value[ 2 ], matrix4.value[ 6 ], matrix4.value[ 10 ] );
+        return this;
     }
 
+    matrix3.prototype.multiplyVector3 = function( v ) {
+        var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ];
+        v.value[ 0 ] = this.value[ 0 ] * vx + this.value[ 3 ] * vy + this.value[ 6 ] * vz;
+        v.value[ 1 ] = this.value[ 1 ] * vx + this.value[ 4 ] * vy + this.value[ 7 ] * vz;
+        v.value[ 2 ] = this.value[ 2 ] * vx + this.value[ 5 ] * vy + this.value[ 8 ] * vz;
+        return v;
+    }
+
+    
     return matrix3;
 })();
 
@@ -691,7 +812,7 @@ GLOW.Matrix4 = (function() {
     }
 
     matrix4.prototype.multiplySelf = function ( a ) {
-    	this.multiply( m, a );
+    	this.multiply( this, a );
     	return this;
     }
 
@@ -754,38 +875,77 @@ GLOW.Matrix4 = (function() {
     }
 
 
-    matrix4.prototype.setPosition = function( x, y, z ) {
-    	this.value[ 12 ] = x;
+    matrix4.prototype.setPosition = function( v, y, z ) {
+    	var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
+        this.value[ 12 ] = x;
     	this.value[ 13 ] = y;
     	this.value[ 14 ] = z;
     	return this;
     }
 
-    matrix4.prototype.addPosition = function( x, y, z ) {
+    matrix4.prototype.addPosition = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
     	this.value[ 12 ] += x;
     	this.value[ 13 ] += y;
     	this.value[ 14 ] += z;
     }
 
-    matrix4.prototype.setRotation = function( x, y, z ) {
-    	this.rotation.set( x, y, z );
-    	var a = Math.cos( x ), b = Math.sin( x ),
-    	    c = Math.cos( y ), d = Math.sin( y ),
-    	    e = Math.cos( z ), f = Math.sin( z ),
-    	    ad = a * d, bd = b * d;
-    	this.value[ 0 ] = c * e;
-    	this.value[ 4 ] = - c * f;
-    	this.value[ 8 ] = d;
-    	this.value[ 1 ] = bd * e + a * f;
-    	this.value[ 5 ] = - bd * f + a * e;
-    	this.value[ 9 ] = - b * c;
-    	this.value[ 2 ] = - ad * e + b * f;
-    	this.value[ 6 ] = ad * f + b * e;
-    	this.value[ 10 ] = a * c;
+    matrix4.prototype.setRotation = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
+        var ch = Math.cos(y);
+        var sh = Math.sin(y);
+        var ca = Math.cos(z);
+        var sa = Math.sin(z);
+        var cb = Math.cos(x);
+        var sb = Math.sin(x);
+
+        this.value[ 0  ] = ch * ca;
+        this.value[ 4  ] = sh*sb - ch*sa*cb;
+        this.value[ 8  ] = ch*sa*sb + sh*cb;
+        this.value[ 1  ] = sa;
+        this.value[ 5  ] = ca*cb;
+        this.value[ 9  ] = -ca*sb;
+        this.value[ 2  ] = -sh*ca;
+        this.value[ 6  ] = sh*sa*cb + ch*sb;
+        this.value[ 10 ] = -sh*sa*sb + ch*cb;
+
     	return this;
     }
 
-    matrix4.prototype.addRotation = function( x, y, z ) {
+    matrix4.prototype.addRotation = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
     	this.rotation.value[ 0 ] += x;
     	this.rotation.value[ 1 ] += y;
     	this.rotation.value[ 2 ] += z;
@@ -827,6 +987,11 @@ GLOW.Matrix4 = (function() {
     	this.value[ 2 ] *= x; this.value[ 6 ] *= y; this.value[ 10 ] *= z;
     	this.value[ 3 ] *= x; this.value[ 7 ] *= y; this.value[ 11 ] *= z;
     	return this;
+    }
+
+    matrix4.prototype.invert = function() {
+        GLOW.Matrix4.makeInverse( this, this );
+        return this;
     }
 
     return matrix4;
@@ -913,11 +1078,11 @@ GLOW.Matrix4.makeInverse = function ( m1, m2 ) {
 }
 */
 
-GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
+GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far, destMatrix ) {
 
 	var m, mv, x, y, a, b, c, d;
 
-	m = new GLOW.Matrix4();
+	m = destMatrix || new GLOW.Matrix4();
 	x = 2 * near / ( right - left );
 	y = 2 * near / ( top - bottom );
 	a = ( right + left ) / ( right - left );
@@ -932,10 +1097,9 @@ GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
 	mv[ 3 ] = 0;  mv[ 7 ] = 0;  mv[ 11 ] = - 1; mv[ 15 ] = 0;
 
 	return m;
-
 };
 
-GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
+GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far, destMatrix ) {
 
 	var ymax, ymin, xmin, xmax;
 
@@ -944,18 +1108,18 @@ GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
 	xmin = ymin * aspect;
 	xmax = ymax * aspect;
 
-	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far );
+	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far, destMatrix );
 
 };
 
-GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far ) {
+GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far, destMatrix ) {
 
 	var m, mv, x, y, z, w, h, p;
 
-	m = new GLOW.Matrix4();
-	w = right - left;
-	h = top - bottom;
-	p = far - near;
+	m = destMatrix || new GLOW.Matrix4();
+	w = Math.abs( right - left );
+	h = Math.abs( top - bottom );
+	p = Math.abs( far - near );
 	x = ( right + left ) / w;
 	y = ( top + bottom ) / h;
 	z = ( far + near ) / p;
@@ -976,7 +1140,97 @@ GLOW.Matrix4.tempVector3A = new GLOW.Vector3();
 GLOW.Matrix4.tempVector3B = new GLOW.Vector3();
 GLOW.Matrix4.tempVector3C = new GLOW.Vector3();
 GLOW.Matrix4.tempVector3D = new GLOW.Vector3();
-GLOW.Geometry = {
+GLOW.Color = (function() {
+
+	"use strict"; "use restrict";
+
+	function color( rOrHex, g, b ) {
+		this.value = new Float32Array( 3 );
+		if( g === undefined && b === undefined ) {		// duck hunt!
+			this.setHex( rOrHex || 0 );
+		} else {
+			this.setRGB( rOrHex, g, b );
+		}
+	}
+
+	color.prototype.setRGB = function( r, g, b ) {
+		this.value[ 0 ] = r !== undefined ? r / 255 : 1;
+		this.value[ 1 ] = g !== undefined ? g / 255 : 1;
+		this.value[ 2 ] = b !== undefined ? b / 255 : 1;
+		return this;
+	}
+
+	color.prototype.setHex = function( hex ) {
+		this.value[ 0 ] = (( hex & 0xff0000 ) >> 16 ) / 255;
+		this.value[ 1 ] = (( hex & 0x00ff00 ) >> 8  ) / 255;
+		this.value[ 2 ] = (( hex & 0x0000ff )       ) / 255;
+		return this;
+	}
+
+	color.prototype.multiplyScalar = function( s ) {
+		this.value[ 0 ] *= s;
+		this.value[ 1 ] *= s;
+		this.value[ 2 ] *= s;
+		return this;
+	} 
+
+	color.prototype.mix = function( otherColor, amount ) {
+		var invAmount = 1.0 - amount;
+		this.value[ 0 ] = this.value[ 0 ] * invAmount + otherColor.value[ 0 ] * amount;
+		this.value[ 1 ] = this.value[ 1 ] * invAmount + otherColor.value[ 1 ] * amount;
+		this.value[ 2 ] = this.value[ 2 ] * invAmount + otherColor.value[ 2 ] * amount;
+		return this;
+	}
+
+	color.prototype.copy = function( srcColor ) {
+		this.value[ 0 ] = srcColor.value[ 0 ];
+		this.value[ 1 ] = srcColor.value[ 1 ];
+		this.value[ 2 ] = srcColor.value[ 2 ];
+		return this;
+	}
+
+	color.prototype.setHSV = function( h, s, v ) {
+
+		// based on MochiKit implementation by Bob Ippolito
+		// h,s,v ranges are < 0.0 - 1.0 >
+
+		var r, g, b, i, f, p, q, t;
+
+		if ( v == 0.0 ) {
+
+			r = g = b = 0;
+
+		} else {
+
+			i = Math.floor( h * 6 );
+			f = ( h * 6 ) - i;
+			p = v * ( 1 - s );
+			q = v * ( 1 - ( s * f ) );
+			t = v * ( 1 - ( s * ( 1 - f ) ) );
+
+			switch ( i ) {
+
+				case 1: r = q; g = v; b = p; break;
+				case 2: r = p; g = v; b = t; break;
+				case 3: r = p; g = q; b = v; break;
+				case 4: r = t; g = p; b = v; break;
+				case 5: r = v; g = p; b = q; break;
+				case 6: // fall through
+				case 0: r = v; g = t; b = p; break;
+
+			}
+
+		}
+
+		this.value[ 0 ] = r;
+		this.value[ 1 ] = g;
+		this.value[ 2 ] = b;
+
+		return this;
+	}
+
+	return color;
+})();GLOW.Geometry = {
 	
 	randomVector3Array: function( amount, factor ) {
 		factor = factor !== undefined ? factor : 1;
@@ -1019,7 +1273,7 @@ GLOW.Geometry = {
 	},
 	
 	faceNormals: function( vertices, elements ) {
-		var normals = new Float32Array( vertices.length );
+		var normals = new Array( vertices.length );
 		var e, el = elements.length;
 		var a, b, c;
 		var av = new GLOW.Vector3();
@@ -1039,7 +1293,7 @@ GLOW.Geometry = {
 			bv.subSelf( av );
 			cv.subSelf( av );
 			
-			nv.cross( cv, bv ).normalize();
+			nv.cross( bv, cv ).normalize();
 			
 			normals[ a + 0 ] = nv.value[ 0 ]; normals[ a + 1 ] = nv.value[ 1 ]; normals[ a + 2 ] = nv.value[ 2 ];
 			normals[ b + 0 ] = nv.value[ 0 ]; normals[ b + 1 ] = nv.value[ 1 ]; normals[ b + 2 ] = nv.value[ 2 ];
@@ -1065,12 +1319,12 @@ GLOW.Geometry = {
 	    
 	    if( shaderConfig.triangles === undefined || 
 	        shaderConfig.data      === undefined ) {
-	        console.error( "GLOW.Geometry.flatShade: missing .data and/or .triangles in shader config object. Quitting." );
+	        GLOW.error( "GLOW.Geometry.flatShade: missing .data and/or .triangles in shader config object. Quitting." );
 	        return;
 	    }
 	    
 	    if( attributeSizes === undefined ) {
-	        console.error( "GLOW.Geometry.flatShade: missing attribute data sizes. Quitting." );
+	        GLOW.error( "GLOW.Geometry.flatShade: missing attribute data sizes. Quitting." );
 	        return;
 	    }
 	    
@@ -1188,7 +1442,11 @@ GLOW.Geometry.Cube = {
 
 		return a;
 	},
-	
+
+	primitives: function() {
+	    return GL.TRIANGLES;
+	},
+
 	uvs: function() {
 		
 		var a = new Float32Array( 6 * 4 * 2 );
@@ -1227,27 +1485,158 @@ GLOW.Geometry.Cube = {
 		return a;
 	},
 	
+	normals: function() {
+		return GLOW.Geometry.faceNormals( GLOW.Geometry.Cube.vertices(), GLOW.Geometry.Cube.indices());
+	}
+}
+
+
+GLOW.Geometry.Cylinder = {
+	
+	vertices: function( numSegs, topRad, botRad, height ) {
+
+		numSegs = numSegs | 7;
+		topRad  = topRad  | 1;
+		botRad  = botRad  | 1;
+		height  = height  | 1;
+
+		var vertices = [];
+		var s, PI2 = Math.PI * 2, halfHeight = height * 0.5;
+
+		for( s = 0; s < numSegs; s++ ) {
+			vertices.push( Math.sin( PI2 * s / numSegs ) * topRad );
+			vertices.push( halfHeight );
+			vertices.push( Math.cos( PI2 * s / numSegs ) * topRad );
+		}
+
+		for( s = 0; s < numSegs; s++ ) {
+			vertices.push( Math.sin( PI2 * s / numSegs ) * botRad );
+			vertices.push( -halfHeight );
+			vertices.push( Math.cos( PI2 * s / numSegs ) * botRad );
+		}
+
+		vertices.push( 0 );
+		vertices.push( halfHeight );
+		vertices.push( 0 );
+
+		vertices.push( 0 );
+		vertices.push( -halfHeight );
+		vertices.push( 0 );
+
+		return vertices;
+	},
+
+	indices: function( numSegs ) {
+
+		numSegs = numSegs | 7;
+		var a, b, c, d, s, indices = [];
+
+		for( s = 0; s < numSegs; s++ ) {
+			a = s;
+			b = s + numSegs;
+			c = numSegs + ( s + 1 ) % numSegs;
+			d = ( s + 1 ) % numSegs;
+
+			indices.push( a );
+			indices.push( b );
+			indices.push( c );
+
+			indices.push( a );
+			indices.push( c );
+			indices.push( d );
+		}
+
+		for( s = numSegs; s < numSegs + numSegs * 0.5; s++ ) {
+			a = 2 * numSegs;
+			b = ( 2 * s - 2 * numSegs + 0 ) % numSegs;
+			c = ( 2 * s - 2 * numSegs + 1 ) % numSegs;
+			d = ( 2 * s - 2 * numSegs + 2 ) % numSegs;
+
+			indices.push( a );
+			indices.push( b );
+			indices.push( c );
+
+			indices.push( a );
+			indices.push( c );
+			indices.push( d );
+		}
+
+		for( s = numSegs + numSegs * 0.5; s < 2 * numSegs; s ++ ) {
+			a = 2 * numSegs + 1;
+			b = ( 2 * s - 2 * numSegs + 2 ) % numSegs + numSegs;
+			c = ( 2 * s - 2 * numSegs + 1 ) % numSegs + numSegs;
+			d = ( 2 * s - 2 * numSegs + 0 ) % numSegs + numSegs;
+
+			indices.push( a );
+			indices.push( b );
+			indices.push( c );
+
+			indices.push( a );
+			indices.push( c );
+			indices.push( d );
+		}
+
+		return indices;
+	},
+
+	uvs: function() {
+/*
+		for ( var i = 0, il = this.faces.length; i < il; i ++ ) {
+
+			var uvs = [], face = this.faces[ i ],
+			a = this.vertices[ face.a ],
+			b = this.vertices[ face.b ],
+			c = this.vertices[ face.c ],
+			d = this.vertices[ face.d ];
+
+			uvs.push( new THREE.UV( 0.5 + Math.atan2( a.position.x, a.position.y ) / PI2, 0.5 + ( a.position.z / height ) ) );
+			uvs.push( new THREE.UV( 0.5 + Math.atan2( b.position.x, b.position.y ) / PI2, 0.5 + ( b.position.z / height ) ) );
+			uvs.push( new THREE.UV( 0.5 + Math.atan2( c.position.x, c.position.y ) / PI2, 0.5 + ( c.position.z / height ) ) );
+
+			if ( face instanceof THREE.Face4 ) {
+
+				uvs.push( new THREE.UV( 0.5 + ( Math.atan2( d.position.x, d.position.y ) / PI2 ), 0.5 + ( d.position.z / height ) ) );
+
+			}
+
+			this.faceVertexUvs[ 0 ].push( uvs );
+
+		}
+*/		
+	},
+
 	primitives: function() {
 	    return GL.TRIANGLES;
+	},
+
+	normals: function( numSegs ) {
+		return GLOW.Geometry.faceNormals( GLOW.Geometry.Cylinder.vertices( numSegs ), GLOW.Geometry.Cylinder.indices( numSegs ));
 	}
 }
 
 
 GLOW.Geometry.Plane = {
 	
-	vertices: function( size ) {
+	vertices: function( size, facingUp ) {
 
 		var a = new Float32Array( 4 * 3 );
 		var i = 0;
 
 		size = size !== undefined ? size * 0.5 : 1.0;
 
-		// front
-
-		a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = 0; 
-		a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = 0; 
-		a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = 0; 
-		a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = 0; 
+		if( facingUp ) {
+			// top
+ 			a[ i++ ] = -size; a[ i++ ] = 0; a[ i++ ] = -size;
+			a[ i++ ] = -size; a[ i++ ] = 0; a[ i++ ] = +size;
+			a[ i++ ] = +size; a[ i++ ] = 0; a[ i++ ] = +size;
+			a[ i++ ] = +size; a[ i++ ] = 0; a[ i++ ] = -size;
+		} else {
+			// front
+			a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = 0; 
+			a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = 0; 
+			a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = 0; 
+			a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = 0; 
+		}
 
 		return a;
 	},
@@ -1263,15 +1652,24 @@ GLOW.Geometry.Plane = {
 		return a;
 	},
 	
-	uvs: function() {
+	uvs: function( facingUp ) {
 		
 		var a = new Float32Array( 4 * 2 );
 		var i = 0;
 		
-		a[ i++ ] = 1; a[ i++ ] = 0;
-		a[ i++ ] = 1; a[ i++ ] = 1;
-		a[ i++ ] = 0; a[ i++ ] = 1;
-		a[ i++ ] = 0; a[ i++ ] = 0;
+		if( facingUp ) {
+			a[ i++ ] = 0; a[ i++ ] = 0;
+			a[ i++ ] = 0; a[ i++ ] = 1;
+			a[ i++ ] = 1; a[ i++ ] = 1;
+
+			a[ i++ ] = 1; a[ i++ ] = 0;
+
+		} else {
+			a[ i++ ] = 1; a[ i++ ] = 0;
+			a[ i++ ] = 1; a[ i++ ] = 1;
+			a[ i++ ] = 0; a[ i++ ] = 1;
+			a[ i++ ] = 0; a[ i++ ] = 0;
+		}
 		
 		return a;
 	},
@@ -1288,9 +1686,12 @@ GLOW.Node = function( shader ) {
 	
 	"use strict";
 	
-	this.localMatrix  = new GLOW.Matrix4();
-	this.globalMatrix = new GLOW.Matrix4();
-	this.viewMatrix   = new GLOW.Matrix4();
+	this.localMatrix    = new GLOW.Matrix4();
+	this.globalMatrix   = new GLOW.Matrix4();
+	this.viewMatrix     = new GLOW.Matrix4();
+	
+	this.updateRotationMatrix = false;
+	this.rotationMatrix = new GLOW.Matrix3(); 
 	
 	this.useXYZStyleTransform = false;
 	this.position = { x: 0, y: 0, z: 0 };
@@ -1313,32 +1714,27 @@ GLOW.Node = function( shader ) {
 GLOW.Node.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix ) {
 	
 	if( this.useXYZStyleTransform ) {
-		
 		this.localMatrix.setPosition( this.position.x, this.position.y, this.position.z );
 		this.localMatrix.setRotation( this.rotation.x, this.rotation.y, this.rotation.z );
 		this.localMatrix.scale( this.scale.x, this.scale.y, this.scale.z );
 	}
 	
 	if( parentGlobalMatrix ) {
-
 		this.globalMatrix.multiply( parentGlobalMatrix, this.localMatrix );
-
 	} else {
-
 		this.globalMatrix.copy( this.localMatrix );
 	}
 	
+	if( this.updateRotationMatrix ) {
+		this.rotationMatrix.extractFromMatrix4( this.globalMatrix );
+	}
 	
 	if( cameraInverseMatrix ) {
-		
 		this.viewMatrix.multiply( cameraInverseMatrix, this.globalMatrix );
 	}
 	
-
 	var c, cl = this.children.length;
-
 	for( c = 0; c < cl; c++ ) {
-		
 		this.children[ c ].update( this.globalMatrix, cameraInverseMatrix );
 	}
 	
@@ -1348,14 +1744,10 @@ GLOW.Node.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix )
 GLOW.Node.prototype.addChild = function( child ) {
 	
 	if( this.children.indexOf( child ) === -1 ) {
-		
 		this.children.push( child );
-		
 		if( child.parent ) {
-			
 			child.parent.removeChild( child );
 		}
-		
 		child.parent = this;
 	}
 	
@@ -1366,9 +1758,7 @@ GLOW.Node.prototype.addChild = function( child ) {
 GLOW.Node.prototype.removeChild = function( child ) {
 	
 	var index = this.children.indexOf( child );
-	
 	if( index !== -1 ) {
-		
 		this.children.splice( 1, index );
 		child.parent = undefined;
 	}
@@ -1388,17 +1778,17 @@ GLOW.Camera = function( parameters ) {
 
 	parameters = parameters !== undefined ? parameters : {};
 
-	var fov    = parameters.fov    !== undefined ? parameters.fov    : 40;
-	var aspect = parameters.aspect !== undefined ? parameters.aspect : window.innerWidth / window.innerHeight;
-	var near   = parameters.near   !== undefined ? parameters.near   : 0.1;
-	var far    = parameters.far    !== undefined ? parameters.far    : 10000;
+	this.fov    = parameters.fov    !== undefined ? parameters.fov    : 40;
+	this.aspect = parameters.aspect !== undefined ? parameters.aspect : window.innerWidth / window.innerHeight;
+	this.near   = parameters.near   !== undefined ? parameters.near   : 0.1;
+	this.far    = parameters.far    !== undefined ? parameters.far    : 10000;
 
-	this.useTarget  = parameters.useTarget !== undefined ? parameters.useTarget : true;
+	this.useTarget = parameters.useTarget !== undefined ? parameters.useTarget : true;
 	
 	if( parameters.ortho !== undefined )
-	    this.projection = GLOW.Matrix4.makeOrtho( parameters.ortho.left, parameters.ortho.right, parameters.ortho.top, parameters.ortho.bottom, near, far );
+	    this.projection = GLOW.Matrix4.makeOrtho( parameters.ortho.left, parameters.ortho.right, parameters.ortho.top, parameters.ortho.bottom, this.near, this.far );
 	else
-	    this.projection = GLOW.Matrix4.makeProjection( fov, aspect, near, far );
+	    this.projection = GLOW.Matrix4.makeProjection( this.fov, this.aspect, this.near, this.far );
 
 	this.inverse    = new GLOW.Matrix4();
 	this.target     = new GLOW.Vector3( 0, 0, -100 );
@@ -1454,6 +1844,507 @@ GLOW.Camera.prototype.update = function( parentGlobalMatrix, cameraInverseMatrix
 
 GLOW.defaultCamera = new GLOW.Camera();
 
+GLOW.Load = (function() {
+    
+    "use strict"; "use restrict";
+    
+    // constructor
+    function load( parameters ) {
+        this.parameters         = parameters;
+        this.onLoadComplete     = undefined;
+        this.onLoadContext      = null;
+        this.onLoadItem         = undefined;
+        this.numItemsToLoad     = 0;
+        this.numItemsLeftToLoad = 0;
+
+        for( var p in parameters ) {
+            if( p !== "onLoadComplete" && p !== "onLoadItem" && p!== "dontParseJS" && p != "onLoadContext" ) {
+                this.numItemsToLoad++;
+            } else {
+                this[ p ] = parameters[ p ];
+                delete parameters[ p ];
+            }
+        }
+        this.numItemsLeftToLoad = this.numItemsToLoad;
+        
+        for( var p in parameters ) {
+            var originalURL  = parameters[ p ];
+            var lowerCaseURL = parameters[ p ];
+            if( lowerCaseURL.indexOf( ".png" ) !== -1 ||
+                lowerCaseURL.indexOf( ".gif" ) !== -1 ||
+                lowerCaseURL.indexOf( ".jpg" ) !== -1 ||
+                lowerCaseURL.indexOf( "jpeg" ) !== -1 ) {
+                parameters[ p ] = new Image();
+                parameters[ p ].scope = this;
+                parameters[ p ].onload = this.onLoadImage;
+                parameters[ p ].onerror = this.onLoadError;
+                parameters[ p ].onabort = this.onLoadError;
+                parameters[ p ].src = originalURL;
+            } else if( lowerCaseURL.indexOf( ".glsl" ) !== -1 ) {
+                parameters[ p ] = new XMLHttpRequest();
+                parameters[ p ].scope = this;
+                parameters[ p ].parametersProperty = p;
+                parameters[ p ].open( "GET", originalURL );
+                parameters[ p ].onreadystatechange = this.onLoadGLSL;
+                parameters[ p ].onerror = this.onLoadError;
+                parameters[ p ].onabort = this.onLoadError;
+                parameters[ p ].send();
+            } else if( lowerCaseURL.indexOf( ".js" ) !== -1 || lowerCaseURL.indexOf( ".json" ) !== -1 ) {
+                parameters[ p ] = new XMLHttpRequest();
+                parameters[ p ].scope = this;
+                parameters[ p ].parametersProperty = p;
+                parameters[ p ].open( "GET", originalURL );
+                parameters[ p ].onreadystatechange = this.onLoadJSON;
+                parameters[ p ].onerror = this.onLoadError;
+                parameters[ p ].onabort = this.onLoadError;
+                parameters[ p ].send();
+            } else {
+                parameters[ p ] = document.createElement( "video" );
+                parameters[ p ].scope = this;
+                parameters[ p ].addEventListener( "loadeddata", this.onLoadVideo, false );
+                parameters[ p ].src = originalURL;
+            }
+        }
+    }
+    
+    // methods
+    load.prototype.handleLoadedItem = function() {
+        this.numItemsLeftToLoad--;
+        if( this.onLoadItem !== undefined ) {
+            this.onLoadItem.call( this.onLoadContext, 1 - this.numItemsLeftToLoad / this.numItemsToLoad );
+        }
+        if( this.numItemsLeftToLoad <= 0 ) {
+            this.onLoadComplete.call( this.onLoadContext, this.parameters );
+        }
+    };
+
+    load.prototype.onLoadJSON = function() {
+        if( this.readyState === 4 ) {
+   /*         var originalData;
+            var data = {};
+            
+            // Three.js
+            if( this.scope.dontParseJS !== true ) {
+                if( this.responseText.indexOf( "var model = {" ) !== -1 ) {
+                    var dataString = this.responseText.slice( this.responseText.indexOf( "var model = {" ) + 12,
+                                                              this.responseText.indexOf( "};" ) + 1 );
+                    originalData = JSON.parse( dataString );
+                    data = this.scope.parseThreeJS( originalData );
+                // J3D
+                } else {
+                    originalData = JSON.parse( this.responseText );
+
+                    if( originalData.vertices && originalData.vertices.length > 0 ) data.vertices = new Float32Array( originalData.vertices );
+                    if( originalData.normals && originalData.normals.length > 0 ) data.normals = new Float32Array( originalData.normals );
+                    if( originalData.uv1 && originalData.uv1.length > 0 ) data.uv1 = new Float32Array( originalData.uv1 );
+                    if( originalData.uv2 && originalData.uv2.length > 0 ) data.uv2 = new Float32Array( originalData.uv2 );
+                    if( originalData.colors && originalData.colors.length > 0 ) data.colors = new Float32Array( originalData.colors );
+                    if( originalData.tris && originalData.tris.length > 0 ) data.triangles = new Uint16Array( originalData.tris );
+                }
+            } else {
+                data = JSON.parse( this.responseText );
+            }*/
+
+            this.scope.parameters[ this.parametersProperty ] = JSON.parse( this.responseText );;
+            this.scope.handleLoadedItem();
+        }
+    };
+
+    load.prototype.onLoadImage = function() {
+        this.scope.handleLoadedItem();
+    };
+
+    load.prototype.onLoadVideo = function() {
+        this.removeEventListener( "loadeddata", this.scope.onLoadVideo, false );
+        this.scope.handleLoadedItem();
+    };
+    
+    /*
+    * GLSL parser by Bartek Drozyz
+    * Slightly modified to suit GLOW by Mikael Emtinger
+    */
+    
+    load.prototype.onLoadGLSL = function() {
+        if( this.readyState === 4 ) {
+            // glsl parser by Bartek Drozyz
+        	var vs = "";
+        	var fs = "";
+        	var ls = this.responseText.split( "\n" );
+        	var buf = "";
+        	for( var i = 0; i < ls.length; i++ ) {
+        		if( ls[ i ].indexOf( "//#" ) > -1 ) {
+        			if( ls[ i ].indexOf( "Fragment" ) > -1 ) {
+        				vs = buf;
+        				buf = "";
+        			}
+        		} else {
+        			var l = ls[ i ];
+        			if( l.indexOf( "//" ) > -1 ) {
+        			    l = l.substring( 0, l.indexOf( "//" ));
+    			    }
+                    if( l.indexOf( ";" ) === -1 ) {
+                        l += "\n";
+                    }
+        			buf += l;
+        		}
+        	}
+        	fs = buf;
+        
+            this.scope.parameters[ this.parametersProperty ] = { fragmentShader: "#ifdef GL_ES\nprecision highp float;\n#endif\n" + fs, vertexShader: vs };
+            this.scope.handleLoadedItem();
+        }
+    };
+    
+    load.prototype.onLoadError = function( event ) {
+        GLOW.error( "GLOW.Load.onLoadError: Error " + event.target.status );
+    };
+
+    /*
+     * Three.js file format parser by
+     * @author mrdoob / http://mrdoob.com/
+     * @author alteredq / http://alteredqualia.com/
+     * Slightly modified to suit GLOW by Mikael Emtinger
+     */
+    
+    load.prototype.parseThreeJS = function( json ) {
+        var geometry = {};
+    	var scale = ( json.scale !== undefined ) ? 1.0 / json.scale : 1.0;
+
+    	parseModel( scale );
+    	parseSkin();
+    	parseMorphing( scale );
+    	parseEdges();
+
+    	function parseModel( scale ) {
+    		if( json.version === undefined || json.version != 2 ) {
+    			GLOW.error( 'Deprecated file format.' );
+    			return;
+    		}
+
+    		function isBitSet( value, position ) {
+    			return value & ( 1 << position );
+    		};
+
+    		var i, j, fi,
+    		offset, zLength, nVertices,
+    		colorIndex, normalIndex, uvIndex, materialIndex,
+    		type,
+    		isQuad,
+    		hasMaterial,
+    		hasFaceUv, hasFaceVertexUv,
+    		hasFaceNormal, hasFaceVertexNormal,
+    		hasFaceColor, hasFaceVertexColor,
+    		vertex, face, color, normal,
+    		uvLayer, uvs, u, v,
+    		faces = json.faces,
+    		vertices = json.vertices,
+    		normals = json.normals,
+    		colors = json.colors,
+    		nUvLayers = 0;
+
+    		// disregard empty arrays
+
+    		for( i = 0; i < json.uvs.length; i++ ) {
+    			if ( json.uvs[ i ].length ) nUvLayers ++;
+    		}
+
+    		for( i = 0; i < nUvLayers; i++ ) {
+    			geometry.faceUvs[ i ] = [];
+    			geometry.faceVertexUvs[ i ] = [];
+
+    		}
+
+    		offset = 0;
+    		zLength = vertices.length;
+
+    		while( offset < zLength ) {
+
+    			vertex = new THREE.Vertex();
+
+    			vertex.position.x = vertices[ offset ++ ] * scale;
+    			vertex.position.y = vertices[ offset ++ ] * scale;
+    			vertex.position.z = vertices[ offset ++ ] * scale;
+
+    			geometry.vertices.push( vertex );
+
+    		}
+
+    		offset = 0;
+    		zLength = faces.length;
+
+    		while ( offset < zLength ) {
+
+    			type = faces[ offset ++ ];
+
+
+    			isQuad          	= isBitSet( type, 0 );
+    			hasMaterial         = isBitSet( type, 1 );
+    			hasFaceUv           = isBitSet( type, 2 );
+    			hasFaceVertexUv     = isBitSet( type, 3 );
+    			hasFaceNormal       = isBitSet( type, 4 );
+    			hasFaceVertexNormal = isBitSet( type, 5 );
+    			hasFaceColor	    = isBitSet( type, 6 );
+    			hasFaceVertexColor  = isBitSet( type, 7 );
+
+    			//GLOW.log("type", type, "bits", isQuad, hasMaterial, hasFaceUv, hasFaceVertexUv, hasFaceNormal, hasFaceVertexNormal, hasFaceColor, hasFaceVertexColor);
+
+    			if ( isQuad ) {
+
+    				face = new THREE.Face4();
+
+    				face.a = faces[ offset ++ ];
+    				face.b = faces[ offset ++ ];
+    				face.c = faces[ offset ++ ];
+    				face.d = faces[ offset ++ ];
+
+    				nVertices = 4;
+
+    			} else {
+
+    				face = new THREE.Face3();
+
+    				face.a = faces[ offset ++ ];
+    				face.b = faces[ offset ++ ];
+    				face.c = faces[ offset ++ ];
+
+    				nVertices = 3;
+
+    			}
+
+    			if ( hasMaterial ) {
+
+    				materialIndex = faces[ offset ++ ];
+    				face.materials = geometry.materials[ materialIndex ];
+
+    			}
+
+    			// to get face <=> uv index correspondence
+
+    			fi = geometry.faces.length;
+
+    			if ( hasFaceUv ) {
+
+    				for ( i = 0; i < nUvLayers; i++ ) {
+
+    					uvLayer = json.uvs[ i ];
+
+    					uvIndex = faces[ offset ++ ];
+
+    					u = uvLayer[ uvIndex * 2 ];
+    					v = uvLayer[ uvIndex * 2 + 1 ];
+
+    					geometry.faceUvs[ i ][ fi ] = new THREE.UV( u, v );
+
+    				}
+
+    			}
+
+    			if ( hasFaceVertexUv ) {
+
+    				for ( i = 0; i < nUvLayers; i++ ) {
+
+    					uvLayer = json.uvs[ i ];
+
+    					uvs = [];
+
+    					for ( j = 0; j < nVertices; j ++ ) {
+
+    						uvIndex = faces[ offset ++ ];
+
+    						u = uvLayer[ uvIndex * 2 ];
+    						v = uvLayer[ uvIndex * 2 + 1 ];
+
+    						uvs[ j ] = new THREE.UV( u, v );
+
+    					}
+
+    					geometry.faceVertexUvs[ i ][ fi ] = uvs;
+
+    				}
+
+    			}
+
+    			if ( hasFaceNormal ) {
+
+    				normalIndex = faces[ offset ++ ] * 3;
+
+    				normal = new THREE.Vector3();
+
+    				normal.x = normals[ normalIndex ++ ];
+    				normal.y = normals[ normalIndex ++ ];
+    				normal.z = normals[ normalIndex ];
+
+    				face.normal = normal;
+
+    			}
+
+    			if ( hasFaceVertexNormal ) {
+
+    				for ( i = 0; i < nVertices; i++ ) {
+
+    					normalIndex = faces[ offset ++ ] * 3;
+
+    					normal = new THREE.Vector3();
+
+    					normal.x = normals[ normalIndex ++ ];
+    					normal.y = normals[ normalIndex ++ ];
+    					normal.z = normals[ normalIndex ];
+
+    					face.vertexNormals.push( normal );
+
+    				}
+
+    			}
+
+
+    			if ( hasFaceColor ) {
+
+    				colorIndex = faces[ offset ++ ];
+
+    				color = new THREE.Color( colors[ colorIndex ] );
+    				face.color = color;
+
+    			}
+
+
+    			if ( hasFaceVertexColor ) {
+
+    				for ( i = 0; i < nVertices; i++ ) {
+
+    					colorIndex = faces[ offset ++ ];
+
+    					color = new THREE.Color( colors[ colorIndex ] );
+    					face.vertexColors.push( color );
+
+    				}
+
+    			}
+
+    			geometry.faces.push( face );
+
+    		}
+
+    	};
+
+    	function parseSkin() {
+
+    		var i, l, x, y, z, w, a, b, c, d;
+
+    		if ( json.skinWeights ) {
+
+    			for ( i = 0, l = json.skinWeights.length; i < l; i += 2 ) {
+
+    				x = json.skinWeights[ i     ];
+    				y = json.skinWeights[ i + 1 ];
+    				z = 0;
+    				w = 0;
+
+    				geometry.skinWeights.push( new THREE.Vector4( x, y, z, w ) );
+
+    			}
+
+    		}
+
+    		if ( json.skinIndices ) {
+
+    			for ( i = 0, l = json.skinIndices.length; i < l; i += 2 ) {
+
+    				a = json.skinIndices[ i     ];
+    				b = json.skinIndices[ i + 1 ];
+    				c = 0;
+    				d = 0;
+
+    				geometry.skinIndices.push( new THREE.Vector4( a, b, c, d ) );
+
+    			}
+
+    		}
+
+    		geometry.bones = json.bones;
+    		geometry.animation = json.animation;
+
+    	};
+
+    	function parseMorphing( scale ) {
+
+    		if ( json.morphTargets !== undefined ) {
+
+    			var i, l, v, vl, x, y, z, dstVertices, srcVertices;
+
+    			for ( i = 0, l = json.morphTargets.length; i < l; i++ ) {
+
+    				geometry.morphTargets[ i ] = {};
+    				geometry.morphTargets[ i ].name = json.morphTargets[ i ].name;
+    				geometry.morphTargets[ i ].vertices = [];
+
+    				dstVertices = geometry.morphTargets[ i ].vertices;
+    				srcVertices = json.morphTargets [ i ].vertices;
+
+    				for( v = 0, vl = srcVertices.length; v < vl; v += 3 ) {
+
+    					x = srcVertices[ v ] * scale;
+    					y = srcVertices[ v + 1 ] * scale;
+    					z = srcVertices[ v + 2 ] * scale;
+
+    					dstVertices.push( new THREE.Vertex( new THREE.Vector3( x, y, z ) ) );
+
+    				}
+
+    			} 
+
+    		}
+
+    		if ( json.morphColors !== undefined ) {
+
+    			var i, l, c, cl, dstColors, srcColors, color;
+
+    			for ( i = 0, l = json.morphColors.length; i < l; i++ ) {
+
+    				geometry.morphColors[ i ] = {};
+    				geometry.morphColors[ i ].name = json.morphColors[ i ].name;
+    				geometry.morphColors[ i ].colors = [];
+
+    				dstColors = geometry.morphColors[ i ].colors;
+    				srcColors = json.morphColors [ i ].colors;
+
+    				for ( c = 0, cl = srcColors.length; c < cl; c += 3 ) {
+
+    					color = new THREE.Color( 0xffaa00 );
+    					color.setRGB( srcColors[ c ], srcColors[ c + 1 ], srcColors[ c + 2 ] );
+    					dstColors.push( color );
+
+    				}
+
+    			} 
+
+    		}
+
+    	};
+
+    	function parseEdges() {
+
+    		if( json.edges !== undefined ) {
+
+    			var i, il, v1, v2;
+
+    			for ( i = 0; i < json.edges.length; i+= 2 ) {
+
+    				v1 = json.edges[ i ];
+    				v2 = json.edges[ i + 1 ];
+
+    				geometry.edges.push( new THREE.Edge( geometry.vertices[ v1 ], geometry.vertices[ v2 ], v1, v2 ) );
+
+    			}
+
+    		}
+
+    	};
+    }
+    
+    
+    return load;
+})();
+
 GLOW.ShaderUtils = {
 	
 	/*
@@ -1467,7 +2358,7 @@ GLOW.ShaderUtils = {
 
         if( originalShaderConfig.triangles === undefined ||
             originalShaderConfig.data      === undefined ) {
-	        console.error( "GLOW.ShaderUtils.createMultiple: missing .data and/or .triangles in shader config object. Quitting." );
+	        GLOW.error( "GLOW.ShaderUtils.createMultiple: missing .data and/or .triangles in shader config object. Quitting." );
 	        return;
         }
 
@@ -1490,7 +2381,7 @@ GLOW.ShaderUtils = {
                 if( originalData[ s ] ) {
                     except[ s ] = [];
                 } else {
-    	            console.error( "GLOW.ShaderUtils.createMultiple: attribute " + d + " doesn't exist in originalShaderConfig.data. Quitting." );
+    	            GLOW.error( "GLOW.ShaderUtils.createMultiple: attribute " + d + " doesn't exist in originalShaderConfig.data. Quitting." );
     	            return;
                 }
             }

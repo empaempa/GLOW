@@ -8,7 +8,7 @@ GLOW.ThreeJS = (function() {
     return { 
         init: function() {
             if( THREE === undefined ) {
-                console.error( "GLOW.ThreeJS.init: THREE is not loaded. Quitting." );
+                GLOW.error( "GLOW.ThreeJS.init: THREE is not loaded. Quitting." );
                 return;
             }
 
@@ -246,5 +246,5 @@ GLOW.ThreeJS.Mesh = (function() {
         return mesh;
     } 
     
-    return function() { console.error( "GLOW.ThreeJS.Mesh.construct: THREE not loaded"); }
+    return function() { GLOW.error( "GLOW.ThreeJS.Mesh.construct: THREE not loaded"); }
 })();
