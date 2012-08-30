@@ -67,8 +67,9 @@ GLOW.FBO = (function() {
     GLOWFBO.prototype.createBuffers = function() {
         // setup texture
         this.texture = GL.createTexture();
-
-        if( GL.getError() !== GL.NO_ERROR ) {
+        
+        var error = GL.getError();
+        if( error !== GL.NO_ERROR && error !== GL.CONTEXT_LOST_WEBGL ) {
             GLOW.error( "GLOW.FBO.createBuffers: Error creating render texture." );
             return;
         }
@@ -94,8 +95,9 @@ GLOW.FBO = (function() {
         // setup render buffer
         if( this.depth || this.stencil ) {
             this.renderBuffer = GL.createRenderbuffer();
-
-            if( GL.getError() !== GL.NO_ERROR ) {
+            
+            error = GL.getError();
+            if( error !== GL.NO_ERROR && error !== GL.CONTEXT_LOST_WEBGL ) {
                 GLOW.error( "GLOW.FBO.createBuffers: Error creating render buffer." );
                 return;
             }
@@ -114,8 +116,9 @@ GLOW.FBO = (function() {
         // setup frame buffer
         if( this.textureType === GL.TEXTURE_2D ) {
             this.frameBuffer = GL.createFramebuffer();
-
-            if( GL.getError() !== GL.NO_ERROR ) {
+            
+            error = GL.getError();
+            if( error !== GL.NO_ERROR && error !== GL.CONTEXT_LOST_WEBGL ) {
                 GLOW.error( "GLOW.FBO.createBuffers: Error creating frame buffer." );
                 return;
             }
@@ -135,7 +138,8 @@ GLOW.FBO = (function() {
             for( var f in cubeSideOffsets ) {
                 this.frameBuffers[ f ] = GL.createFramebuffer();
 
-                if( GL.getError() !== GL.NO_ERROR ) {
+                error = GL.getError();
+                if( error !== GL.NO_ERROR && error !== GL.CONTEXT_LOST_WEBGL ) {
                     GLOW.error( "GLOW.FBO.createBuffers: Error creating frame buffer for side " + f );
                     return;
                 }
