@@ -10,8 +10,12 @@ GLOW.Float = (function() {
 	
     // constructor
 	function float( value ) {
-    	this.value = new Float32Array( 1 );
-    	this.value[ 0 ] = value !== undefined ? value : 0;
+        if( value !== undefined && value.length ) {
+            this.value = new Float32Array( value );
+       } else {
+            this.value = new Float32Array( 1 );
+            this.value[ 0 ] = value !== undefined ? value : 0;
+        }
 	}
 
     // methods
@@ -52,14 +56,18 @@ GLOW.Float = (function() {
 * @author: Mikael Emtinger, gomo.se
 */
 
-GLOW.Int = function( value ) {
+GLOW.Int = (function() {
 
 	"use strict";
 	
     // constructor
 	function int( value ) {
-    	this.value = new int32Array( 1 );
-    	this.value[ 0 ] = value !== undefined ? value : 0;
+        if( value !== undefined && value.length ) {
+            this.value = new Int32Array( value );
+        } else {
+            this.value = new Int32Array( 1 );
+            this.value[ 0 ] = value !== undefined ? value : 0;
+        }
 	}
 
     // methods
@@ -94,7 +102,113 @@ GLOW.Int = function( value ) {
     }
     	
 	return int;
-}
+})();
+
+/*
+* GLOW.Bool
+* @author: Tom Beddard, subblue.com
+*/
+
+GLOW.Bool = (function() {
+	
+	"use strict";
+	
+    // constructor
+	function bool( value ) {
+    	this.value = [];
+    	this.value[ 0 ] = value !== undefined ? !!value : false;
+	}
+
+    // methods
+    bool.prototype.set = function( value ) {
+        this.value[ 0 ] = !!value;
+        return this;
+    }
+    
+	return bool;
+})();
+/*
+* GLOW.Bool2
+* @author: Tom Beddard, subblue.com
+*/
+
+GLOW.Bool2 = (function() {
+	
+	"use strict";
+	
+    // constructor
+	function bool( x, y ) {
+    	this.value = [];
+		this.value[ 0 ] = x !== undefined ? !!x : false;
+        this.value[ 1 ] = y !== undefined ? !!y : false;
+	}
+
+    // methods
+    bool.prototype.set = function ( x, y ) {
+		this.value[ 0 ] = !!x;
+		this.value[ 1 ] = !!y;
+		return this;
+    }
+    
+	return bool;
+})();
+/*
+* GLOW.Bool3
+* @author: Tom Beddard, subblue.com
+*/
+
+GLOW.Bool3 = (function() {
+	
+	"use strict";
+	
+    // constructor
+	function bool( x, y, z ) {
+    	this.value = [];
+		this.value[ 0 ] = x !== undefined ? !!x : false;
+        this.value[ 1 ] = y !== undefined ? !!y : false;
+        this.value[ 2 ] = z !== undefined ? !!z : false;
+	}
+
+    // methods
+    bool.prototype.set = function ( x, y, z ) {
+		this.value[ 0 ] = !!x;
+		this.value[ 1 ] = !!y;
+		this.value[ 2 ] = !!z;
+		return this;
+    }
+    
+	return bool;
+})();
+
+/*
+* GLOW.Bool4
+* @author: Tom Beddard, subblue.com
+*/
+
+GLOW.Bool4 = (function() {
+	
+	"use strict";
+	
+    // constructor
+	function bool( x, y, z, w ) {
+    	this.value = [];
+		this.value[ 0 ] = x !== undefined ? !!x : false;
+        this.value[ 1 ] = y !== undefined ? !!y : false;
+        this.value[ 2 ] = z !== undefined ? !!z : false;
+        this.value[ 3 ] = w !== undefined ? !!w : false;
+	}
+
+    // methods
+    bool.prototype.set = function ( x, y, z, w ) {
+		this.value[ 0 ] = !!x;
+		this.value[ 1 ] = !!y;
+		this.value[ 2 ] = !!z;
+		this.value[ 3 ] = !!w;
+		return this;
+    }
+    
+	return bool;
+})();
 /**
  * GLOW.Vector2 Based upon THREE.Vector2 by
  * @author mr.doob / http://mrdoob.com/
@@ -202,7 +316,7 @@ GLOW.Vector2 = (function() {
  * @author mikael emtinger / http://gomo.se/
  */
 
-GLOW.Vector3 = (function( x, y, z ) {
+GLOW.Vector3 = (function() {
 
 	"use strict"; "use restrict";
 
@@ -223,7 +337,7 @@ GLOW.Vector3 = (function( x, y, z ) {
     }
 
     vector3.prototype.copy = function ( v ) {
-    	this.set( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+    	this.set( v.value[ 0 ], v.value[ 1 ], v.value[ 2 ] );
     	return this;
     }
 
@@ -482,6 +596,10 @@ GLOW.Vector4 = (function() {
 	    return this;
 	};
 
+	vector4.prototype.lengthOfXYZ = function() {
+		return Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
+	}
+
 	vector4.prototype.clone = function () {
 		return new GLOW.Vector4( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
 	};
@@ -505,9 +623,9 @@ GLOW.Matrix3 = (function() {
 
     // methods
     matrix3.prototype.set = function( m11, m12, m13, m21, m22, m23, m31, m32, m33 ) {
-    	this.value[ 0 ] = m11; this.value[ 4 ] = m12; this.value[ 8 ] = m13;
-    	this.value[ 1 ] = m21; this.value[ 5 ] = m22; this.value[ 9 ] = m23;
-    	this.value[ 2 ] = m31; this.value[ 6 ] = m32; this.value[ 10 ] = m33;
+    	this.value[ 0 ] = m11; this.value[ 3 ] = m12; this.value[ 6 ] = m13;
+    	this.value[ 1 ] = m21; this.value[ 4 ] = m22; this.value[ 7 ] = m23;
+    	this.value[ 2 ] = m31; this.value[ 5 ] = m32; this.value[ 8 ] = m33;
     	return this;
     }
 
@@ -515,20 +633,23 @@ GLOW.Matrix3 = (function() {
     	this.set( 1, 0, 0, 0, 1, 0, 0, 0, 1	);
     	return this;
     }
-    
-    matrix3.prototype.getValueAsFloat32Array = function() {
-        this.float32Array[ 0 ] = this.value[ 0 ];
-        this.float32Array[ 1 ] = this.value[ 1 ];
-        this.float32Array[ 2 ] = this.value[ 2 ];
-        this.float32Array[ 3 ] = this.value[ 3 ];
-        this.float32Array[ 4 ] = this.value[ 4 ];
-        this.float32Array[ 5 ] = this.value[ 5 ];
-        this.float32Array[ 6 ] = this.value[ 6 ];
-        this.float32Array[ 7 ] = this.value[ 7 ];
-        this.float32Array[ 8 ] = this.value[ 8 ];
-        return this.float32Array;
+
+    matrix3.prototype.extractFromMatrix4 = function( matrix4 ) {
+        this.set( matrix4.value[ 0 ], matrix4.value[ 4 ], matrix4.value[ 8  ],
+                  matrix4.value[ 1 ], matrix4.value[ 5 ], matrix4.value[ 9  ],
+                  matrix4.value[ 2 ], matrix4.value[ 6 ], matrix4.value[ 10 ] );
+        return this;
     }
 
+    matrix3.prototype.multiplyVector3 = function( v ) {
+        var vx = v.value[ 0 ], vy = v.value[ 1 ], vz = v.value[ 2 ];
+        v.value[ 0 ] = this.value[ 0 ] * vx + this.value[ 3 ] * vy + this.value[ 6 ] * vz;
+        v.value[ 1 ] = this.value[ 1 ] * vx + this.value[ 4 ] * vy + this.value[ 7 ] * vz;
+        v.value[ 2 ] = this.value[ 2 ] * vx + this.value[ 5 ] * vy + this.value[ 8 ] * vz;
+        return v;
+    }
+
+    
     return matrix3;
 })();
 
@@ -691,7 +812,7 @@ GLOW.Matrix4 = (function() {
     }
 
     matrix4.prototype.multiplySelf = function ( a ) {
-    	this.multiply( m, a );
+    	this.multiply( this, a );
     	return this;
     }
 
@@ -754,38 +875,77 @@ GLOW.Matrix4 = (function() {
     }
 
 
-    matrix4.prototype.setPosition = function( x, y, z ) {
-    	this.value[ 12 ] = x;
+    matrix4.prototype.setPosition = function( v, y, z ) {
+    	var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
+        this.value[ 12 ] = x;
     	this.value[ 13 ] = y;
     	this.value[ 14 ] = z;
     	return this;
     }
 
-    matrix4.prototype.addPosition = function( x, y, z ) {
+    matrix4.prototype.addPosition = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
     	this.value[ 12 ] += x;
     	this.value[ 13 ] += y;
     	this.value[ 14 ] += z;
     }
 
-    matrix4.prototype.setRotation = function( x, y, z ) {
-    	this.rotation.set( x, y, z );
-    	var a = Math.cos( x ), b = Math.sin( x ),
-    	    c = Math.cos( y ), d = Math.sin( y ),
-    	    e = Math.cos( z ), f = Math.sin( z ),
-    	    ad = a * d, bd = b * d;
-    	this.value[ 0 ] = c * e;
-    	this.value[ 4 ] = - c * f;
-    	this.value[ 8 ] = d;
-    	this.value[ 1 ] = bd * e + a * f;
-    	this.value[ 5 ] = - bd * f + a * e;
-    	this.value[ 9 ] = - b * c;
-    	this.value[ 2 ] = - ad * e + b * f;
-    	this.value[ 6 ] = ad * f + b * e;
-    	this.value[ 10 ] = a * c;
+    matrix4.prototype.setRotation = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
+        var ch = Math.cos(y);
+        var sh = Math.sin(y);
+        var ca = Math.cos(z);
+        var sa = Math.sin(z);
+        var cb = Math.cos(x);
+        var sb = Math.sin(x);
+
+        this.value[ 0  ] = ch * ca;
+        this.value[ 4  ] = sh*sb - ch*sa*cb;
+        this.value[ 8  ] = ch*sa*sb + sh*cb;
+        this.value[ 1  ] = sa;
+        this.value[ 5  ] = ca*cb;
+        this.value[ 9  ] = -ca*sb;
+        this.value[ 2  ] = -sh*ca;
+        this.value[ 6  ] = sh*sa*cb + ch*sb;
+        this.value[ 10 ] = -sh*sa*sb + ch*cb;
+
     	return this;
     }
 
-    matrix4.prototype.addRotation = function( x, y, z ) {
+    matrix4.prototype.addRotation = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
     	this.rotation.value[ 0 ] += x;
     	this.rotation.value[ 1 ] += y;
     	this.rotation.value[ 2 ] += z;
@@ -827,6 +987,11 @@ GLOW.Matrix4 = (function() {
     	this.value[ 2 ] *= x; this.value[ 6 ] *= y; this.value[ 10 ] *= z;
     	this.value[ 3 ] *= x; this.value[ 7 ] *= y; this.value[ 11 ] *= z;
     	return this;
+    }
+
+    matrix4.prototype.invert = function() {
+        GLOW.Matrix4.makeInverse( this, this );
+        return this;
     }
 
     return matrix4;
@@ -913,11 +1078,11 @@ GLOW.Matrix4.makeInverse = function ( m1, m2 ) {
 }
 */
 
-GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
+GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far, destMatrix ) {
 
 	var m, mv, x, y, a, b, c, d;
 
-	m = new GLOW.Matrix4();
+	m = destMatrix || new GLOW.Matrix4();
 	x = 2 * near / ( right - left );
 	y = 2 * near / ( top - bottom );
 	a = ( right + left ) / ( right - left );
@@ -932,10 +1097,9 @@ GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far ) {
 	mv[ 3 ] = 0;  mv[ 7 ] = 0;  mv[ 11 ] = - 1; mv[ 15 ] = 0;
 
 	return m;
-
 };
 
-GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
+GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far, destMatrix ) {
 
 	var ymax, ymin, xmin, xmax;
 
@@ -944,18 +1108,18 @@ GLOW.Matrix4.makeProjection = function ( fov, aspect, near, far ) {
 	xmin = ymin * aspect;
 	xmax = ymax * aspect;
 
-	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far );
+	return GLOW.Matrix4.makeFrustum( xmin, xmax, ymin, ymax, near, far, destMatrix );
 
 };
 
-GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far ) {
+GLOW.Matrix4.makeOrtho = function( left, right, top, bottom, near, far, destMatrix ) {
 
 	var m, mv, x, y, z, w, h, p;
 
-	m = new GLOW.Matrix4();
-	w = right - left;
-	h = top - bottom;
-	p = far - near;
+	m = destMatrix || new GLOW.Matrix4();
+	w = Math.abs( right - left );
+	h = Math.abs( top - bottom );
+	p = Math.abs( far - near );
 	x = ( right + left ) / w;
 	y = ( top + bottom ) / h;
 	z = ( far + near ) / p;
