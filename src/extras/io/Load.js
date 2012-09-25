@@ -12,7 +12,7 @@ GLOW.Load = (function() {
         this.numItemsLeftToLoad = 0;
 
         for( var p in parameters ) {
-            if( p !== "onLoadComplete" && p !== "onLoadItem" && p!== "dontParseJS" && p != "onLoadContext" ) {
+            if( p !== "onLoadComplete" && p !== "onLoadItem" && p!== "dontParseJS" && p !== "onLoadContext" ) {
                 this.numItemsToLoad++;
             } else {
                 this[ p ] = parameters[ p ];
