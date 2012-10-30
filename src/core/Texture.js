@@ -25,11 +25,14 @@ GLOW.Texture = (function() {
         this.onLoadComplete = parameters.onLoadComplete;
         this.onLoadContext  = parameters.onLoadContext;
         this.texture        = undefined;
+        this.FLIP           = parameters.FLIP;
 	}
 
 	// methods
     GLOWTexture.prototype.init = function() {
         if( this.texture !== undefined ) return this;
+
+        if (this.FLIP !== undefined) GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.FLIP);
 
         if( this.data === undefined && 
             this.width !== undefined && 
