@@ -127,11 +127,11 @@ GLOW.Texture = (function() {
     	GL.bindTexture( this.textureType, this.texture );
 
     	if( this.textureType === GL.TEXTURE_2D ) {
-        	if( this.data instanceof Uint8Array ) {
-        	    if( this.width !== undefined && this.height !== undefined ) {
+        	if( this.data instanceof Uint8Array || this.data instanceof Float32Array) {
+                if( this.width !== undefined && this.height !== undefined ) {
                 	GL.texImage2D( this.textureType, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data );
         	    } else {
-        	        GLOW.error( "GLOW.Texture.createTexture: Textures of type Uint8Array requires width and height parameters. Quitting." );
+        	        GLOW.error( "GLOW.Texture.createTexture: Textures of type Uint8Array/Float32Array requires width and height parameters. Quitting." );
         	        return;
         	    }
         	} else {
