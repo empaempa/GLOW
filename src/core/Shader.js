@@ -68,7 +68,6 @@ GLOW.Shader = (function() {
     GLOWShader.prototype.draw = function() {
         var compiledData = this.compiledData;
         var cache = GLOW.currentContext.cache;
-        var isCached = cache.programCached;
 
         if( !cache.programCached( compiledData.program )) {
             GL.useProgram( compiledData.program );
