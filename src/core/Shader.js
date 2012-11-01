@@ -68,7 +68,6 @@ GLOW.Shader = (function() {
     GLOWShader.prototype.draw = function() {
         var compiledData = this.compiledData;
         var cache = GLOW.currentContext.cache;
-        var isCached = cache.programCached;
 
         if( !cache.programCached( compiledData.program )) {
             GL.useProgram( compiledData.program );
@@ -92,7 +91,6 @@ GLOW.Shader = (function() {
         
         var data = compiledData.attributeArray;
         var a    = data.length;
-        isCached = cache.attributeCached;
 
         while( a-- ) {
             if( data[ a ].interleaved === false ) {
@@ -104,7 +102,6 @@ GLOW.Shader = (function() {
 
         data     = compiledData.interleavedAttributeArray;
         a        = data.length;
-        isCached = cache.interleavedAttributeCached;
 
         while( a-- ) {
             if( !cache.interleavedAttributeCached( data[ a ] )) {
@@ -114,7 +111,6 @@ GLOW.Shader = (function() {
 
         data     = compiledData.uniformArray;
         a        = data.length;
-        isCached = cache.uniformCached;
 
         while( a-- ) {
             if( !cache.uniformCached( data[ a ] )) {
