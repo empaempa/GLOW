@@ -66,8 +66,17 @@ GLOW.Shader = (function() {
     };
 
     GLOWShader.prototype.draw = function() {
-        var compiledData = this.compiledData;
-        var cache = GLOW.currentContext.cache;
+        var compiledData              = this.compiledData;
+        var cache                     = GLOW.currentContext.cache;
+        var attributeCache            = cache.attributeByLocation;
+        var uniformCache              = cache.uniformByLocation;
+        var attributeArray            = compiledData.attributeArray;
+        var interleavedAttributeArray = compiledData.interleavedAttributeArray;
+        var uniformArray              = compiledData.uniformArray;
+        var interleavedAttribute;
+        var attribute;
+        var uniform;
+        var a;
 
         if( !cache.programCached( compiledData.program )) {
             GL.useProgram( compiledData.program );
@@ -88,33 +97,58 @@ GLOW.Shader = (function() {
                 }
             }
         }
-        
-        var data = compiledData.attributeArray;
-        var a    = data.length;
 
-        while( a-- ) {
-            if( data[ a ].interleaved === false ) {
-                if( !cache.attributeCached( data[ a ] )) {
-                    data[ a ].bind();
+        if( cache.active ) {
+            // check cache and bind attributes
+            a = attributeArray.length;
+            while( a-- ) {
+                attribute = attributeArray[ a ];
+                if( attribute.interleaved === false ) {
+                    if( attributeCache[ attribute.locationNumber ] !== attribute.id ) {
+                        attributeCache[ attribute.locationNumber ] = attribute.id;
+                        attribute.bind();
+                    }
                 }
             }
-        }
 
-        data     = compiledData.interleavedAttributeArray;
-        a        = data.length;
-
-        while( a-- ) {
-            if( !cache.interleavedAttributeCached( data[ a ] )) {
-                data[ a ].bind();
+            // check cache and bind interleaved attributes
+            a = interleavedAttributeArray.length;
+            while( a-- ) {
+                interleavedAttribute = interleavedAttributeArray[ a ];
+                if( attributeCache[ interleavedAttribute.locationNumber ] !== interleavedAttribute.id ) {
+                    attributeCache[ interleavedAttribute.locationNumber ] = interleavedAttribute.id;
+                    interleavedAttribute.bind();
+                }
             }
-        }
 
-        data     = compiledData.uniformArray;
-        a        = data.length;
+            // check cache bind unfirms
+            a = uniformArray.length;
+            while( a-- ) {
+                uniform = uniformArray[ a ];
+                if( uniformCache[ uniform.locationNumber ] !== uniform.id ) {
+                    uniformCache[ uniform.locationNumber ] = uniform.id;
+                    uniform.load();
+                }
+            }
+        } else {
+            // bind attributes
+            a = attributeArray.length;
+            while( a-- ) {
+                if( attributeArray[ a ].interleaved === false ) {
+                    attributeArray[ a ].bind();
+                }
+            }
 
-        while( a-- ) {
-            if( !cache.uniformCached( data[ a ] )) {
-                data[ a ].load();
+            // bind interleaved attributes
+            a = interleavedAttributeArray.length;
+            while( a-- ) {
+                interleavedAttributeArray[ a ].bind();
+            }
+
+            // bind unfirms
+            a = uniformArray.length;
+            while( a-- ) {
+                uniformArray[ a ].load();
             }
         }
         
@@ -134,7 +168,7 @@ GLOW.Shader = (function() {
         }
 
         for( a in this.compiledData.attributes ) {
-            delete this[ a ];
+            delete this[ a ];
         }
         
         for( i in this.compiledData.interleavedAttributes ) {
