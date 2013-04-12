@@ -252,7 +252,12 @@ GLOW.Compiler = (function() {
 		var a;
 		var attribute, name;
 		var attributes = {};
+		var defaultInterleave = true;
+		
 		interleave = interleave !== undefined ? interleave : {};
+		if( interleave === false ) {
+			defaultInterleave = false;
+		}
 		usage = usage !== undefined ? usage : {};
 
 		for( a in attributeInformation ) {
@@ -265,7 +270,7 @@ GLOW.Compiler = (function() {
 				if( data[ name ] === undefined ) {
 					GLOW.warn( "GLOW.Compiler.createAttributes: missing data for attribute " + name + ". Creating anyway, but make sure to set data before drawing." );
 				}
-				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ], interleave[ name ] !== undefined ? interleave[ name ] : true );
+				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ], interleave[ name ] !== undefined ? interleave[ name ] : defaultInterleave );
 			}
 		}
 
