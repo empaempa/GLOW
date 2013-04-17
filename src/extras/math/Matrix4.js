@@ -280,6 +280,29 @@ GLOW.Matrix4 = (function() {
     	return this;
     }
 
+    matrix4.prototype.getRotation = function() {
+        var matrix   = this.value;
+        var rotation = this.rotation.value;
+
+        if( matrix[ 1 ] > 0.998 ) {
+            rotation[ 0 ] = 0;
+            rotation[ 1 ] = Math.atan2( matrix[ 8 ], matrix[ 10 ] );
+            rotation[ 2 ] = Math.PI / 2;
+            return this.rotation;
+        } else if( matrix[ 1 ] < -0.998 ) {
+            rotation[ 0 ] = 0;
+            rotation[ 1 ] = Math.atan2( matrix[ 8 ], matrix[ 10 ] );
+            rotation[ 2 ] = -Math.PI / 2;
+            return this.rotation;
+        }
+
+        rotation[ 0 ] = Math.atan2( -matrix[ 9 ], matrix[ 5 ] );
+        rotation[ 1 ] = Math.atan2( -matrix[ 2 ], matrix[ 0 ] );
+        rotation[ 2 ] = Math.asin( matrix[ 1 ] );
+
+        return this.rotation;
+    }
+
     matrix4.prototype.addRotation = function( v, y, z ) {
         var x;
         if( y !== undefined && z !== undefined ) {

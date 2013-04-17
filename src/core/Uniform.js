@@ -57,7 +57,7 @@ GLOW.Uniform = (function() {
         this.type = parameters.type;
         this.location = parameters.location;
         this.locationNumber = parameters.locationNumber;
-        this.textureUnit = -1;
+        this.textureUnit = parameters.textureUnit !== undefined ? parameters.textureUnit : -1;
         this.load = parameters.loadFunction || setFunctions[ this.type ];
     }
 
