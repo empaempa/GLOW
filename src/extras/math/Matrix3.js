@@ -41,6 +41,21 @@ GLOW.Matrix3 = (function() {
         return v;
     }
 
+    matrix3.prototype.scale = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
+        this.value[ 0 ] *= x; this.value[ 3 ] *= y; this.value[ 6 ] *= z;
+        this.value[ 1 ] *= x; this.value[ 4 ] *= y; this.value[ 7 ] *= z;
+        this.value[ 2 ] *= x; this.value[ 5 ] *= y; this.value[ 8 ] *= z;
+        return this;
+    }
     
     return matrix3;
 })();

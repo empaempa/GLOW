@@ -656,7 +656,12 @@ GLOW.Compiler = (function() {
 		var a;
 		var attribute, name;
 		var attributes = {};
+		var defaultInterleave = true;
+		
 		interleave = interleave !== undefined ? interleave : {};
+		if( interleave === false ) {
+			defaultInterleave = false;
+		}
 		usage = usage !== undefined ? usage : {};
 
 		for( a in attributeInformation ) {
@@ -669,7 +674,7 @@ GLOW.Compiler = (function() {
 				if( data[ name ] === undefined ) {
 					GLOW.warn( "GLOW.Compiler.createAttributes: missing data for attribute " + name + ". Creating anyway, but make sure to set data before drawing." );
 				}
-				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ], interleave[ name ] !== undefined ? interleave[ name ] : true );
+				attributes[ name ] = new GLOW.Attribute( attribute, data[ name ], usage[ name ], interleave[ name ] !== undefined ? interleave[ name ] : defaultInterleave );
 			}
 		}
 
@@ -805,6 +810,7 @@ GLOW.CompiledData = (function() {
     // constructor
     
     function GLOWCompiledData( program, uniforms, attributes, interleavedAttributes, elements ) {
+        this.id                        = GLOW.uniqueId();
         this.program                   = program;
         this.uniforms                  = uniforms || {};
         this.attributes                = attributes || {};
@@ -845,7 +851,7 @@ GLOW.CompiledData = (function() {
     	for( u in this.uniforms ) {
     		if( except[ u ] ) {
                 if( except[ u ] instanceof GLOW.Uniform ) {
-                    clone.uniforms[ u ] = execept[ u ];
+                    clone.uniforms[ u ] = except[ u ];
                 } else {
                     clone.uniforms[ u ] = new GLOW.Uniform( this.uniforms[ u ], except[ u ] );
                     if( clone.uniforms[ u ].type === GL.SAMPLER_2D || 
@@ -1401,11 +1407,14 @@ GLOW.Texture = (function() {
         this.onLoadComplete = parameters.onLoadComplete;
         this.onLoadContext  = parameters.onLoadContext;
         this.texture        = undefined;
+        this.flipY          = parameters.flipY || 0;    // default - no flip
 	}
 
 	// methods
     GLOWTexture.prototype.init = function() {
         if( this.texture !== undefined ) return this;
+
+        GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, this.flipY);
 
         if( this.data === undefined && 
             this.width !== undefined && 
@@ -1503,11 +1512,11 @@ GLOW.Texture = (function() {
     	GL.bindTexture( this.textureType, this.texture );
 
     	if( this.textureType === GL.TEXTURE_2D ) {
-        	if( this.data instanceof Uint8Array ) {
-        	    if( this.width !== undefined && this.height !== undefined ) {
+        	if( this.data instanceof Uint8Array || this.data instanceof Float32Array) {
+                if( this.width !== undefined && this.height !== undefined ) {
                 	GL.texImage2D( this.textureType, 0, this.internalFormat, this.width, this.height, 0, this.format, this.type, this.data );
         	    } else {
-        	        GLOW.error( "GLOW.Texture.createTexture: Textures of type Uint8Array requires width and height parameters. Quitting." );
+        	        GLOW.error( "GLOW.Texture.createTexture: Textures of type Uint8Array/Float32Array requires width and height parameters. Quitting." );
         	        return;
         	    }
         	} else {
@@ -1703,9 +1712,17 @@ GLOW.Shader = (function() {
     };
 
     GLOWShader.prototype.draw = function() {
-        var compiledData = this.compiledData;
-        var cache = GLOW.currentContext.cache;
-        var isCached = cache.programCached;
+        var compiledData              = this.compiledData;
+        var cache                     = GLOW.currentContext.cache;
+        var attributeCache            = cache.attributeByLocation;
+        var uniformCache              = cache.uniformByLocation;
+        var attributeArray            = compiledData.attributeArray;
+        var interleavedAttributeArray = compiledData.interleavedAttributeArray;
+        var uniformArray              = compiledData.uniformArray;
+        var interleavedAttribute;
+        var attribute, attributes;
+        var uniform;
+        var a, al, cached;
 
         if( !cache.programCached( compiledData.program )) {
             GL.useProgram( compiledData.program );
@@ -1726,36 +1743,70 @@ GLOW.Shader = (function() {
                 }
             }
         }
-        
-        var data = compiledData.attributeArray;
-        var a    = data.length;
-        isCached = cache.attributeCached;
 
-        while( a-- ) {
-            if( data[ a ].interleaved === false ) {
-                if( !cache.attributeCached( data[ a ] )) {
-                    data[ a ].bind();
+        if( cache.active ) {
+            // check cache and bind attributes
+            a = attributeArray.length;
+            while( a-- ) {
+                attribute = attributeArray[ a ];
+                if( attribute.interleaved === false ) {
+                    if( attributeCache[ attribute.locationNumber ] !== attribute.id ) {
+                        attributeCache[ attribute.locationNumber ] = attribute.id;
+                        attribute.bind();
+                    }
+                }
+           }
+
+            // check cache and bind interleaved attributes
+            a = interleavedAttributeArray.length;
+            while( a-- ) {
+                interleavedAttribute = interleavedAttributeArray[ a ];
+                attributes           = interleavedAttribute.attributes;
+                al                   = attributes.length;
+                cached               = false;
+
+                while( al-- ) {
+                    attribute = attributes[ al ];
+                    if( attributeCache[ attribute.locationNumber ] === attribute.id ) {
+                        cached = true;
+                        break;
+                    }
+                    attributeCache[ attribute.locationNumber ] = attribute.id;
+                }
+
+                if( !cached ) {
+                    interleavedAttribute.bind();
                 }
             }
-        }
 
-        data     = compiledData.interleavedAttributeArray;
-        a        = data.length;
-        isCached = cache.interleavedAttributeCached;
-
-        while( a-- ) {
-            if( !cache.interleavedAttributeCached( data[ a ] )) {
-                data[ a ].bind();
+            // check cache bind unfirms
+            a = uniformArray.length;
+            while( a-- ) {
+                uniform = uniformArray[ a ];
+                if( uniformCache[ uniform.locationNumber ] !== uniform.id ) {
+                    uniformCache[ uniform.locationNumber ] = uniform.id;
+                    uniform.load();
+                }
             }
-        }
+        } else {
+            // bind attributes
+            a = attributeArray.length;
+            while( a-- ) {
+                if( attributeArray[ a ].interleaved === false ) {
+                    attributeArray[ a ].bind();
+                }
+            }
 
-        data     = compiledData.uniformArray;
-        a        = data.length;
-        isCached = cache.uniformCached;
+            // bind interleaved attributes
+            a = interleavedAttributeArray.length;
+            while( a-- ) {
+                interleavedAttributeArray[ a ].bind();
+            }
 
-        while( a-- ) {
-            if( !cache.uniformCached( data[ a ] )) {
-                data[ a ].load();
+            // bind unfirms
+            a = uniformArray.length;
+            while( a-- ) {
+                uniformArray[ a ].load();
             }
         }
         
@@ -1775,7 +1826,7 @@ GLOW.Shader = (function() {
         }
 
         for( a in this.compiledData.attributes ) {
-            delete this[ a ];
+            delete this[ a ];
         }
         
         for( i in this.compiledData.interleavedAttributes ) {
@@ -1914,7 +1965,7 @@ GLOW.Uniform = (function() {
         this.type = parameters.type;
         this.location = parameters.location;
         this.locationNumber = parameters.locationNumber;
-        this.textureUnit = -1;
+        this.textureUnit = parameters.textureUnit !== undefined ? parameters.textureUnit : -1;
         this.load = parameters.loadFunction || setFunctions[ this.type ];
     }
 

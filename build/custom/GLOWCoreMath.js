@@ -649,6 +649,21 @@ GLOW.Matrix3 = (function() {
         return v;
     }
 
+    matrix3.prototype.scale = function( v, y, z ) {
+        var x;
+        if( y !== undefined && z !== undefined ) {
+            x = v;
+        } else {
+            x = v.value[ 0 ];
+            y = v.value[ 1 ];
+            z = v.value[ 2 ];
+        }
+
+        this.value[ 0 ] *= x; this.value[ 3 ] *= y; this.value[ 6 ] *= z;
+        this.value[ 1 ] *= x; this.value[ 4 ] *= y; this.value[ 7 ] *= z;
+        this.value[ 2 ] *= x; this.value[ 5 ] *= y; this.value[ 8 ] *= z;
+        return this;
+    }
     
     return matrix3;
 })();
@@ -934,6 +949,29 @@ GLOW.Matrix4 = (function() {
         this.value[ 10 ] = -sh*sa*sb + ch*cb;
 
     	return this;
+    }
+
+    matrix4.prototype.getRotation = function() {
+        var matrix   = this.value;
+        var rotation = this.rotation.value;
+
+        if( matrix[ 1 ] > 0.998 ) {
+            rotation[ 0 ] = 0;
+            rotation[ 1 ] = Math.atan2( matrix[ 8 ], matrix[ 10 ] );
+            rotation[ 2 ] = Math.PI / 2;
+            return this.rotation;
+        } else if( matrix[ 1 ] < -0.998 ) {
+            rotation[ 0 ] = 0;
+            rotation[ 1 ] = Math.atan2( matrix[ 8 ], matrix[ 10 ] );
+            rotation[ 2 ] = -Math.PI / 2;
+            return this.rotation;
+        }
+
+        rotation[ 0 ] = Math.atan2( -matrix[ 9 ], matrix[ 5 ] );
+        rotation[ 1 ] = Math.atan2( -matrix[ 2 ], matrix[ 0 ] );
+        rotation[ 2 ] = Math.asin( matrix[ 1 ] );
+
+        return this.rotation;
     }
 
     matrix4.prototype.addRotation = function( v, y, z ) {

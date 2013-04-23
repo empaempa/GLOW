@@ -74,9 +74,9 @@ GLOW.Shader = (function() {
         var interleavedAttributeArray = compiledData.interleavedAttributeArray;
         var uniformArray              = compiledData.uniformArray;
         var interleavedAttribute;
-        var attribute;
+        var attribute, attributes;
         var uniform;
-        var a;
+        var a, al, cached;
 
         if( !cache.programCached( compiledData.program )) {
             GL.useProgram( compiledData.program );
@@ -109,14 +109,26 @@ GLOW.Shader = (function() {
                         attribute.bind();
                     }
                 }
-            }
+           }
 
             // check cache and bind interleaved attributes
             a = interleavedAttributeArray.length;
             while( a-- ) {
                 interleavedAttribute = interleavedAttributeArray[ a ];
-                if( attributeCache[ interleavedAttribute.locationNumber ] !== interleavedAttribute.id ) {
-                    attributeCache[ interleavedAttribute.locationNumber ] = interleavedAttribute.id;
+                attributes           = interleavedAttribute.attributes;
+                al                   = attributes.length;
+                cached               = false;
+
+                while( al-- ) {
+                    attribute = attributes[ al ];
+                    if( attributeCache[ attribute.locationNumber ] === attribute.id ) {
+                        cached = true;
+                        break;
+                    }
+                    attributeCache[ attribute.locationNumber ] = attribute.id;
+                }
+
+                if( !cached ) {
                     interleavedAttribute.bind();
                 }
             }
