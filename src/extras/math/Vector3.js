@@ -188,7 +188,7 @@ GLOW.Vector3 = (function() {
     }
 
     vector3.prototype.clone = function() {
-    	return GLOW.Vector3( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+    	return new GLOW.Vector3( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
     }
 
     return vector3;
