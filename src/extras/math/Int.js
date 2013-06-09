@@ -8,7 +8,7 @@ GLOW.Int = (function() {
     "use strict";
     
     // constructor
-	function int( value ) {
+    function _int( value ) {
         if( value !== undefined && value.length ) {
             this.value = new Int32Array( value );
         } else {
@@ -18,36 +18,36 @@ GLOW.Int = (function() {
     }
 
     // methods
-    int.prototype.set = function( value ) {
+    _int.prototype.set = function( value ) {
         this.value[ 0 ] = value;
         return this;
     };
 
-    int.prototype.add = function( value ) {
+    _int.prototype.add = function( value ) {
         this.value[ 0 ] += value;
         return this;
     };
 
-    int.prototype.sub = function( value ) {
+    _int.prototype.sub = function( value ) {
         this.value[ 0 ] -= value;
         return this;
     };
 
-    int.prototype.multiply = function( value ) {
+    _int.prototype.multiply = function( value ) {
         this.value[ 0 ] *= value;
         return this;
     };
 
-    int.prototype.divide = function( value ) {
+    _int.prototype.divide = function( value ) {
         this.value[ 0 ] /= value;
         return this;
     };
 
-    int.prototype.modulo = function( value ) {
+    _int.prototype.modulo = function( value ) {
         this.value[ 0 ] %= value;
         return this;
-	return int;
     };
         
+    return _int;
 })();
 
