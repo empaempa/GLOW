@@ -23,6 +23,7 @@ GLOW.Texture = (function() {
         this.width          = parameters.width;
         this.height         = parameters.height;
         this.onLoadComplete = parameters.onLoadComplete;
+        this.onLoadError    = parameters.onLoadError;
         this.onLoadContext  = parameters.onLoadContext;
         this.texture        = undefined;
     }
@@ -50,6 +51,7 @@ GLOW.Texture = (function() {
                 lowerCaseURL.indexOf( "jpeg" ) !== -1 ) {
                 this.data = new Image();
                 this.data.scope = this;
+                this.data.onerror = this.onLoadError;
                 this.data.onload  = this.onLoadImage;
                 this.data.src = originalURL;
             } else {
@@ -212,6 +214,12 @@ GLOW.Texture = (function() {
         
         if( this.scope.onLoadComplete ) {
             this.scope.onLoadComplete.call( this.scope.onLoadContext, this.scope );
+        }
+    };
+    
+    GLOWTexture.prototype.onLoadError = function() {
+        if( this.scope.onLoadError ) {
+            this.scope.onLoadError.call( this.scope.onLoadContext, this.scope );
         }
     };
     
