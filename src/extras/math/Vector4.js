@@ -19,85 +19,85 @@ GLOW.Vector4 = (function() {
     }
     
     // methods
-	vector4.prototype.set = function ( x, y, z, w ) {
-		this.value[ 0 ] = x;
-		this.value[ 1 ] = y;
-		this.value[ 2 ] = z;
-		this.value[ 3 ] = w;
-		return this;
-	};
+    vector4.prototype.set = function ( x, y, z, w ) {
+        this.value[ 0 ] = x;
+        this.value[ 1 ] = y;
+        this.value[ 2 ] = z;
+        this.value[ 3 ] = w;
+        return this;
+    };
 
-	vector4.prototype.copy = function ( v ) {
-		this.value[ 0 ] = v.value[ 0 ];
-		this.value[ 1 ] = v.value[ 1 ];
-		this.value[ 2 ] = v.value[ 2 ];
-		this.value[ 3 ] = v.value[ 3 ];
-		return this;
-	};
+    vector4.prototype.copy = function ( v ) {
+        this.value[ 0 ] = v.value[ 0 ];
+        this.value[ 1 ] = v.value[ 1 ];
+        this.value[ 2 ] = v.value[ 2 ];
+        this.value[ 3 ] = v.value[ 3 ];
+        return this;
+    };
 
-	vector4.prototype.add = function ( v1, v2 ) {
-		this.value[ 0 ] = v1.value[ 0 ] + v2.value[ 0 ];
-		this.value[ 1 ] = v1.value[ 1 ] + v2.value[ 1 ];
-		this.value[ 2 ] = v1.value[ 2 ] + v2.value[ 2 ];
-		this.value[ 3 ] = v1.value[ 3 ] + v2.value[ 3 ];
-		return this;
-	};
+    vector4.prototype.add = function ( v1, v2 ) {
+        this.value[ 0 ] = v1.value[ 0 ] + v2.value[ 0 ];
+        this.value[ 1 ] = v1.value[ 1 ] + v2.value[ 1 ];
+        this.value[ 2 ] = v1.value[ 2 ] + v2.value[ 2 ];
+        this.value[ 3 ] = v1.value[ 3 ] + v2.value[ 3 ];
+        return this;
+    };
 
-	vector4.prototype.addSelf = function ( v ) {
-		this.value[ 0 ] += v.value[ 0 ];
-		this.value[ 1 ] += v.value[ 1 ];
-		this.value[ 2 ] += v.value[ 2 ];
-		this.value[ 3 ] += v.value[ 3 ];
-		return this;
-	};
+    vector4.prototype.addSelf = function ( v ) {
+        this.value[ 0 ] += v.value[ 0 ];
+        this.value[ 1 ] += v.value[ 1 ];
+        this.value[ 2 ] += v.value[ 2 ];
+        this.value[ 3 ] += v.value[ 3 ];
+        return this;
+    };
 
-	vector4.prototype.sub = function ( v1, v2 ) {
-		this.value[ 0 ] = v1.value[ 0 ] - v2.value[ 0 ];
-		this.value[ 1 ] = v1.value[ 1 ] - v2.value[ 1 ];
-		this.value[ 2 ] = v1.value[ 2 ] - v2.value[ 2 ];
-		this.value[ 3 ] = v1.value[ 3 ] - v2.value[ 3 ];
-		return this;
-	};
+    vector4.prototype.sub = function ( v1, v2 ) {
+        this.value[ 0 ] = v1.value[ 0 ] - v2.value[ 0 ];
+        this.value[ 1 ] = v1.value[ 1 ] - v2.value[ 1 ];
+        this.value[ 2 ] = v1.value[ 2 ] - v2.value[ 2 ];
+        this.value[ 3 ] = v1.value[ 3 ] - v2.value[ 3 ];
+        return this;
+    };
 
-	vector4.prototype.subSelf = function ( v ) {
-		this.value[ 0 ] -= v.value[ 0 ];
-		this.value[ 1 ] -= v.value[ 1 ];
-		this.value[ 2 ] -= v.value[ 2 ];
-		this.value[ 3 ] -= v.value[ 3 ];
-		return this;
-	};
+    vector4.prototype.subSelf = function ( v ) {
+        this.value[ 0 ] -= v.value[ 0 ];
+        this.value[ 1 ] -= v.value[ 1 ];
+        this.value[ 2 ] -= v.value[ 2 ];
+        this.value[ 3 ] -= v.value[ 3 ];
+        return this;
+    };
 
-	vector4.prototype.multiplyScalar = function ( s ) {
-		this.value[ 0 ] *= s;
-		this.value[ 1 ] *= s;
-		this.value[ 2 ] *= s;
-		this.value[ 3 ] *= s;
-		return this;
-	};
+    vector4.prototype.multiplyScalar = function ( s ) {
+        this.value[ 0 ] *= s;
+        this.value[ 1 ] *= s;
+        this.value[ 2 ] *= s;
+        this.value[ 3 ] *= s;
+        return this;
+    };
 
-	vector4.prototype.divideScalar = function ( s ) {
-		this.value[ 0 ] /= s;
-		this.value[ 1 ] /= s;
-		this.value[ 2 ] /= s;
-		this.value[ 3 ] /= s;
-		return this;
-	};
+    vector4.prototype.divideScalar = function ( s ) {
+        this.value[ 0 ] /= s;
+        this.value[ 1 ] /= s;
+        this.value[ 2 ] /= s;
+        this.value[ 3 ] /= s;
+        return this;
+    };
 
-	vector4.prototype.lerpSelf = function ( v, alpha ) {
-		this.value[ 0 ] += (v.x - this.value[ 0 ]) * alpha;
-		this.value[ 1 ] += (v.y - this.value[ 1 ]) * alpha;
-		this.value[ 2 ] += (v.z - this.value[ 2 ]) * alpha;
-		this.value[ 3 ] += (v.w - this.value[ 3 ]) * alpha;
-	    return this;
-	};
+    vector4.prototype.lerpSelf = function ( v, alpha ) {
+        this.value[ 0 ] += (v.x - this.value[ 0 ]) * alpha;
+        this.value[ 1 ] += (v.y - this.value[ 1 ]) * alpha;
+        this.value[ 2 ] += (v.z - this.value[ 2 ]) * alpha;
+        this.value[ 3 ] += (v.w - this.value[ 3 ]) * alpha;
+        return this;
+    };
 
-	vector4.prototype.lengthOfXYZ = function() {
-		return Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
-	}
+    vector4.prototype.lengthOfXYZ = function() {
+        return Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
+    };
 
-	vector4.prototype.clone = function () {
-		return new GLOW.Vector4( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
-	};
+    vector4.prototype.clone = function () {
+        return new GLOW.Vector4( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
+    };
 
     return vector4;
 })();

@@ -4,64 +4,64 @@ GLOW.FBO = (function() {
 
     var cubeSideOffsets = { "posX":0, "negX":1, "posY":2, "negY":3, "posZ":4, "negZ":5 };
 
-	// constructor
-	function GLOWFBO( parameters ) {
+    // constructor
+    function GLOWFBO( parameters ) {
 
-    	parameters = parameters !== undefined ? parameters : {};
+        parameters = parameters !== undefined ? parameters : {};
 
-    	this.id             = GLOW.uniqueId();
-    	this.width          = parameters.width  || parameters.size || window.innerWidth;
-    	this.height         = parameters.height || parameters.size || window.innerHeight;
-    	this.wrapS          = parameters.wrapS  || parameters.wrap || GL.CLAMP_TO_EDGE;
-    	this.wrapT          = parameters.wrapT  || parameters.wrap || GL.CLAMP_TO_EDGE;
-    	this.magFilter      = parameters.magFilter || parameters.filter || GL.LINEAR;
-    	this.minFilter      = parameters.minFilter || parameters.filter || GL.LINEAR;
-    	this.internalFormat = parameters.internalFormat || GL.RGBA;
-    	this.format         = parameters.format || GL.RGBA;
-    	this.type           = parameters.type || GL.UNSIGNED_BYTE;
-    	this.depth          = parameters.depth   !== undefined ? parameters.depth : true;
-    	this.stencil        = parameters.stencil !== undefined ? parameters.stencil : false;
+        this.id             = GLOW.uniqueId();
+        this.width          = parameters.width  || parameters.size || window.innerWidth;
+        this.height         = parameters.height || parameters.size || window.innerHeight;
+        this.wrapS          = parameters.wrapS  || parameters.wrap || GL.CLAMP_TO_EDGE;
+        this.wrapT          = parameters.wrapT  || parameters.wrap || GL.CLAMP_TO_EDGE;
+        this.magFilter      = parameters.magFilter || parameters.filter || GL.LINEAR;
+        this.minFilter      = parameters.minFilter || parameters.filter || GL.LINEAR;
+        this.internalFormat = parameters.internalFormat || GL.RGBA;
+        this.format         = parameters.format || GL.RGBA;
+        this.type           = parameters.type || GL.UNSIGNED_BYTE;
+        this.depth          = parameters.depth   !== undefined ? parameters.depth : true;
+        this.stencil        = parameters.stencil !== undefined ? parameters.stencil : false;
         this.data           = parameters.data || null;
 
         this.isBound       = false;
-    	this.textureUnit   = -1;
+        this.textureUnit   = -1;
         this.textureType   = parameters.cube !== true ? GL.TEXTURE_2D : GL.TEXTURE_CUBE_MAP;
-    	
-    	if( parameters.viewport ) {
-    	    this.viewport = {
-    	        x:      parameters.viewport.x      !== undefined ? parameters.viewport.x      : 0,
-    	        y:      parameters.viewport.y      !== undefined ? parameters.viewport.y      : 0,
-    	        width:  parameters.viewport.width  !== undefined ? parameters.viewport.width  : this.width,
-    	        height: parameters.viewport.height !== undefined ? parameters.viewport.height : this.height
-    	    }
-    	} else {
-        	this.viewport = { x: 0, y: 0, width: this.width, height: this.height };
-    	}
-    	
-    	if( parameters.clear ) {
-    	    this.clearSettings = {
-    	        r:     parameters.clear.red   !== undefined ? parameters.clear.red   : 0,
-    	        g:     parameters.clear.green !== undefined ? parameters.clear.green : 0,
-    	        b:     parameters.clear.blue  !== undefined ? parameters.clear.blue  : 0,
-    	        a:     parameters.clear.alpha !== undefined ? parameters.clear.alpha : 1,
-    	        depth: parameters.clear.depth !== undefined ? parameters.clear.depth : 1,
-    	        bits:  parameters.clear.bits  !== undefined ? parameters.clear.bits  : -1
-	        }
-	        
-	        if( this.clearSettings.bits === -1 ) {
-            	this.clearSettings.bits  = GL.COLOR_BUFFER_BIT;
-            	this.clearSettings.bits |= this.depth   ? GL.DEPTH_BUFFER_BIT   : 0;
+        
+        if( parameters.viewport ) {
+            this.viewport = {
+                x:      parameters.viewport.x      !== undefined ? parameters.viewport.x      : 0,
+                y:      parameters.viewport.y      !== undefined ? parameters.viewport.y      : 0,
+                width:  parameters.viewport.width  !== undefined ? parameters.viewport.width  : this.width,
+                height: parameters.viewport.height !== undefined ? parameters.viewport.height : this.height
+            };
+        } else {
+            this.viewport = { x: 0, y: 0, width: this.width, height: this.height };
+        }
+        
+        if( parameters.clear ) {
+            this.clearSettings = {
+                r:     parameters.clear.red   !== undefined ? parameters.clear.red   : 0,
+                g:     parameters.clear.green !== undefined ? parameters.clear.green : 0,
+                b:     parameters.clear.blue  !== undefined ? parameters.clear.blue  : 0,
+                a:     parameters.clear.alpha !== undefined ? parameters.clear.alpha : 1,
+                depth: parameters.clear.depth !== undefined ? parameters.clear.depth : 1,
+                bits:  parameters.clear.bits  !== undefined ? parameters.clear.bits  : -1
+            };
+            
+            if( this.clearSettings.bits === -1 ) {
+                this.clearSettings.bits  = GL.COLOR_BUFFER_BIT;
+                this.clearSettings.bits |= this.depth   ? GL.DEPTH_BUFFER_BIT   : 0;
                 this.clearSettings.bits |= this.stencil ? GL.STENCIL_BUFFER_BIT : 0;
-	        }
-    	} else {
-        	this.clearSettings = { r: 0, g: 0, b: 0, a: 1, depth: 1, bits: 0 };
-        	this.clearSettings.bits  = GL.COLOR_BUFFER_BIT;
-        	this.clearSettings.bits |= this.depth   ? GL.DEPTH_BUFFER_BIT   : 0;
+            }
+        } else {
+            this.clearSettings = { r: 0, g: 0, b: 0, a: 1, depth: 1, bits: 0 };
+            this.clearSettings.bits  = GL.COLOR_BUFFER_BIT;
+            this.clearSettings.bits |= this.depth   ? GL.DEPTH_BUFFER_BIT   : 0;
             this.clearSettings.bits |= this.stencil ? GL.STENCIL_BUFFER_BIT : 0;
-    	}
+        }
 
         this.createBuffers();
-	}
+    }
 
     // methods
     GLOWFBO.prototype.createBuffers = function() {
@@ -161,7 +161,7 @@ GLOW.FBO = (function() {
         GL.bindTexture( this.textureType, null );
         GL.bindRenderbuffer( GL.RENDERBUFFER, null );
         GL.bindFramebuffer( GL.FRAMEBUFFER, null);
-    }
+    };
 
     GLOWFBO.prototype.deleteBuffers = function() {
         if( this.texture      ) GL.deleteTexture( this.texture );
@@ -174,7 +174,7 @@ GLOW.FBO = (function() {
                 GL.deleteFramebuffer( this.frameBuffers[ f ] );
             }
         }
-    }
+    };
 
     GLOWFBO.prototype.init = function() {
         // called from compiler but there's really nothing to do here
@@ -188,25 +188,25 @@ GLOW.FBO = (function() {
                 this.setupViewport( setViewport );
                 
             if( this.textureType === GL.TEXTURE_2D ) {
-            	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
+                GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffer );
             } else {
                 side = side !== undefined ? side : "posX";
-            	GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffers[ side ] );
+                GL.bindFramebuffer( GL.FRAMEBUFFER, this.frameBuffers[ side ] );
             }
         }
-    	return this;
+        return this;
     };
 
     GLOWFBO.prototype.unbind = function( setViewport ) {
-    	// TODO: add cache
-    	if( this.isBound ) {
-    	    this.isBound = false;
-        	GL.bindFramebuffer( GL.FRAMEBUFFER, null );
-        	
-        	if( setViewport === undefined || setViewport === true )
-        	    GL.viewport( GLOW.currentContext.viewport.x, GLOW.currentContext.viewport.y, GLOW.currentContext.viewport.width, GLOW.currentContext.viewport.height );
-    	}
-    	return this;
+        // TODO: add cache
+        if( this.isBound ) {
+            this.isBound = false;
+            GL.bindFramebuffer( GL.FRAMEBUFFER, null );
+            
+            if( setViewport === undefined || setViewport === true )
+                GL.viewport( GLOW.currentContext.viewport.x, GLOW.currentContext.viewport.y, GLOW.currentContext.viewport.width, GLOW.currentContext.viewport.height );
+        }
+        return this;
     };
 
     GLOWFBO.prototype.setViewport = function() {
@@ -215,36 +215,36 @@ GLOW.FBO = (function() {
 
     GLOWFBO.prototype.setupViewport = function( setup ) {
         if( setup ) {
-        	this.viewport.x      = setup.x      !== undefined ? setup.x      : this.viewport.x;
-        	this.viewport.y      = setup.y      !== undefined ? setup.y      : this.viewport.y;
-        	this.viewport.width  = setup.width  !== undefined ? setup.width  : this.viewport.width;
-        	this.viewport.height = setup.height !== undefined ? setup.height : this.viewport.height;
+            this.viewport.x      = setup.x      !== undefined ? setup.x      : this.viewport.x;
+            this.viewport.y      = setup.y      !== undefined ? setup.y      : this.viewport.y;
+            this.viewport.width  = setup.width  !== undefined ? setup.width  : this.viewport.width;
+            this.viewport.height = setup.height !== undefined ? setup.height : this.viewport.height;
         }
-    	GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
-    	return this;
+        GL.viewport( this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height );
+        return this;
     };
 
     GLOWFBO.prototype.setupClear = function( setup ) {
-    	if( setup !== undefined ) {
-        	this.clearSettings.r     = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : this.clearSettings.r; 
-        	this.clearSettings.g     = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : this.clearSettings.g; 
-        	this.clearSettings.b     = setup.blue  !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : this.clearSettings.b; 
-        	this.clearSettings.a     = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : this.clearSettings.a;
-        	this.clearSettings.depth = setup.depth !== undefined ? Math.min( 1, Math.max( 0, setup.depth )) : this.clearSettings.depth;
-        	this.clearSettings.bits  = setup.bits  !== undefined ? setup.bits : this.clearSettings.bits;
-    	}
+        if( setup !== undefined ) {
+            this.clearSettings.r     = setup.red   !== undefined ? Math.min( 1, Math.max( 0, setup.red   )) : this.clearSettings.r; 
+            this.clearSettings.g     = setup.green !== undefined ? Math.min( 1, Math.max( 0, setup.green )) : this.clearSettings.g; 
+            this.clearSettings.b     = setup.blue  !== undefined ? Math.min( 1, Math.max( 0, setup.blue  )) : this.clearSettings.b; 
+            this.clearSettings.a     = setup.alpha !== undefined ? Math.min( 1, Math.max( 0, setup.alpha )) : this.clearSettings.a;
+            this.clearSettings.depth = setup.depth !== undefined ? Math.min( 1, Math.max( 0, setup.depth )) : this.clearSettings.depth;
+            this.clearSettings.bits  = setup.bits  !== undefined ? setup.bits : this.clearSettings.bits;
+        }
 
-    	GL.clearColor( this.clearSettings.r, this.clearSettings.g, this.clearSettings.b, this.clearSettings.a );
-    	GL.clearDepth( this.clearSettings.depth );
-    	return this;
+        GL.clearColor( this.clearSettings.r, this.clearSettings.g, this.clearSettings.b, this.clearSettings.a );
+        GL.clearDepth( this.clearSettings.depth );
+        return this;
     };
 
     GLOWFBO.prototype.clear = function( setup ) {
         if( this.isBound ) {
             this.setupClear( setup );
-        	GL.clear( this.clearSettings.bits );
+            GL.clear( this.clearSettings.bits );
         }
-    	return this;
+        return this;
     };
     
     GLOWFBO.prototype.resize = function( newWidth, newHeight ) {
@@ -259,14 +259,14 @@ GLOW.FBO = (function() {
 
         this.deleteBuffers();
         this.createBuffers();
-    	return this;
+        return this;
     };
 
     GLOWFBO.prototype.generateMipMaps = function() {
-    	GL.bindTexture( this.textureType, this.texture );
-    	GL.generateMipmap( this.textureType );
-    	GL.bindTexture( this.textureType, null );
-    	return this;
+        GL.bindTexture( this.textureType, this.texture );
+        GL.generateMipmap( this.textureType );
+        GL.bindTexture( this.textureType, null );
+        return this;
     };
 
     GLOWFBO.prototype.dispose = function() {
@@ -280,7 +280,7 @@ GLOW.FBO = (function() {
         delete this.frameBuffers;
         delete this.viewport;
         delete this.clearSettings;
-    }
+    };
     
     return GLOWFBO;
 })();

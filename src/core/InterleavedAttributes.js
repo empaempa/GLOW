@@ -87,7 +87,7 @@ GLOW.InterleavedAttributes = (function() {
             }
             delete this.attributes;
         }
-    }
+    };
     
     
     return GLOWInterleavedAttributes;

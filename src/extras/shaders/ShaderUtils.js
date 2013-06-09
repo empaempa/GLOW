@@ -1,18 +1,18 @@
 GLOW.ShaderUtils = {
-	
-	/*
-	* Creates multiple shaders if element indices exceed 65535 (Uint16Array)
-	* Note that the method used is quite stupid and just splits so each
-	* element get their own attribute - sharing of attributes is no more
-	* after this, thus potentially taking up more memory than before
-	*/
+    
+    /*
+    * Creates multiple shaders if element indices exceed 65535 (Uint16Array)
+    * Note that the method used is quite stupid and just splits so each
+    * element get their own attribute - sharing of attributes is no more
+    * after this, thus potentially taking up more memory than before
+    */
 
-	createMultiple: function( originalShaderConfig, attributeSizes ) {
+    createMultiple: function( originalShaderConfig, attributeSizes ) {
 
         if( originalShaderConfig.triangles === undefined ||
             originalShaderConfig.data      === undefined ) {
-	        GLOW.error( "GLOW.ShaderUtils.createMultiple: missing .data and/or .triangles in shader config object. Quitting." );
-	        return;
+            GLOW.error( "GLOW.ShaderUtils.createMultiple: missing .data and/or .triangles in shader config object. Quitting." );
+            return;
         }
 
         var triangles, originalTriangles = originalShaderConfig.triangles;
@@ -34,8 +34,8 @@ GLOW.ShaderUtils = {
                 if( originalData[ s ] ) {
                     except[ s ] = [];
                 } else {
-    	            GLOW.error( "GLOW.ShaderUtils.createMultiple: attribute " + d + " doesn't exist in originalShaderConfig.data. Quitting." );
-    	            return;
+                    GLOW.error( "GLOW.ShaderUtils.createMultiple: attribute " + d + " doesn't exist in originalShaderConfig.data. Quitting." );
+                    return;
                 }
             }
             
@@ -49,17 +49,17 @@ GLOW.ShaderUtils = {
                 triangles[ t ] = t++;
                 triangles[ t ] = t++;
 
-        	    for( s in attributeSizes ) {
-        	        originalAttribute = originalData[ s ];
-        	        newAttribute      = except[ s ];
-        	        size              = attributeSizes[ s ];
+                for( s in attributeSizes ) {
+                    originalAttribute = originalData[ s ];
+                    newAttribute      = except[ s ];
+                    size              = attributeSizes[ s ];
 
                     for( ii = 0; ii < 3; ii++ ) {
                         for( n = 0, nl = size; n < nl; n++ ) {
                             except[ s ].push( originalAttribute[ originalTriangles[ i + ii ] * size + n ] );
                         }
                     }
-        	    }
+                }
             }
         } while( i < il );
         
@@ -81,8 +81,8 @@ GLOW.ShaderUtils = {
             for( s in attributeSizes )
                 originalShaderConfig.data[ s ] = excepts[ i ][ s ];
                 
-    		attributes            = GLOW.Compiler.createAttributes( GLOW.Compiler.extractAttributes( shader.compiledData.program ), originalShaderConfig.data, originalShaderConfig.usage, originalShaderConfig.interleave );
-    		interleavedAttributes = GLOW.Compiler.interleaveAttributes( attributes, originalShaderConfig.interleave );
+            attributes            = GLOW.Compiler.createAttributes( GLOW.Compiler.extractAttributes( shader.compiledData.program ), originalShaderConfig.data, originalShaderConfig.usage, originalShaderConfig.interleave );
+            interleavedAttributes = GLOW.Compiler.interleaveAttributes( attributes, originalShaderConfig.interleave );
 
             for( n in interleavedAttributes )
                 excepts[ i ][ n ] = interleavedAttributes[ n ];
@@ -90,8 +90,8 @@ GLOW.ShaderUtils = {
             shaders[ i ] = shader.clone( excepts[ i ] );
         }
         
-	    return shaders;
-	}
+        return shaders;
+    }
 };
 
 

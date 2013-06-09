@@ -21,32 +21,32 @@ GLOW.Float = (function() {
     float.prototype.set = function( value ) {
         this.value[ 0 ] = value;
         return this;
-    }
+    };
 
     float.prototype.add = function( value ) {
         this.value[ 0 ] += value;
         return this;
-    }
+    };
 
     float.prototype.sub = function( value ) {
         this.value[ 0 ] -= value;
         return this;
-    }
+    };
 
     float.prototype.multiply = function( value ) {
         this.value[ 0 ] *= value;
         return this;
-    }
+    };
 
     float.prototype.divide = function( value ) {
         this.value[ 0 ] /= value;
         return this;
-    }
+    };
 
     float.prototype.modulo = function( value ) {
         this.value[ 0 ] %= value;
         return this;
-    }
+    };
     
 	return float;
 })();
