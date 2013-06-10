@@ -25,12 +25,21 @@ GLOW.Geometry.Plane = {
 	},
 
 	indices: function() {
-
 		var a = new Uint16Array( 2 * 3 );
 		var i = 0;
 
 		a[ i++ ] = 0; a[ i++ ] = 1; a[ i++ ] = 2;
 		a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 3;
+
+		return a;
+	},
+
+	indicesFlipped: function() {
+		var a = new Uint16Array( 2 * 3 );
+		var i = 0;
+
+		a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 1;
+		a[ i++ ] = 0; a[ i++ ] = 3; a[ i++ ] = 2;
 
 		return a;
 	},
