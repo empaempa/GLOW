@@ -1,72 +1,72 @@
 GLOW.Geometry.Plane = {
-	
-	vertices: function( size, facingUp ) {
+    vertices: function( size, facingUp ) {
 
-		var a = new Float32Array( 4 * 3 );
-		var i = 0;
+        var a = new Float32Array( 4 * 3 );
+        var i = 0;
 
-		size = size !== undefined ? size * 0.5 : 1.0;
+        size = size !== undefined ? size * 0.5 : 1.0;
 
-		if( facingUp ) {
-			// top
- 			a[ i++ ] = -size; a[ i++ ] = 0; a[ i++ ] = -size;
-			a[ i++ ] = -size; a[ i++ ] = 0; a[ i++ ] = +size;
-			a[ i++ ] = +size; a[ i++ ] = 0; a[ i++ ] = +size;
-			a[ i++ ] = +size; a[ i++ ] = 0; a[ i++ ] = -size;
-		} else {
-			// front
-			a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = 0; 
-			a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = 0; 
-			a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = 0; 
-			a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = 0; 
-		}
+        if( facingUp ) {
+            // top
+            a[ i++ ] = -size; a[ i++ ] = 0; a[ i++ ] = -size;
+            a[ i++ ] = -size; a[ i++ ] = 0; a[ i++ ] = +size;
+            a[ i++ ] = +size; a[ i++ ] = 0; a[ i++ ] = +size;
+            a[ i++ ] = +size; a[ i++ ] = 0; a[ i++ ] = -size;
+        } else {
+            // front
+            a[ i++ ] = +size; a[ i++ ] = -size; a[ i++ ] = 0; 
+            a[ i++ ] = +size; a[ i++ ] = +size; a[ i++ ] = 0; 
+            a[ i++ ] = -size; a[ i++ ] = +size; a[ i++ ] = 0; 
+            a[ i++ ] = -size; a[ i++ ] = -size; a[ i++ ] = 0; 
+        }
 
-		return a;
-	},
+        return a;
+    },
 
-	indices: function() {
-		var a = new Uint16Array( 2 * 3 );
-		var i = 0;
+    indices: function() {
 
-		a[ i++ ] = 0; a[ i++ ] = 1; a[ i++ ] = 2;
-		a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 3;
+        var a = new Uint16Array( 2 * 3 );
+        var i = 0;
 
-		return a;
-	},
+        a[ i++ ] = 0; a[ i++ ] = 1; a[ i++ ] = 2;
+        a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 3;
 
-	indicesFlipped: function() {
-		var a = new Uint16Array( 2 * 3 );
-		var i = 0;
+        return a;
+    },
 
-		a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 1;
-		a[ i++ ] = 0; a[ i++ ] = 3; a[ i++ ] = 2;
+    indicesFlipped: function() {
+        var a = new Uint16Array( 2 * 3 );
+        var i = 0;
 
-		return a;
-	},
-	
-	uvs: function( facingUp ) {
-		
-		var a = new Float32Array( 4 * 2 );
-		var i = 0;
-		
-		if( facingUp ) {
-			a[ i++ ] = 0; a[ i++ ] = 0;
-			a[ i++ ] = 0; a[ i++ ] = 1;
-			a[ i++ ] = 1; a[ i++ ] = 1;
+        a[ i++ ] = 0; a[ i++ ] = 2; a[ i++ ] = 1;
+        a[ i++ ] = 0; a[ i++ ] = 3; a[ i++ ] = 2;
 
-			a[ i++ ] = 1; a[ i++ ] = 0;
+        return a;
+    },
 
-		} else {
-			a[ i++ ] = 1; a[ i++ ] = 0;
-			a[ i++ ] = 1; a[ i++ ] = 1;
-			a[ i++ ] = 0; a[ i++ ] = 1;
-			a[ i++ ] = 0; a[ i++ ] = 0;
-		}
-		
-		return a;
-	},
-	
-	primitives: function() {
-	    return GL.TRIANGLES;
-	}
-}
+    uvs: function( facingUp ) {
+        
+        var a = new Float32Array( 4 * 2 );
+        var i = 0;
+        
+        if( facingUp ) {
+            a[ i++ ] = 0; a[ i++ ] = 0;
+            a[ i++ ] = 0; a[ i++ ] = 1;
+            a[ i++ ] = 1; a[ i++ ] = 1;
+            a[ i++ ] = 1; a[ i++ ] = 0;
+
+        } else {
+            a[ i++ ] = 1; a[ i++ ] = 0;
+            a[ i++ ] = 1; a[ i++ ] = 1;
+            a[ i++ ] = 0; a[ i++ ] = 1;
+            a[ i++ ] = 0; a[ i++ ] = 0;
+        }
+        
+        return a;
+    },
+    
+    primitives: function() {
+        return GL.TRIANGLES;
+    }
+};
+

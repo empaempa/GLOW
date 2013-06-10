@@ -60,7 +60,7 @@ GLOW.Shader = (function() {
             if( this[ i ] === undefined ) {
                 this[ i ] = this.compiledData.interleavedAttributes[ i ];
             } else if( this[ i ] !== this.compiledData.interleavedAttributes[ i ] ) {
-                GLOW.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on interleavedAttribute " + a + ", not attaching for easy access. Please use Shader.interleavedAttributes." + a + ".data to access data." )
+                GLOW.warn( "GLOW.Shader.attachUniformAndAttributeData: name collision on interleavedAttribute " + a + ", not attaching for easy access. Please use Shader.interleavedAttributes." + a + ".data to access data." );
             }
         }
     };

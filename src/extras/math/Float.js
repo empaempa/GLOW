@@ -8,7 +8,7 @@ GLOW.Float = (function() {
 	"use strict";
 	
     // constructor
-	function float( value ) {
+	function GLOWFloat( value ) {
         if( value !== undefined && value.length ) {
             this.value = new Float32Array( value );
        } else {
@@ -18,35 +18,35 @@ GLOW.Float = (function() {
 	}
 
     // methods
-    float.prototype.set = function( value ) {
+    GLOWFloat.prototype.set = function( value ) {
         this.value[ 0 ] = value;
         return this;
-    }
+    };
 
-    float.prototype.add = function( value ) {
+    GLOWFloat.prototype.add = function( value ) {
         this.value[ 0 ] += value;
         return this;
-    }
+    };
 
-    float.prototype.sub = function( value ) {
+    GLOWFloat.prototype.sub = function( value ) {
         this.value[ 0 ] -= value;
         return this;
-    }
+    };
 
-    float.prototype.multiply = function( value ) {
+    GLOWFloat.prototype.multiply = function( value ) {
         this.value[ 0 ] *= value;
         return this;
-    }
+    };
 
-    float.prototype.divide = function( value ) {
+    GLOWFloat.prototype.divide = function( value ) {
         this.value[ 0 ] /= value;
         return this;
-    }
+    };
 
-    float.prototype.modulo = function( value ) {
+    GLOWFloat.prototype.modulo = function( value ) {
         this.value[ 0 ] %= value;
         return this;
-    }
+    };
     
-	return float;
+	return GLOWFloat;
 })();

@@ -18,9 +18,9 @@ GLOW.Elements = (function() {
         if( typeof( data ) === "number" || data === undefined ) {
             this.length = data;
         } else {
-    		if( !( data instanceof Uint16Array )) {
-    			data = new Uint16Array( data );
-    		}
+            if( !( data instanceof Uint16Array )) {
+                data = new Uint16Array( data );
+            }
 
             this.length = data.length;
             this.elements = GL.createBuffer();

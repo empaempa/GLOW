@@ -43,15 +43,15 @@ GLOW.CompiledData = (function() {
         for( i in this.interleavedAttributes ) {
             this.interleavedAttributeArray.push( this.interleavedAttributes[ i ] );
         }
-    }
+    };
 
     GLOWCompiledData.prototype.clone = function( except ) {
-    	var clone = new GLOW.CompiledData();
-    	except = except || {};
+        var clone = new GLOW.CompiledData();
+        except = except || {};
 
-    	var u;
-    	for( u in this.uniforms ) {
-    		if( except[ u ] ) {
+        var u;
+        for( u in this.uniforms ) {
+            if( except[ u ] ) {
                 if( except[ u ] instanceof GLOW.Uniform ) {
                     clone.uniforms[ u ] = except[ u ];
                 } else {
@@ -64,51 +64,51 @@ GLOW.CompiledData = (function() {
                         }
                     }
                 }
-    		} else {
-    			clone.uniforms[ u ] = this.uniforms[ u ];
-    		}
-    	}
+            } else {
+                clone.uniforms[ u ] = this.uniforms[ u ];
+            }
+        }
 
-    	var a;
-    	for( a in this.attributes ) {
-    		if( except[ a ] ) {
+        var a;
+        for( a in this.attributes ) {
+            if( except[ a ] ) {
                 if( except[ a ] instanceof GLOW.Attribute ) {
                     clone.attributes[ a ] = except[ a ];
             } else {
                     clone.attributes[ a ] = new GLOW.Attribute( this.attributes[ a ], except[ a ] );
                 }
-    		} else {
-    			clone.attributes[ a ] = this.attributes[ a ];
-    		}
-    	}
-    	
-    	var i;
-    	for( i in this.interleavedAttributes ) {
-    	    if( except[ i ] ) {
+            } else {
+                clone.attributes[ a ] = this.attributes[ a ];
+            }
+        }
+        
+        var i;
+        for( i in this.interleavedAttributes ) {
+            if( except[ i ] ) {
                 // todo: This really needs some cleaning up... somehow.
-    	        clone.interleavedAttributes[ i ] = except[ i ];
-    	    } else {
-    	        clone.interleavedAttributes[ i ] = this.interleavedAttributes[ i ];
-    	    }
-    	}
+                clone.interleavedAttributes[ i ] = except[ i ];
+            } else {
+                clone.interleavedAttributes[ i ] = this.interleavedAttributes[ i ];
+            }
+        }
 
-    	if( except.indices ) {
-    		clone.elements = new GLOW.Elements( except.indices, except.primitives );
-    	} else if( except.elements instanceof GLOW.Elements ) {
+        if( except.indices ) {
+            clone.elements = new GLOW.Elements( except.indices, except.primitives );
+        } else if( except.elements instanceof GLOW.Elements ) {
             clone.elements = except.elements;
         } else {
-    		clone.elements = this.elements;
-    	}
+            clone.elements = this.elements;
+        }
 
         if( except.program ) {
-        	clone.program = except.program;
+            clone.program = except.program;
         } else {
-        	clone.program = this.program;
+            clone.program = this.program;
         }
 
         clone.createArrays();
         
-    	return clone;
+        return clone;
     };
 
     GLOWCompiledData.prototype.dispose = function( disposeBuffers, disposeProgram, disposeTexture ) {

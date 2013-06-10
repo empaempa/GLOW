@@ -89,7 +89,7 @@ GLOW.Attribute = (function() {
 
         except = except || {};
         return new GLOW.Attribute( this, except.data || this.data, except.usage || this.usage, except.interleaved || this.interleaved );
-    }
+    };
     
     GLOWAttribute.prototype.dispose = function() {
         if( this.buffer ) {
@@ -97,7 +97,7 @@ GLOW.Attribute = (function() {
             delete this.buffer;
         }
         delete this.data;
-    }
+    };
 
     return GLOWAttribute;
 })();

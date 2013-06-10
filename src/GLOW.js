@@ -26,7 +26,7 @@ var GLOW = (function() {
                 this.callback( message );
             }
         }
-    }
+    };
 
     // log flags
 
@@ -67,26 +67,26 @@ var GLOW = (function() {
             console.log( message );
         }
         glow.dispatch( glow.LOGS, message );
-    }
+    };
 
     glow.warn = function( message ) {
         if( glow.logFlags & glow.WARNINGS ) {
             console.warn( message );
         }
         glow.dispatch( glow.WARNINGS, message );
-    }
+    };
 
     glow.error = function( message ) {
         if( glow.logFlags  & glow.ERRORS ){
             console.error( message );
         }
         glow.dispatch( glow.ERRORS, message );
-    }
+    };
 
     glow.addEventListener = function( flags, callback, context ) {
         listeners.push( new Listener( flags, callback, context ));
         return listeners[ listeners.length - 1 ];
-    }
+    };
 
     glow.removeEventListener = function( listener ) {
         var i = listeners.indexOf( listener );
@@ -95,14 +95,14 @@ var GLOW = (function() {
             return;
         }
         glow.warn( "GLOW.removeEventListener: Couldn't find listener object" );
-    }
+    };
 
     glow.dispatch = function( flags, message ) {
         var l = listeners.length;
         while( l-- ) {
             listeners[ l ].dispatch( flags, message );
         }
-    }
+    };
 
     return glow;
 }());
