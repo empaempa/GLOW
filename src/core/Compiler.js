@@ -283,6 +283,10 @@ GLOW.Compiler = (function() {
 
 	    interleave = interleave !== undefined ? interleave : {};
   
+	    if( interleave === false ) {
+	    	return {};
+	    }
+
 	    var a, al, b, bl, i;
 	    var lowestAvailableIndex = 0;
 	    var attributeByIndex = [];
