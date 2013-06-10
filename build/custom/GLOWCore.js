@@ -687,6 +687,10 @@ GLOW.Compiler = (function() {
 
 	    interleave = interleave !== undefined ? interleave : {};
   
+	    if( interleave === false ) {
+	    	return {};
+	    }
+
 	    var a, al, b, bl, i;
 	    var lowestAvailableIndex = 0;
 	    var attributeByIndex = [];
@@ -909,12 +913,12 @@ GLOW.CompiledData = (function() {
     	return clone;
     };
 
-    GLOWCompiledData.prototype.dispose = function( disposeBuffers, disposeProgram ) {
+    GLOWCompiledData.prototype.dispose = function( disposeBuffers, disposeProgram, disposeTexture ) {
         if( disposeBuffers ) {
             var u, a, i;
             u = this.uniformArray.length;
             while( u-- ) {
-                this.uniformArray[ u ].dispose();
+                this.uniformArray[ u ].dispose( disposeTexture );
             }
 
             a = this.attributeArray.length;
@@ -1817,7 +1821,21 @@ GLOW.Shader = (function() {
         return new GLOW.Shader( { use: this.compiledData, except: except } );
     };
 
-    GLOWShader.prototype.dispose = function( disposeBuffers, disposeProgram ) {
+    GLOWShader.prototype.applyUniformData = function( uniformName, data ) {
+        if( this.compiledData.uniforms[ uniformName ] !== undefined ) {
+            this[ uniformName ] = data;
+            this.compiledData.uniforms[ uniformName ].data = data;
+            var ul = this.compiledData.uniformArray.length;
+            while( ul-- ) {
+                if( this.compiledData.uniformArray[ ul ].name === uniformName ) {
+                    this.compiledData.uniformArray[ ul ].data = data;
+                    break;
+                }
+            }
+        }
+    };
+
+    GLOWShader.prototype.dispose = function( disposeBuffers, disposeProgram, disposeTextures ) {
 
         var u, a, i;
 
@@ -1839,7 +1857,7 @@ GLOW.Shader = (function() {
         delete this.attributes;
         delete this.interleavedAttributes;
 
-        this.compiledData.dispose( disposeBuffers, disposeProgram );
+        this.compiledData.dispose( disposeBuffers, disposeProgram, disposeTextures );
         delete this.compiledData;
     };
 
@@ -1979,7 +1997,11 @@ GLOW.Uniform = (function() {
         return new GLOW.Uniform( this, data || this.data );
     }
 
-    GLOWUniform.prototype.dispose = function() {
+    GLOWUniform.prototype.dispose = function( disposeTexture ) {
+        if( this.data !== undefined && this.type === GL.SAMPLER_2D && disposeTexture ) {
+            this.data.dispose();
+        }
+
         delete this.data;
         delete this.load;
         delete this.location;

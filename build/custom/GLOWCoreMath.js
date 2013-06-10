@@ -252,6 +252,12 @@ GLOW.Vector2 = (function() {
 		return this;
 	};
 
+    vector2.prototype.addScalar = function ( s ) {
+    	this.value[ 0 ] += s;
+    	this.value[ 1 ] += s;
+    	return this;
+    };
+
 	vector2.prototype.subSelf = function ( v ) {
 		this.value[ 0 ] -= v.x,
 		this.value[ 1 ] -= v.y
@@ -326,7 +332,7 @@ GLOW.Vector3 = (function() {
     	this.value[ 0 ] = x !== undefined ? x : 0;
     	this.value[ 1 ] = y !== undefined ? y : 0;
     	this.value[ 2 ] = z !== undefined ? z : 0;
-    }
+    };
 
     // methods
     vector3.prototype.set = function( x, y, z ) {
@@ -334,12 +340,12 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] = y;
     	this.value[ 2 ] = z;
     	return this;
-    }
+    };
 
     vector3.prototype.copy = function ( v ) {
     	this.set( v.value[ 0 ], v.value[ 1 ], v.value[ 2 ] );
     	return this;
-    }
+    };
 
     vector3.prototype.add = function ( a, b ) {
     	a = a.value;
@@ -348,7 +354,7 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] = a[ 1 ] + b[ 1 ];
     	this.value[ 2 ] = a[ 2 ] + b[ 2 ];
     	return this;
-    }
+    };
 
     vector3.prototype.addSelf = function ( a ) {
     	a = a.value;
@@ -356,14 +362,14 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] = this.value[ 1 ] + a[ 1 ];
     	this.value[ 2 ] = this.value[ 2 ] + a[ 2 ];
     	return this;
-    }
+    };
 
     vector3.prototype.addScalar = function ( s ) {
     	this.value[ 0 ] += s;
     	this.value[ 1 ] += s;
     	this.value[ 2 ] += s;
     	return this;
-    }
+    };
 
 
     vector3.prototype.sub = function ( a, b ) {
@@ -373,7 +379,7 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] = a[ 1 ] - b[ 1 ];
     	this.value[ 2 ] = a[ 2 ] - b[ 2 ];
     	return this;
-    }
+    };
 
     vector3.prototype.subSelf = function ( a ) {
     	a = a.value;
@@ -381,7 +387,7 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] -= a[ 1 ];
     	this.value[ 2 ] -= a[ 2 ];
     	return this;
-    }
+    };
 
     vector3.prototype.cross = function ( a, b ) {
     	a = a.value;
@@ -390,7 +396,7 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] = a[ 2 ] * b[ 0 ] - a[ 0 ] * b[ 2 ];
     	this.value[ 2 ] = a[ 0 ] * b[ 1 ] - a[ 1 ] * b[ 0 ];
     	return this;
-    }
+    };
 
     vector3.prototype.crossSelf = function ( a ) {
     	a = a.value;
@@ -400,7 +406,7 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] = az * vx - ax * vz;
     	this.value[ 2 ] = ax * vy - ay * vx;
     	return this;
-    }
+    };
 
     vector3.prototype.multiply = function( a, b ) {
     	a = a.value;
@@ -409,7 +415,7 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] = a[ 1 ] * b[ 1 ];
     	this.value[ 2 ] = a[ 2 ] * b[ 2 ];
     	return this;
-    }
+    };
 
     vector3.prototype.multiplySelf = function( a ) {
     	a = a.value;
@@ -417,14 +423,14 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] *= a[ 1 ];
     	this.value[ 2 ] *= a[ 2 ];
     	return this;
-    }
+    };
 
     vector3.prototype.multiplyScalar = function( s ) {
     	this.value[ 0 ] *= s;
     	this.value[ 1 ] *= s;
     	this.value[ 2 ] *= s;
     	return this;
-    }
+    };
 
     vector3.prototype.divideSelf = function( a ) {
     	a = a.value;
@@ -432,74 +438,74 @@ GLOW.Vector3 = (function() {
     	this.value[ 1 ] /= a[ 1 ];
     	this.value[ 2 ] /= a[ 2 ];
     	return this;
-    }
+    };
 
     vector3.prototype.divideScalar = function( s ) {
     	this.value[ 0 ] /= s;
     	this.value[ 1 ] /= s;
     	this.value[ 2 ] /= s;
     	return this;
-    }
+    };
 
     vector3.prototype.negate = function() {
     	this.value[ 0 ] = -this.value[ 0 ];
     	this.value[ 1 ] = -this.value[ 1 ];
     	this.value[ 2 ] = -this.value[ 2 ];
     	return this;
-    }
+    };
 
     vector3.prototype.dot = function( a ) {
     	a = a.value;
     	return this.value[ 0 ] * a[ 0 ] + this.value[ 1 ] * a[ 1 ] + this.value[ 2 ] * a[ 2 ];
-    }
+    };
 
     vector3.prototype.distanceTo = function ( a ) {
     	return Math.sqrt( this.distanceToSquared( a ) );
-    }
+    };
 
     vector3.prototype.distanceToSquared = function( a ) {
     	a = a.value;
     	var dx = this.value[ 0 ] - a[ 0 ], dy = this.value[ 1 ] - a[ 1 ], dz = this.value[ 2 ] - a[ 2 ];
     	return dx * dx + dy * dy + dz * dz;
-    }
+    };
 
     vector3.prototype.length = function() {
     	return Math.sqrt( this.lengthSq() );
-    }
+    };
 
     vector3.prototype.lengthSq = function() {
     	return this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ];
-    }
+    };
 
     vector3.prototype.lengthManhattan = function() {
     	return this.value[ 0 ] + this.value[ 1 ] + this.value[ 2 ];
-    }
+    };
 
     vector3.prototype.normalize = function() {
     	var l = Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
     	l > 0 ? this.multiplyScalar( 1 / l ) : this.set( 0, 0, 0 );
     	return this;
-    }
+    };
 
     vector3.prototype.setPositionFromMatrix = function( m ) {
     	m = m.value;
     	this.value[ 0 ] = m[ 12 ];
     	this.value[ 1 ] = m[ 13 ];
     	this.value[ 2 ] = m[ 14 ];
-    }
+    };
 
     vector3.prototype.setLength = function( l ) {
     	return this.normalize().multiplyScalar( l );
-    }
+    };
 
     vector3.prototype.isZero = function() {
     	var almostZero = 0.0001;
     	return ( Math.abs( this.value[ 0 ] ) < almostZero ) && ( Math.abs( this.value[ 1 ] ) < almostZero ) && ( Math.abs( this.value[ 2 ] ) < almostZero );
-    }
+    };
 
     vector3.prototype.clone = function() {
-    	return GLOW.Vector3( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
-    }
+    	return new GLOW.Vector3( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ] );
+    };
 
     return vector3;
 })();
@@ -588,6 +594,12 @@ GLOW.Vector4 = (function() {
 		return this;
 	};
 
+    vector4.prototype.normalize = function() {
+    	var l = Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] + this.value[ 3 ] * this.value[ 3 ] );
+    	l > 0 ? this.multiplyScalar( 1 / l ) : this.set( 0, 0, 0, 1 );
+    	return this;
+    };
+
 	vector4.prototype.lerpSelf = function ( v, alpha ) {
 		this.value[ 0 ] += (v.x - this.value[ 0 ]) * alpha;
 		this.value[ 1 ] += (v.y - this.value[ 1 ]) * alpha;
@@ -598,7 +610,7 @@ GLOW.Vector4 = (function() {
 
 	vector4.prototype.lengthOfXYZ = function() {
 		return Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
-	}
+	};
 
 	vector4.prototype.clone = function () {
 		return new GLOW.Vector4( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
@@ -990,6 +1002,34 @@ GLOW.Matrix4 = (function() {
     	this.setRotation( this.rotation.value[ 0 ], this.rotation.value[ 1 ], this.rotation.value[ 2 ] );
     }
 
+    matrix4.prototype.setQuaternion = function( q ) {
+        var d = this.value;
+
+        var qv = q.value;
+        var qx = qv[ 0 ];
+        var qy = qv[ 1 ];
+        var qz = qv[ 2 ];
+        var qw = qv[ 3 ];
+
+        var sqx = qx * qx;
+        var sqy = qy * qy;
+        var sqz = qz * qz;
+
+        d[0] = (1 - 2 * sqy - 2 * sqz);
+        d[1] = (2 * qx * qy - 2 * qz * qw);
+        d[2] = (2 * qx * qz + 2 * qy * qw);
+
+        d[4] = (2 * qx * qy + 2 * qz * qw);
+        d[5] = (1 - 2 * sqx - 2 * sqz);
+        d[6] = (2 * qy * qz - 2 * qx * qw);
+
+        d[8] = (2 * qx * qz - 2 * qy * qw);
+        d[9] = (2 * qy * qz + 2 * qx * qw);
+        d[10] = (1 - 2 * sqx - 2 * sqy);
+
+        return this;
+    }
+
     matrix4.prototype.getPosition = function() {
     	this.position.set( this.value[ 12 ], this.value[ 13 ], this.value[ 14 ] );
     	return this.position;
@@ -1036,9 +1076,6 @@ GLOW.Matrix4 = (function() {
 })();
 
 
-
-
-
 /*
 * Helpers
 */
@@ -1079,42 +1116,6 @@ GLOW.Matrix4.makeInverse = function ( m1, m2 ) {
 	return m2;
 
 };
-
-/*THREE.Matrix4.makeInvert3x3 = function ( m1 ) {
-
-	// input:  THREE.Matrix4, output: THREE.Matrix3
-	// ( based on http://code.google.com/p/webgl-mjs/ )
-
-	var m33 = m1.m33, m33m = m33.m,
-	a11 =   m1.n33 * m1.n22 - m1.n32 * m1.n23,
-	a21 = - m1.n33 * m1.n21 + m1.n31 * m1.n23,
-	a31 =   m1.n32 * m1.n21 - m1.n31 * m1.n22,
-	a12 = - m1.n33 * m1.n12 + m1.n32 * m1.n13,
-	a22 =   m1.n33 * m1.n11 - m1.n31 * m1.n13,
-	a32 = - m1.n32 * m1.n11 + m1.n31 * m1.n12,
-	a13 =   m1.n23 * m1.n12 - m1.n22 * m1.n13,
-	a23 = - m1.n23 * m1.n11 + m1.n21 * m1.n13,
-	a33 =   m1.n22 * m1.n11 - m1.n21 * m1.n12,
-
-	det = m1.n11 * a11 + m1.n21 * a12 + m1.n31 * a13,
-
-	idet;
-
-	// no inverse
-	if (det == 0) {
-		throw "matrix not invertible";
-	}
-	
-	idet = 1.0 / det;
-
-	m33this.value[ 0 ] = idet * a11; m33this.value[ 1 ] = idet * a21; m33this.value[ 2 ] = idet * a31;
-	m33this.value[ 3 ] = idet * a12; m33this.value[ 4 ] = idet * a22; m33this.value[ 5 ] = idet * a32;
-	m33this.value[ 6 ] = idet * a13; m33this.value[ 7 ] = idet * a23; m33this.value[ 8 ] = idet * a33;
-
-	return m33;
-
-}
-*/
 
 GLOW.Matrix4.makeFrustum = function ( left, right, bottom, top, near, far, destMatrix ) {
 
@@ -1178,3 +1179,108 @@ GLOW.Matrix4.tempVector3A = new GLOW.Vector3();
 GLOW.Matrix4.tempVector3B = new GLOW.Vector3();
 GLOW.Matrix4.tempVector3C = new GLOW.Vector3();
 GLOW.Matrix4.tempVector3D = new GLOW.Vector3();
+/**
+ * GLOW.Vector3 Based upon THREE.Vector3 by
+ * @author supereggbert / http://www.paulbrunt.co.uk/
+ * @author philogb / http://blog.thejit.org/
+ * @author mikael emtinger / http://gomo.se/
+ */
+
+GLOW.Quaternion = (function() {
+
+    "use strict"; "use restrict";
+    
+    // constructor
+    function quaternion( x, y, z, w ) {
+        this.value = new Float32Array( 4 );
+        this.value[ 0 ] = x !== undefined ? x : 0;
+        this.value[ 1 ] = y !== undefined ? y : 0;
+        this.value[ 2 ] = z !== undefined ? z : 0;
+        this.value[ 3 ] = w !== undefined ? w : 0;
+    }
+    
+    // methods
+	quaternion.prototype.set = function ( x, y, z, w ) {
+		this.value[ 0 ] = x;
+		this.value[ 1 ] = y;
+		this.value[ 2 ] = z;
+		this.value[ 3 ] = w;
+		return this;
+	};
+
+	quaternion.prototype.copy = function ( v ) {
+		this.value[ 0 ] = v.value[ 0 ];
+		this.value[ 1 ] = v.value[ 1 ];
+		this.value[ 2 ] = v.value[ 2 ];
+		this.value[ 3 ] = v.value[ 3 ];
+		return this;
+	};
+
+	quaternion.prototype.add = function ( v1, v2 ) {
+		this.value[ 0 ] = v1.value[ 0 ] + v2.value[ 0 ];
+		this.value[ 1 ] = v1.value[ 1 ] + v2.value[ 1 ];
+		this.value[ 2 ] = v1.value[ 2 ] + v2.value[ 2 ];
+		this.value[ 3 ] = v1.value[ 3 ] + v2.value[ 3 ];
+		return this;
+	};
+
+	quaternion.prototype.addSelf = function ( v ) {
+		this.value[ 0 ] += v.value[ 0 ];
+		this.value[ 1 ] += v.value[ 1 ];
+		this.value[ 2 ] += v.value[ 2 ];
+		this.value[ 3 ] += v.value[ 3 ];
+		return this;
+	};
+
+	quaternion.prototype.sub = function ( v1, v2 ) {
+		this.value[ 0 ] = v1.value[ 0 ] - v2.value[ 0 ];
+		this.value[ 1 ] = v1.value[ 1 ] - v2.value[ 1 ];
+		this.value[ 2 ] = v1.value[ 2 ] - v2.value[ 2 ];
+		this.value[ 3 ] = v1.value[ 3 ] - v2.value[ 3 ];
+		return this;
+	};
+
+	quaternion.prototype.subSelf = function ( v ) {
+		this.value[ 0 ] -= v.value[ 0 ];
+		this.value[ 1 ] -= v.value[ 1 ];
+		this.value[ 2 ] -= v.value[ 2 ];
+		this.value[ 3 ] -= v.value[ 3 ];
+		return this;
+	};
+
+	quaternion.prototype.multiplyScalar = function ( s ) {
+		this.value[ 0 ] *= s;
+		this.value[ 1 ] *= s;
+		this.value[ 2 ] *= s;
+		this.value[ 3 ] *= s;
+		return this;
+	};
+
+	quaternion.prototype.divideScalar = function ( s ) {
+		this.value[ 0 ] /= s;
+		this.value[ 1 ] /= s;
+		this.value[ 2 ] /= s;
+		this.value[ 3 ] /= s;
+		return this;
+	};
+
+    quaternion.prototype.normalize = function() {
+    	var l = Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] + this.value[ 3 ] * this.value[ 3 ] );
+    	l > 0 ? this.multiplyScalar( 1 / l ) : this.set( 0, 0, 0, 1 );
+    	return this;
+    };
+
+	quaternion.prototype.lerpSelf = function ( v, alpha ) {
+		this.value[ 0 ] += (v.x - this.value[ 0 ]) * alpha;
+		this.value[ 1 ] += (v.y - this.value[ 1 ]) * alpha;
+		this.value[ 2 ] += (v.z - this.value[ 2 ]) * alpha;
+		this.value[ 3 ] += (v.w - this.value[ 3 ]) * alpha;
+	    return this;
+	};
+
+	quaternion.prototype.clone = function () {
+		return new GLOW.Quaternion( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
+	};
+
+    return quaternion;
+})();
