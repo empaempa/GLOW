@@ -71,7 +71,11 @@ GLOW.Uniform = (function() {
         return new GLOW.Uniform( this, data || this.data );
     }
 
-    GLOWUniform.prototype.dispose = function() {
+    GLOWUniform.prototype.dispose = function( disposeTexture ) {
+        if( this.data !== undefined && this.type === GL.SAMPLER_2D && disposeTexture ) {
+            this.data.dispose();
+        }
+
         delete this.data;
         delete this.load;
         delete this.location;

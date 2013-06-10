@@ -171,7 +171,21 @@ GLOW.Shader = (function() {
         return new GLOW.Shader( { use: this.compiledData, except: except } );
     };
 
-    GLOWShader.prototype.dispose = function( disposeBuffers, disposeProgram ) {
+    GLOWShader.prototype.applyUniformData = function( uniformName, data ) {
+        if( this.compiledData.uniforms[ uniformName ] !== undefined ) {
+            this[ uniformName ] = data;
+            this.compiledData.uniforms[ uniformName ].data = data;
+            var ul = this.compiledData.uniformArray.length;
+            while( ul-- ) {
+                if( this.compiledData.uniformArray[ ul ].name === uniformName ) {
+                    this.compiledData.uniformArray[ ul ].data = data;
+                    break;
+                }
+            }
+        }
+    };
+
+    GLOWShader.prototype.dispose = function( disposeBuffers, disposeProgram, disposeTextures ) {
 
         var u, a, i;
 
@@ -193,7 +207,7 @@ GLOW.Shader = (function() {
         delete this.attributes;
         delete this.interleavedAttributes;
 
-        this.compiledData.dispose( disposeBuffers, disposeProgram );
+        this.compiledData.dispose( disposeBuffers, disposeProgram, disposeTextures );
         delete this.compiledData;
     };
 

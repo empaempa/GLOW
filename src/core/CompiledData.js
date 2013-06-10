@@ -111,12 +111,12 @@ GLOW.CompiledData = (function() {
     	return clone;
     };
 
-    GLOWCompiledData.prototype.dispose = function( disposeBuffers, disposeProgram ) {
+    GLOWCompiledData.prototype.dispose = function( disposeBuffers, disposeProgram, disposeTexture ) {
         if( disposeBuffers ) {
             var u, a, i;
             u = this.uniformArray.length;
             while( u-- ) {
-                this.uniformArray[ u ].dispose();
+                this.uniformArray[ u ].dispose( disposeTexture );
             }
 
             a = this.attributeArray.length;
