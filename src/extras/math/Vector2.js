@@ -41,6 +41,12 @@ GLOW.Vector2 = (function() {
 		return this;
 	};
 
+    vector2.prototype.addScalar = function ( s ) {
+    	this.value[ 0 ] += s;
+    	this.value[ 1 ] += s;
+    	return this;
+    };
+
 	vector2.prototype.subSelf = function ( v ) {
 		this.value[ 0 ] -= v.x,
 		this.value[ 1 ] -= v.y

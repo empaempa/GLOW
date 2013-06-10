@@ -83,6 +83,12 @@ GLOW.Vector4 = (function() {
 		return this;
 	};
 
+    vector4.prototype.normalize = function() {
+    	var l = Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] + this.value[ 3 ] * this.value[ 3 ] );
+    	l > 0 ? this.multiplyScalar( 1 / l ) : this.set( 0, 0, 0, 1 );
+    	return this;
+    };
+
 	vector4.prototype.lerpSelf = function ( v, alpha ) {
 		this.value[ 0 ] += (v.x - this.value[ 0 ]) * alpha;
 		this.value[ 1 ] += (v.y - this.value[ 1 ]) * alpha;
@@ -93,7 +99,7 @@ GLOW.Vector4 = (function() {
 
 	vector4.prototype.lengthOfXYZ = function() {
 		return Math.sqrt( this.value[ 0 ] * this.value[ 0 ] + this.value[ 1 ] * this.value[ 1 ] + this.value[ 2 ] * this.value[ 2 ] );
-	}
+	};
 
 	vector4.prototype.clone = function () {
 		return new GLOW.Vector4( this.value[ 0 ], this.value[ 1 ], this.value[ 2 ], this.value[ 3 ] );
