@@ -38,6 +38,7 @@ MATH_FILES = [
 'extras/math/Vector4.js',
 'extras/math/Matrix3.js',
 'extras/math/Matrix4.js',
+'extras/math/Quaternion.js'
 ]
 
 EXTRAS_FILES = [
@@ -50,6 +51,7 @@ EXTRAS_FILES = [
 'extras/math/Vector2.js',
 'extras/math/Vector3.js',
 'extras/math/Vector4.js',
+'extras/math/Quaternion.js',
 'extras/math/Matrix3.js',
 'extras/math/Matrix4.js',
 'extras/math/Color.js',
