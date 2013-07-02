@@ -2,6 +2,8 @@ GLOW.Load = (function() {
     
     "use strict"; "use restrict";
     
+    var precision = "";
+
     // constructor
     function load( parameters ) {
         this.parameters         = parameters;
@@ -143,8 +145,21 @@ GLOW.Load = (function() {
                 }
             }
             fs = buf;
-        
-            this.scope.parameters[ this.parametersProperty ] = { fragmentShader: "#ifdef GL_ES\nprecision highp float;\n#endif\n" + fs, vertexShader: vs };
+
+            if( precision === "" ) {
+                if( typeof GL === "object" && typeof GL.getShaderPrecisionFormat === "function" ) {
+                    var precisionInfo = GL.getShaderPrecisionFormat(GL.FRAGMENT_SHADER, GL.HIGH_FLOAT);
+                    if( precisionInfo.rangeMax >= 62 && precisionInfo.rangeMin >= 62 && precisionInfo.precision >= 16 ) {
+                        precision = "precision highp float;";
+                    } else {
+                        precision = "precision mediump float;";
+                    }
+                } else {
+                    precision = "#ifdef GL_FRAGMENT_PRECISION_HIGH\n#if GL_FRAGMENT_PRECISION_HIGH == 1\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n#else\nprecision mediump float;\n#endif";
+                }
+            }
+
+            this.scope.parameters[ this.parametersProperty ] = { fragmentShader: precision + "\n" + fs, vertexShader: vs };
             this.scope.handleLoadedItem();
         }
     };
@@ -177,7 +192,7 @@ GLOW.Load = (function() {
 
             function isBitSet( value, position ) {
                 return value & ( 1 << position );
-            }
+            };
 
             var i, j, fi,
             offset, zLength, nVertices,
@@ -378,7 +393,7 @@ GLOW.Load = (function() {
 
             }
 
-        }
+        };
 
         function parseSkin() {
 
@@ -417,7 +432,7 @@ GLOW.Load = (function() {
             geometry.bones = json.bones;
             geometry.animation = json.animation;
 
-        }
+        };
 
         function parseMorphing( scale ) {
 
@@ -473,7 +488,7 @@ GLOW.Load = (function() {
 
             }
 
-        }
+        };
 
         function parseEdges() {
 
@@ -492,8 +507,8 @@ GLOW.Load = (function() {
 
             }
 
-        }
-    };
+        };
+    }
     
     
     return load;

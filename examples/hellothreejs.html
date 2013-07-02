@@ -26,7 +26,7 @@
 
 		<!-- load Three, GLOW Core and Three Compatibility -->
 
-		<script type="text/javascript" src="http://mrdoob.github.com/three.js/build/Three.js"></script>
+		<script type="text/javascript" src="http://mrdoob.github.com/three.js/build/three.js"></script>
 		<script type="text/javascript" src="../build/custom/GLOWCore.js"></script>
 		<script type="text/javascript" src="../build/custom/GLOWThreeCompatibility.js"></script>
 		<script type="text/javascript">
@@ -40,7 +40,7 @@
 		
 			var camera = new THREE.Camera( 80, window.innerWidth / window.innerHeight, 0.1, 10000 );
 			camera.position.z = 1500;
-			camera.update();
+			camera.updateMatrix();
 
 
 			// create the shader material information 
