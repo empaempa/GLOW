@@ -2093,6 +2093,19 @@ GLOW.Attribute = (function() {
         GL.bufferData( GL.ARRAY_BUFFER, this.data, this.usage );
     };
 
+    GLOWAttribute.prototype.bufferSubData = function( data, offset ) {
+        if( offset === undefined ) offset = 0;
+        if( this.buffer === undefined ) {
+            GLOW.error( "GLOWAttribute.prototype.bufferSubData: call bufferData first" );
+        }
+        if( data.constructor.toString().indexOf( " Array()") !== -1 ) {
+            data = new Float32Array( data );
+        }
+        
+        GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
+        GL.bufferSubData( GL.ARRAY_BUFFER, offset, data );
+    };
+
     GLOWAttribute.prototype.bind = function() {
         if( this.interleaved === false ) {
             GL.bindBuffer( GL.ARRAY_BUFFER, this.buffer );
